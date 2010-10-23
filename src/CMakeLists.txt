@@ -114,6 +114,9 @@ SET( tomahawkSourcesGui ${tomahawkSourcesGui}
      topbar/lineedit.cpp
      topbar/searchbutton.cpp
 
+     wizard/wizard.cpp
+     wizard/wizardpage.cpp
+
      tomahawkwindow.cpp
      audiocontrols.cpp
      settingsdialog.cpp
@@ -222,6 +225,9 @@ SET( tomahawkHeadersGui ${tomahawkHeadersGui}
      topbar/lineedit.h
      topbar/lineedit_p.h
      topbar/searchbutton.h
+
+     wizard/wizard.h
+     wizard/wizardpage.h
 
      tomahawkwindow.h
      audiocontrols.h
