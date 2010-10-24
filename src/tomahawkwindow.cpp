@@ -30,6 +30,8 @@
 #include "proxystyle.h"
 #include "tomahawksettings.h"
 #include "widgetdragfilter.h"
+#include "wizard/wizard.h"
+#include "wizard/wizardpage.h"
 
 using namespace Tomahawk;
 
@@ -73,6 +75,14 @@ TomahawkWindow::TomahawkWindow( QWidget* parent )
 
     loadSettings();
     setupSignals();
+    
+//     Wizard* w = new Wizard( this, this );
+//     w->addPage( new WizardPage );
+//     w->addPage( new WizardPage );
+//     w->addPage( new WizardPage );
+//     w->addPage( new WizardPage );
+//     w->addPage( new WizardPage );
+//     w->start();
 }
 
 
