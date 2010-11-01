@@ -21,6 +21,7 @@ SourceTreeView::SourceTreeView( QWidget* parent )
     , m_collectionModel( new CollectionModel( this ) )
     , m_dragging( false )
 {
+    setObjectName( "SourceTreeView" );
     setHeaderHidden( true );
     setRootIsDecorated( false );
     setExpandsOnDoubleClick( false );

@@ -1,7 +1,5 @@
 #include "wizard.h"
 
-#include "wizardpage.h"
-
 #include <QDebug>
 #include <QEvent>
 #include <QGraphicsScene>
@@ -9,22 +7,85 @@
 #include <QGraphicsView>
 #include <QWidget>
 #include <QPropertyAnimation>
+#include <tomahawkwindow.h>
+#include <QTreeView>
+#include <sourcetreeview.h>
+#include <qvarlengtharray.h>
 
-// The border on each side of the page being displayed
-#define WIZARD_PAGE_TOP_BORDER 100
-#define WIZARD_PAGE_SIDE_BORDER 200
+WizardMask::WizardMask(TomahawkWindow* window, QGraphicsItem* parent, QGraphicsScene* scene)
+    : QGraphicsItem(parent, scene)
+    , m_window( window )
+{
 
-Wizard::Wizard( QWidget* widget, QObject* parent )
-    : QObject( parent )
-    , m_currentPage( -1 )
-    , m_parent( widget )
+}
+
+void WizardMask::setWidgetToMask(QWidget* w)
+{
+    m_toMask = w;
+}
+
+void WizardMask::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+{
+    painter->save();
+    painter->setRenderHints( QPainter::Antialiasing );
+    QPainterPath p;
+    p.addRect( m_window->rect() );
+    
+    if( !m_toMask )
+        return;
+
+    QPainterPath mRect;
+    QPoint parentPos = m_toMask->mapTo( m_window, m_toMask->pos() );
+    mRect.addRoundedRect( QRect( parentPos, m_toMask->contentsRect().size() ), 5, 5 );
+    p = p.subtracted( mRect );
+    
+    // paint the translucent background
+    QColor top( Qt::gray );
+    top.setAlpha( 180 );
+    QColor bottom( Qt::gray);
+    bottom.setAlpha( 220 );
+    // put gradient from middle of top to middle of bottom
+    QLinearGradient g( QPointF( m_window->size().width() / 2, 0 ), QPointF( m_window->width() / 2, m_window->height() ) );
+    g.setColorAt( 0, top );
+    g.setColorAt( 1, bottom );
+    QBrush b( g );
+    painter->fillPath( p, b );
+    
+    // paint the radial gradient that acts as a shadow
+//     QRadialGradient g2( QRect( parentPos, m_toMask->contentsRect().size() ).center(), 250 );
+//     QColor c( Qt::white );
+//     c.setAlpha( 255 );
+//     g2.setColorAt( 0, c );
+//     c.setAlpha( 0 );
+//     g2.setColorAt( 1, c );
+//     QBrush b2( g2 );
+//     QPainterPath circle;
+//     circle.addEllipse( QRect( parentPos, m_toMask->contentsRect().size() ).center(), m_toMask->contentsRect().size().width(), m_toMask->contentsRect().size().height() / 2 );
+//     circle = circle.subtracted( mRect );
+//     painter->fillPath( circle, b2 );
+    
+    
+    painter->restore();
+}
+
+
+QRectF WizardMask::boundingRect() const
+{
+    return m_window->rect();
+}
+
+
+Wizard::Wizard( TomahawkWindow* window)
+    : QObject( window )
+    , m_parent( window )
     , m_scene( new QGraphicsScene( this ) )
-    , m_view( new QGraphicsView( m_scene, widget ) )
+    , m_view( new QGraphicsView( m_scene, window ) )
+    , m_mask( 0 )
     , m_title( new QGraphicsTextItem )
     , m_pageFadeOut( new QPropertyAnimation )
     , m_pageFadeIn( new QPropertyAnimation )
 {
-    Q_ASSERT( widget );
+    Q_ASSERT( window );
     
     init();
     layout();
@@ -46,6 +107,11 @@ void Wizard::init()
     m_title->setCursor( Qt::ArrowCursor );
     m_scene->addItem( m_title );
     
+    m_mask = new WizardMask( m_parent );
+    m_mask->setZValue( -100 );
+    m_scene->addItem( m_mask );
+    m_mask->setPos( 0, 0 );
+    
     m_pageFadeOut->setDuration( 100 );
     m_pageFadeOut->setPropertyName( "opacity" );
     m_pageFadeOut->setStartValue( 0 );
@@ -55,57 +121,28 @@ void Wizard::init()
     m_pageFadeOut->setStartValue( 1 );
     m_pageFadeOut->setStartValue( 0 );
     
-    m_parent->installEventFilter( this ); // React to resize events
-    
-    // paint the translucent background
-    QColor top( Qt::gray );
-    top.setAlpha( 200 );
-    QColor bottom( Qt::darkGray );
-    bottom.setAlpha( 250 );
-    // put gradient from middle of top to middle of bottom
-    QLinearGradient g( QPointF( m_parent->size().width() / 2, 0 ), QPointF( m_parent->width() / 2, m_parent->height() ) );
-    g.setColorAt( 0, top );
-    g.setColorAt( 1, bottom );
-    QBrush b( g );
     QPalette p = m_view->palette();
-    p.setBrush( QPalette::Window, b );
+    p.setColor( QPalette::Window, Qt::transparent );
+    QColor c;
+    c.setAlpha( 0 );
+//     b.setColor( c );
     m_view->setPalette( p );
+
+    
+    m_parent->installEventFilter( this ); // React to resize events
+   
+    sourceListWizard();
 }
 
 
 Wizard::~Wizard()
 {
-    qDeleteAll( m_pages );
-}
-
-void Wizard::addPage( WizardPage* page )
-{
-    page->setOpacity( 0 );
-    m_scene->addItem( page );
-    m_pages << page;
 }
 
 void Wizard::start()
 {
-    if( m_pages.isEmpty() )
-        return;
-    
-    m_currentPage = 0;
     layout();
 }
-
-void Wizard::nextPage()
-{
-    if( m_currentPage + 1 >= m_pages.size() )
-        return;
-    qDebug() << Q_FUNC_INFO;
-    m_pageFadeOut->setTargetObject( m_pages[ m_currentPage ] );
-    m_pageFadeIn->setTargetObject( m_pages[ m_currentPage + 1 ] );
-    
-    m_pageFadeOut->start();
-    m_pageFadeIn->start();
-}
-
 
 void Wizard::layout()
 {
@@ -114,8 +151,8 @@ void Wizard::layout()
     QSizeF totalSize =QSizeF( m_parent->size() );
     
     // Center title above the page box.
-    m_title->setPos( ( totalSize.width() / 2 ) - ( m_title->boundingRect().width() / 2 ), ( WIZARD_PAGE_TOP_BORDER / 2 ) - ( m_title->boundingRect().height() / 2 ) );
-    
+    m_title->setPos( ( totalSize.width() / 2 ) - ( m_title->boundingRect().width() / 2 ), 100 ); // center at 100px from top
+    /*
     if( m_currentPage >= 0 ) { // We've got at least one page
         QSizeF pageSize = totalSize; // I wish QSize had an adjusted()...
         pageSize.setHeight( pageSize.height() - ( 2 * WIZARD_PAGE_TOP_BORDER ) );
@@ -126,9 +163,20 @@ void Wizard::layout()
         m_pages[ m_currentPage ]->setPos( pagePos );
         m_pages[ m_currentPage ]->resize( pageSize );
         m_pages[ m_currentPage ]->setOpacity( 1 );
-    }
+    }*/
 }
 
+void Wizard::sourceListWizard()
+{
+    // setup the mask to exclude the sourcelist, and highlight around
+    SourceTreeView* sourceList = m_parent->findChild<SourceTreeView*>();
+    if( sourceList ) {
+        qDebug() << "Found sourcelist!";
+        m_mask->setWidgetToMask( sourceList );
+    } else {
+        qDebug() << "DIDNT find sourcelist";
+    }
+}
 
 bool Wizard::eventFilter( QObject* obj, QEvent* event )
 {
