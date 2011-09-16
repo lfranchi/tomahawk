@@ -27,6 +27,7 @@
 
 #include "result.h"
 
+class JobStatusModel;
 class QSearchField;
 class SipPlugin;
 class SourceTreeView;
@@ -55,6 +56,7 @@ public:
 
     AudioControls* audioControls() { return m_audioControls; }
     SourceTreeView* sourceTreeView() const { return m_sourcetree; }
+    JobStatusModel* jobsModel() const { return m_jobsModel; }
 
     void setWindowTitle( const QString& title );
 
@@ -127,6 +129,7 @@ private:
     PlaylistModel* m_queueModel;
     QueueView* m_queueView;
     AnimatedSplitter* m_sidebar;
+    JobStatusModel* m_jobsModel;
 
     Tomahawk::result_ptr m_currentTrack;
     QString m_windowTitle;
