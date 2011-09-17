@@ -60,7 +60,6 @@
 #include "tomahawksettings.h"
 #include "sourcelist.h"
 #include "jobview/JobStatusView.h"
-#include "transferview.h"
 #include "tomahawktrayicon.h"
 #include "scanmanager.h"
 #include "tomahawkapp.h"
@@ -207,7 +206,6 @@ TomahawkWindow::setupSideBar()
     connect( m_searchWidget, SIGNAL( returnPressed() ), this, SLOT( onFilterEdited() ) );
 
     m_sourcetree = new SourceTreeView();
-    TransferView* transferView = new TransferView( m_sidebar );
     JobStatusView* jobsView = new JobStatusView( m_sidebar );
     m_jobsModel = new JobStatusModel( jobsView );
     jobsView->setModel( m_jobsModel );
@@ -221,7 +219,6 @@ TomahawkWindow::setupSideBar()
 
     m_sidebar->addWidget( m_searchWidget );
     m_sidebar->addWidget( m_sourcetree );
-    m_sidebar->addWidget( transferView );
     m_sidebar->addWidget( jobsView );
     m_sidebar->addWidget( m_queueView );
 
