@@ -48,8 +48,7 @@ JobStatusDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option,
     opt.state &= ~QStyle::State_MouseOver;
     QApplication::style()->drawPrimitive( QStyle::PE_PanelItemViewItem, &opt, painter, opt.widget );
 
-    tDebug() << "DRAWING LINE:" << opt.rect.topLeft() << opt.rect.topRight();
-    painter->drawLine( opt.rect.topLeft(), opt.rect.topRight() );
+//     painter->drawLine( opt.rect.topLeft(), opt.rect.topRight() );
 
     painter->setRenderHint( QPainter::Antialiasing );
     const QRect iconRect( PADDING, PADDING + opt.rect.y(), ROW_HEIGHT - 2*PADDING, ROW_HEIGHT - 2*PADDING );
