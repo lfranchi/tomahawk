@@ -118,5 +118,6 @@
 	<file>data/images/spotify-logo.jpg</file>
         <file>data/images/uploading.png</file>
         <file>data/images/downloading.png</file>
+        <file>data/images/headphones.png</file>
     </qresource>
 </RCC>
