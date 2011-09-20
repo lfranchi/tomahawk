@@ -43,6 +43,8 @@
 #include "utils/logger.h"
 #include "items/genericpageitems.h"
 #include "items/temporarypageitem.h"
+#include <database/databasecommand_socialaction.h>
+#include <database/database.h>
 
 using namespace Tomahawk;
 
@@ -354,7 +356,13 @@ SourceTreeView::latchOn()
         }
     }
 
+    DatabaseCommand_SocialAction* cmd = new DatabaseCommand_SocialAction();
+    cmd->setSource( SourceList::instance()->getLocal() );
+    cmd->setAction( "latchOn");
+    cmd->setComment( source->userName() );
+    cmd->setTimestamp( QDateTime::currentDateTime().toTime_t() );
     AudioEngine::instance()->playItem( source->getPlaylistInterface().data(), source->getPlaylistInterface()->nextItem() );
+    Database::instance()->enqueue( QSharedPointer< DatabaseCommand >( cmd ) );
 }
 
 
@@ -369,6 +377,18 @@ SourceTreeView::latchOff()
     SourcesModel::RowType type = ( SourcesModel::RowType )model()->data( m_contextMenuIndex, SourcesModel::SourceTreeItemTypeRole ).toInt();
     if( type != SourcesModel::Collection )
         return;
+
+    const CollectionItem* item = itemFromIndex< CollectionItem >( m_contextMenuIndex );
+    const source_ptr source = item->source();
+
+    DatabaseCommand_SocialAction* cmd = new DatabaseCommand_SocialAction();
+    cmd->setSource( SourceList::instance()->getLocal() );
+    cmd->setAction( "latchOff");
+    cmd->setComment( source->userName() );
+    cmd->setTimestamp( QDateTime::currentDateTime().toTime_t() );
+    AudioEngine::instance()->playItem( source->getPlaylistInterface().data(), source->getPlaylistInterface()->nextItem() );
+
+    Database::instance()->enqueue( QSharedPointer< DatabaseCommand >( cmd ) );
 
     AudioEngine::instance()->stop();
     AudioEngine::instance()->setPlaylist( 0 );
