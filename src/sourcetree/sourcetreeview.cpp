@@ -361,8 +361,9 @@ SourceTreeView::latchOn()
     cmd->setAction( "latchOn");
     cmd->setComment( source->userName() );
     cmd->setTimestamp( QDateTime::currentDateTime().toTime_t() );
-    AudioEngine::instance()->playItem( source->getPlaylistInterface().data(), source->getPlaylistInterface()->nextItem() );
     Database::instance()->enqueue( QSharedPointer< DatabaseCommand >( cmd ) );
+
+    AudioEngine::instance()->playItem( source->getPlaylistInterface().data(), source->getPlaylistInterface()->nextItem() );
 }
 
 
@@ -386,9 +387,10 @@ SourceTreeView::latchOff()
     cmd->setAction( "latchOff");
     cmd->setComment( source->userName() );
     cmd->setTimestamp( QDateTime::currentDateTime().toTime_t() );
+    Database::instance()->enqueue( QSharedPointer< DatabaseCommand >( cmd ) );
+
     AudioEngine::instance()->playItem( source->getPlaylistInterface().data(), source->getPlaylistInterface()->nextItem() );
 
-    Database::instance()->enqueue( QSharedPointer< DatabaseCommand >( cmd ) );
 
     AudioEngine::instance()->stop();
     AudioEngine::instance()->setPlaylist( 0 );

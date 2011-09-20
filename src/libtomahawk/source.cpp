@@ -320,7 +320,7 @@ Source::reportSocialAttributesChanged( DatabaseCommand_SocialAction* action )
         if ( !to.isNull() )
             emit latchedOn( to );
     }
-    else if ( action->action() == "latchedOff" )
+    else if ( action->action() == "latchOff" )
     {
         const source_ptr from = SourceList::instance()->get( action->comment() );
         if ( !from.isNull() )
