@@ -53,6 +53,7 @@
 #include "sip/SipHandler.h"
 #include "sip/SipModel.h"
 #include "utils/logger.h"
+#include "FacebookMonster.h"
 
 #include "ui_proxydialog.h"
 #include "ui_stackedsettingsdialog.h"
@@ -198,6 +199,8 @@ SettingsDialog::SettingsDialog( QWidget *parent )
     connect( ui->proxyButton,  SIGNAL( clicked() ),  SLOT( showProxySettings() ) );
     connect( ui->checkBoxStaticPreferred, SIGNAL( toggled(bool) ), SLOT( toggleUpnp(bool) ) );
     connect( this, SIGNAL( rejected() ), SLOT( onRejected() ) );
+
+    connect( ui->facebookButton, SIGNAL(clicked()), this, SLOT(facebookClicked()));
 
     ui->listWidget->setCurrentRow( 0 );
     ui->listWidget->setItemDelegate(new SettingsListDelegate());
@@ -909,4 +912,10 @@ ProxyDialog::saveSettings()
             proxyFactory->setNoProxyHosts( ui->noHostLineEdit->text().split( ' ', QString::SkipEmptyParts ) );
         }
     }
+}
+
+void
+SettingsDialog::facebookClicked()
+{
+    FacebookMonster::instance()->auth( this );
 }

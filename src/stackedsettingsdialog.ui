@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>641</width>
+    <width>645</width>
     <height>393</height>
    </rect>
   </property>
@@ -611,6 +611,13 @@
                </spacer>
               </item>
              </layout>
+            </item>
+            <item>
+             <widget class="QPushButton" name="facebookButton">
+              <property name="text">
+               <string>Auth to facebook</string>
+              </property>
+             </widget>
             </item>
             <item>
              <spacer name="verticalSpacer_5">

@@ -107,6 +107,7 @@ private slots:
     void changePage( QListWidgetItem*, QListWidgetItem* );
     void serventReady();
 
+    void facebookClicked();
 private:
     void createIcons();
     void setupSipButtons();

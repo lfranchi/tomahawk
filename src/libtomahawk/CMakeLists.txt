@@ -59,6 +59,9 @@ set( libSources
 
     EchonestCatalogSynchronizer.cpp
 
+    FacebookMonster.cpp
+    RecentUpdatesModel.cpp
+
     sip/SipPlugin.cpp
     sip/SipHandler.cpp
     sip/SipModel.cpp
@@ -276,6 +279,9 @@ set( libHeaders
     contextmenu.h
     dropjob.h
     LatchManager.h
+
+    FacebookMonster.h
+    RecentUpdatesModel.h
 
     artist.h
     album.h

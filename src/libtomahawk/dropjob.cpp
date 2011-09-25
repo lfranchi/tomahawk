@@ -146,6 +146,7 @@ DropJob::acceptsMimeData( const QMimeData* data, DropJob::DropTypes acceptedType
 }
 
 bool
+<<<<<<< HEAD
 DropJob::isDropType( DropJob::DropType desired, const QMimeData* data )
 {
     const QString url = data->data( "text/plain" );
@@ -168,11 +169,26 @@ DropJob::isDropType( DropJob::DropType desired, const QMimeData* data )
              url.contains( "rd.io" ) )
             return true;
     }
+=======
+DropJob::acceptsTrackUrl( const QString &url )
+{
+    if ( url.contains( "itunes" ) && url.contains( "album" ) ) // YES itunes is fucked up and song links have album/ in the url.
+        return true;
+
+    if ( url.contains( "spotify" ) && url.contains( "track" ) )
+        return true;
+
+    if ( url.contains( "rdio.com" ) && url.contains( "track" ) )
+        return true;
+>>>>>>> f309abb... MHDiness
 
     return false;
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> f309abb... MHDiness
 void
 DropJob::setGetWholeArtists( bool getWholeArtists )
 {

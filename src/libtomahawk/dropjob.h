@@ -73,6 +73,7 @@ public:
      * \param action What action is requested from the content, if not all data types support all actions
      */
     static bool acceptsMimeData( const QMimeData* data, DropJob::DropTypes type = All, DropAction action = Append );
+    static bool acceptsTrackUrl( const QString& url );
 
     /**
      * Return if the drop is primarily of the given type. Does not auto-convert (e.g. if the drop is of type playlist,
