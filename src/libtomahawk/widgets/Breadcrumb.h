@@ -44,11 +44,16 @@ class Breadcrumb : public QWidget
 {
     Q_OBJECT
 public:
+    enum ExtraRoles {
+        DefaultRole = Qt::UserRole + 1,
+        UserSelectedRole = Qt::UserRole + 2
+    };
+
     explicit Breadcrumb( QWidget* parent = 0, Qt::WindowFlags f = 0 );
     virtual ~Breadcrumb();
 
-    void setModel( BreadcrumbModel* model );
-    BreadcrumbModel* model() const { return m_model; }
+    void setModel( QAbstractItemModel* model );
+    QAbstractItemModel* model() const { return m_model; }
 
     void setRootIcon( const QPixmap& pm );
 
@@ -65,7 +70,7 @@ private:
     // Takes an index in the selection model to update from (updates from that to all children)
     void updateButtons( const QModelIndex& fromIndex );
 
-    BreadcrumbModel* m_model;
+    QAbstractItemModel* m_model;
     KBreadcrumbSelectionModel* m_selModel;
     QPixmap m_rootIcon;
 

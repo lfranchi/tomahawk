@@ -19,6 +19,7 @@
 
 #include "BreadcrumbButton.h"
 
+#include "Breadcrumb.h"
 #include "combobox.h"
 #include "utils/stylehelper.h"
 #include "utils/tomahawkutils.h"
@@ -28,7 +29,7 @@
 
 using namespace Tomahawk;
 
-BreadcrumbButton::BreadcrumbButton( Breadcrumb* parent, BreadcrumbModel* model )
+BreadcrumbButton::BreadcrumbButton( Breadcrumb* parent, QAbstractItemModel* model )
     : QWidget( parent )
     , m_breadcrumb( parent )
     , m_model( model )
@@ -110,9 +111,9 @@ BreadcrumbButton::setParentIndex( const QModelIndex& idx )
         if ( idx.isValid() )
         {
             list << idx.data().toString();
-            if ( idx.data( BreadcrumbModel::DefaultRole ).toBool() )
+            if ( idx.data( Breadcrumb::DefaultRole ).toBool() )
                 defaultIndex = i;
-            if ( idx.data( BreadcrumbModel::UserSelectedRole ).toBool() )
+            if ( idx.data( Breadcrumb::UserSelectedRole ).toBool() )
                 userSelected = i;
         }
     }
@@ -145,11 +146,11 @@ BreadcrumbButton::setParentIndex( const QModelIndex& idx )
 void
 BreadcrumbButton::comboboxActivated( int idx )
 {
-    m_model->setData( m_curIndex, false, BreadcrumbModel::UserSelectedRole );
+    m_model->setData( m_curIndex, false, Breadcrumb::UserSelectedRole );
 
     QModelIndex selected = m_model->index( idx, 0, m_parentIndex );
     m_curIndex = selected;
-    m_model->setData( selected, true, BreadcrumbModel::UserSelectedRole );
+    m_model->setData( selected, true, Breadcrumb::UserSelectedRole );
 
     emit currentIndexChanged( m_parentIndex );
 }
@@ -159,4 +160,10 @@ bool
 BreadcrumbButton::hasChildren() const
 {
     return m_model->rowCount( m_model->index( m_combo->currentIndex(), 0, m_parentIndex ) ) > 0;
+}
+
+QModelIndex
+BreadcrumbButton::currentIndex() const
+{
+    return m_model->index( m_combo->currentIndex(), 0, m_parentIndex );
 }

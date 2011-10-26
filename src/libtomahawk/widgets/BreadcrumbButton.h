@@ -34,10 +34,14 @@ class BreadcrumbButton : public QWidget
 {
     Q_OBJECT
 public:
-    explicit BreadcrumbButton( Breadcrumb* parent, BreadcrumbModel* model );
+    explicit BreadcrumbButton( Breadcrumb* parent, QAbstractItemModel* model );
 
     void setParentIndex( const QModelIndex& idx );
 
+    // Which index is currently visible. This is the first, default or last selected
+    // calculated immediately after loading, or what the user has selected if he has made
+    // a manua;l selection
+    QModelIndex currentIndex() const;
 protected:
     virtual void paintEvent( QPaintEvent* );
     virtual QSize sizeHint() const;
@@ -53,7 +57,7 @@ private:
     bool hasChildren() const;
 
     Breadcrumb* m_breadcrumb;
-    BreadcrumbModel* m_model;
+    QAbstractItemModel* m_model;
 
     QPersistentModelIndex m_parentIndex;
     QPersistentModelIndex m_curIndex;

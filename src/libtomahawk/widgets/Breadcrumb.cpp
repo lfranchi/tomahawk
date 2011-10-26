@@ -18,6 +18,7 @@
 
 #include "Breadcrumb.h"
 
+#include "BreadcrumbButton.h"
 #include "utils/stylehelper.h"
 #include "kbreadcrumbselectionmodel.h"
 
@@ -56,8 +57,8 @@ Breadcrumb::setModel( QAbstractItemModel* model )
 {
     m_model = model;
 
-    if ( m_selMode )
-        delete m_selMode;
+    if ( m_selModel )
+        delete m_selModel;
 
     m_selModel = new KBreadcrumbSelectionModel( new QItemSelectionModel( m_model ) );
 //     connect( m_selMode, SIGNAL( currentChanged( QModelIndex, QModelIndex) ), this, SLOT( updateButtons( QModelIndex, QModelIndex ) ) );
@@ -90,6 +91,7 @@ Breadcrumb::paintEvent( QPaintEvent* )
 void
 Breadcrumb::updateButtons( const QModelIndex& updateFrom )
 {
+    qDebug() << "Updating buttons";
     QModelIndexList sel = m_selModel->selectedIndexes();
     int cur = 0;
     QModelIndex idx;
@@ -137,7 +139,7 @@ Breadcrumb::updateButtons( const QModelIndex& updateFrom )
         btn->setParentIndex( idx );
 
         // Repeat with children
-        idx = btn->currentIdx();
+        idx = btn->currentIndex();
     }
 
     // Now we're at the leaf, lets activate the chart
