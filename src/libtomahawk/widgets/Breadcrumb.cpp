@@ -94,28 +94,19 @@ void
 Breadcrumb::updateButtons( const QModelIndex& updateFrom )
 {
     qDebug() << "Updating buttons:" << updateFrom.data();
-    QModelIndexList sel = m_selModel->selectedIndexes();
     int cur = 0;
     QModelIndex idx;
-
-    int i = 0;
-    if ( sel.count() > 0 )
+    for ( cur = 0; cur < m_buttons.count(); cur++ )
     {
-        for ( i = sel.count() - 1; i >= 0; i-- )
-        {
-            qDebug() << "Checking if this breadcrumb item is it:" << sel[ i ].data() << updateFrom.data() << ( sel[ i ] == updateFrom);
-            if ( sel[ i ] == updateFrom )
-            {
-                idx = sel[ i ];
-                break;
-            }
-        }
+        qDebug() << "Checking if this breadcrumb item changed:" << sel[ cur ].data() << updateFrom.data() << ( sel[ cur ] != updateFrom);
+        if ( m_buttons[ cur ].currentIndex() == updateFrom )
+            break;
+        idx = m_buttons[ cur ].currentIndex();
     }
-    cur = sel.count() - i;
 
     // Ok, changed all indices that are at cur or past it. lets update them
     // When we get to the "end" of the tree, the leaf node is the chart itself
-    qDebug() << "DONE and beginning iteration:" << idx.data() << sel;
+    qDebug() << "DONE and beginning iteration:" << idx.data();
     while ( m_model->rowCount( idx ) > 0 )
     {
         qDebug() << "CHANGED AND iterating:" << idx.data();
