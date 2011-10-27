@@ -152,7 +152,7 @@ BreadcrumbButton::comboboxActivated( int idx )
     m_curIndex = selected;
     m_model->setData( selected, true, Breadcrumb::UserSelectedRole );
 
-    emit currentIndexChanged( m_parentIndex );
+    emit currentIndexChanged( selected );
 }
 
 

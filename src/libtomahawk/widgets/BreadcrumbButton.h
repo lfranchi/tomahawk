@@ -48,7 +48,7 @@ protected:
 
 signals:
     // Some combobox value is changed
-    void currentIndexChanged( const QModelIndex& idx );
+    void currentIndexChanged( const QModelIndex& childSelected );
 
 private slots:
     void comboboxActivated( int );

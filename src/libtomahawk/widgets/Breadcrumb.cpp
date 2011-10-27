@@ -21,11 +21,13 @@
 #include "BreadcrumbButton.h"
 #include "utils/stylehelper.h"
 #include "kbreadcrumbselectionmodel.h"
+#include "utils/logger.h"
 
 #include <QStylePainter>
 #include <QPushButton>
 #include <QHBoxLayout>
 #include <QPropertyAnimation>
+#include <QDebug>
 
 using namespace Tomahawk;
 
@@ -91,23 +93,34 @@ Breadcrumb::paintEvent( QPaintEvent* )
 void
 Breadcrumb::updateButtons( const QModelIndex& updateFrom )
 {
-    qDebug() << "Updating buttons";
+    qDebug() << "Updating buttons:" << updateFrom.data();
     QModelIndexList sel = m_selModel->selectedIndexes();
     int cur = 0;
     QModelIndex idx;
-    for ( cur = 0; cur < sel.count(); cur++ )
+
+    int i = 0;
+    if ( sel.count() > 0 )
     {
-        if ( sel[ cur ] != updateFrom )
-            break;
-        idx = sel[ cur ];
+        for ( i = sel.count() - 1; i >= 0; i-- )
+        {
+            qDebug() << "Checking if this breadcrumb item is it:" << sel[ i ].data() << updateFrom.data() << ( sel[ i ] == updateFrom);
+            if ( sel[ i ] == updateFrom )
+            {
+                idx = sel[ i ];
+                break;
+            }
+        }
     }
+    cur = sel.count() - i;
 
     // Ok, changed all indices that are at cur or past it. lets update them
     // When we get to the "end" of the tree, the leaf node is the chart itself
+    qDebug() << "DONE and beginning iteration:" << idx.data() << sel;
     while ( m_model->rowCount( idx ) > 0 )
     {
+        qDebug() << "CHANGED AND iterating:" << idx.data();
         BreadcrumbButton* btn = 0;
-        if ( m_buttons.size() < cur )
+        if ( m_buttons.size() <= cur )
         {
             // We have to create a new button, doesn't exist yet
             btn = new BreadcrumbButton( this, m_model );
@@ -140,6 +153,8 @@ Breadcrumb::updateButtons( const QModelIndex& updateFrom )
 
         // Repeat with children
         idx = btn->currentIndex();
+
+        cur++;
     }
 
     // Now we're at the leaf, lets activate the chart
@@ -147,10 +162,12 @@ Breadcrumb::updateButtons( const QModelIndex& updateFrom )
 }
 
 void
-Breadcrumb::breadcrumbComboChanged( const QModelIndex& index )
+Breadcrumb::breadcrumbComboChanged( const QModelIndex& childSelected )
 {
     // Some breadcrumb buttons' combobox changed. lets update the child breadcrumbs
-    updateButtons( index );
+    tDebug() << "Combo changed:" << childSelected.data();
+    m_selModel->select( childSelected, QItemSelectionModel::SelectCurrent );
+    updateButtons( childSelected );
 }
 
 

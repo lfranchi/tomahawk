@@ -313,12 +313,12 @@ WhatsHotWidget::leftCrumbIndexChanged( QModelIndex index )
         return;
 
 
-//    QList<QModelIndex> indexes;
-//    while ( index.parent().isValid() )
-//    {
-//        indexes.prepend(index);
-//        index = index.parent();
-//    }
+   QList<QModelIndex> indexes;
+   while ( index.parent().isValid() )
+   {
+       indexes.prepend(index);
+       index = index.parent();
+   }
 
 
     const QString chartId = item->data().toString();
