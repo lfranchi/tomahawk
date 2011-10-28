@@ -53,7 +53,6 @@ BreadcrumbButton::paintEvent( QPaintEvent* )
 
     StyleHelper::horizontalHeader( &p, r ); // draw the background
 
-    qDebug() << "PAINTING IN RECT" << r << m_curIndex.data() << "children:" << hasChildren();
     if( !hasChildren() )
         return;
 
@@ -94,7 +93,6 @@ BreadcrumbButton::sizeHint() const
 {
     // our width = width of combo + 20px for right-arrow and spacing
     const int padding = hasChildren() ? 20 : 5;
-    qDebug() << "RETURNING SIZEHINT:" << m_combo->sizeHint() + QSize( padding, 0 ) << m_curIndex.data() << "has children?" << hasChildren();
     return m_combo->sizeHint() + QSize( padding, 0 );
 }
 
