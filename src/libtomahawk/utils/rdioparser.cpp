@@ -27,16 +27,27 @@
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 
+
+#include "dropjob.h"
+#include "jobview/JobStatusView.h"
+#include "jobview/JobStatusModel.h"
+#include "dropjobnotifier.h"
+#include "viewmanager.h"
+
+
 #include <qjson/parser.h>
 #include <qjson/serializer.h>
 #include <QtCore/QCryptographicHash>
 
-#define RDIO_URL "http://rdioconsole.appspot.com/call";
 using namespace Tomahawk;
+
+QPixmap* RdioParser::s_pixmap = 0;
+
 
 RdioParser::RdioParser( QObject* parent )
     : QObject( parent )
     , m_count( 0 )
+    , m_browseJob( 0 )
 {
 }
 
@@ -95,12 +106,14 @@ RdioParser::handleRdioLink( const QString url, RdioParser::linkType type)
     if ( loc >= 0 )
         playlist = r.cap( 1 );
 
+    DropJob::DropType djType = DropJob::None;
     switch( type )
     {
         case Artist:
 
             if ( !artist.isEmpty() )
             {
+                djType = DropJob::Artist;
                 qDebug() << "Parsing artist" << artist;
             }
             break;
@@ -109,63 +122,77 @@ RdioParser::handleRdioLink( const QString url, RdioParser::linkType type)
 
             if ( !album.isEmpty() && !artist.isEmpty() )
             {
+                djType = DropJob::Album;
                 qDebug() << "Parsing album" << album << " by " << artist;
             }
             break;
 
-        case Track:
-
-            if ( !trk.isEmpty() && !artist.isEmpty() )
-            {
-                query = Query::get( artist, trk, album, uuid(), true );
-            }
-
-            if ( m_multi )
-            {
-                if ( !query.isNull() )
-                    m_queries << query;
-
-                if ( m_count == m_total )
-                    emit tracks( m_queries );
-            }
-            if ( !m_multi && !query.isNull() )
-                emit track( query );
-
-            break;
 
         case Playlist:
 
                 if ( !playlist.isEmpty() )
                 {
+                   djType = DropJob::Playlist;
 
-
-                    QUrl signUrl( "POST&http://api.rdio.com/1/" );
+                   /* QUrl signUrl( "POST&http://api.rdio.com/1/" );
                     signUrl.addEncodedQueryItem("oauth_version",  "1.0");
                     signUrl.addEncodedQueryItem("oauth_nonce", QString::number(qrand() % ((int(100000000) + 1) - int(0)) + int(0) ).toLatin1() );
                     signUrl.addEncodedQueryItem("oauth_timestamp", QString::number(QDateTime::currentMSecsSinceEpoch() / 1000 ).toLatin1() );
                     signUrl.addEncodedQueryItem("oauth_consumer_key", "gk8zmyzj5xztt8aj48csaart" );
                     signUrl.addEncodedQueryItem("oauth_signature_method", "HMAC-SHA1");
                     signUrl.addEncodedQueryItem("extras", "tracks" );
-                    signUrl.addEncodedQueryItem("url", QUrl(url).toEncoded() );
+                    signUrl.addEncodedQueryItem("url", QString(url).remove("#/").toLatin1() );
                     signUrl.addEncodedQueryItem("method", "getObjectFromUrl" );
-                    signUrl.addEncodedQueryItem("oauth_consumer_secret", "yt35kakDyW");
+                    //signUrl.addEncodedQueryItem("oauth_consumer_secret", "yt35kakDyW");
                     qDebug() << "Rdio" << signUrl;
 
                     signUrl.addEncodedQueryItem( "oauth_signature",  hmacSha1("yt35kakDyW", signUrl.toEncoded() ).toLatin1() );
                     signUrl.removeEncodedQueryItem("oauth_consumer_secret");
 
                     qDebug() << "RdioSigned" << signUrl.toEncoded();
-
                     QNetworkReply* reply = TomahawkUtils::nam()->post( QNetworkRequest( signUrl.toString().remove( "POST&" ) ), "" );
-
-                    connect( reply, SIGNAL( finished() ), this, SLOT( rdioReturned() ) );
+                    connect( reply, SIGNAL( finished() ), this, SLOT( rdioReturned() ) );*/
 
                 }
             break;
 
+            case Track:
+
+                djType = DropJob::Track;
+                if ( !trk.isEmpty() && !artist.isEmpty() )
+                {
+                    djType = DropJob::Track;
+                    query = Query::get( artist, trk, album, uuid(), true );
+                }
+
+                if ( m_multi )
+                {
+                    if ( !query.isNull() )
+                        m_queries << query;
+
+                    if ( m_count == m_total )
+                        emit tracks( m_queries );
+                }
+                if ( !m_multi && !query.isNull() )
+                    emit track( query );
+
+                break;
+
         default:
             qDebug() << "Bad type";
             break;
+
+    }
+    if(djType != DropJob::Track){
+
+        QUrl urlap = QUrl( QString( "http://localhost:8080/%1" ).arg( QString(url).remove("http://www.rdio.com/").remove("#/") ) );
+        QNetworkReply* reply = TomahawkUtils::nam()->get( QNetworkRequest( urlap ) );
+        connect( reply, SIGNAL( finished() ), this, SLOT( rdioReturned() ) );
+
+        DropJobNotifier* j = new DropJobNotifier( pixmap(), QString( "Rdio" ), djType, reply );
+        JobStatusView::instance()->model()->addJob( j );
+
+        m_reqQueries.insert( reply );
 
     }
 
@@ -203,18 +230,85 @@ void
 RdioParser::rdioReturned()
 {
 
-    /// Chart request returned something! Woho
-    QNetworkReply* reply = qobject_cast<QNetworkReply*>( sender() );
+    QNetworkReply* r = qobject_cast< QNetworkReply* >( sender() );
+    Q_ASSERT( r );
+    m_reqQueries.remove( r );
+    r->deleteLater();
 
-
-    if ( reply->error() == QNetworkReply::NoError )
+    if ( r->error() == QNetworkReply::NoError )
     {
         QJson::Parser p;
         bool ok;
-        QVariantMap res = p.parse( reply, &ok ).toMap();
-        qDebug() << "RdioReply" << res;
-    }else qDebug() << "RdioReply" << reply->errorString();
+        QVariantMap res = p.parse( r, &ok ).toMap();
 
+        if ( !ok )
+        {
+            tLog() << "Failed to parse json from Rdio browse item :" << p.errorString() << "On line" << p.errorLine();
+
+            return;
+        }
+
+        foreach( QVariant result, res.value("result").toMap().value("tracks").toList() )
+        {
+            QVariantMap rdioResult = result.toMap();
+            QString title, artist, album;
+
+            title = rdioResult.value( "name", QString() ).toString();
+            artist = rdioResult.value( "artist", QString() ).toString();
+            album = rdioResult.value( "album", QString() ).toString();
+
+            if ( title.isEmpty() && artist.isEmpty() ) // don't have enough...
+            {
+                tLog() << "Didn't get an artist and track name from Rdio, not enough to build a query on. Aborting" << title << artist << album;
+                return;
+            }
+            m_trackMode = false;
+            m_single = false;
+            Tomahawk::query_ptr q = Tomahawk::Query::get( artist, title, album, uuid(), m_trackMode );
+            m_tracks << q;
+        }
+
+    } else
+    {
+        tLog() << "Error in network request to Rdio for track decoding:" << r->errorString();
+    }
+
+
+    checkBrowseFinished();
+
+
+}
+
+void
+RdioParser::checkBrowseFinished()
+{
+    tDebug() << "Checking for Rdio batch playlist job finished" << m_reqQueries.isEmpty();
+    if ( m_reqQueries.isEmpty() ) // we're done
+    {
+        if ( m_browseJob )
+            m_browseJob->setFinished();
+
+        /*if( m_createNewPlaylist && !m_tracks.isEmpty() )
+        {
+            m_playlist = Playlist::create( SourceList::instance()->getLocal(),
+                                       uuid(),
+                                       m_title,
+                                       m_info,
+                                       m_creator,
+                                       false,
+                                       m_tracks );
+            connect( m_playlist.data(), SIGNAL( revisionLoaded( Tomahawk::PlaylistRevision ) ), this, SLOT( playlistCreated() ) );
+            return;
+        }
+
+        else*/
+        if ( m_single && !m_tracks.isEmpty() )
+            emit track( m_tracks.first() );
+        else if ( !m_single && !m_tracks.isEmpty() )
+            emit tracks( m_tracks );
+
+        deleteLater();
+    }
 }
 
 
@@ -252,5 +346,14 @@ RdioParser::expandedLinks( const QStringList& urls )
         if ( url.contains( "rdio.com" ) || url.contains( "rd.io" ) )
             parseUrl( url );
     }
+}
+
+QPixmap
+RdioParser::pixmap() const
+{
+    if ( !s_pixmap )
+        s_pixmap = new QPixmap( RESPATH "images/rdio.png" );
+
+    return *s_pixmap;
 }
 

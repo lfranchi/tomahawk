@@ -19,16 +19,17 @@
 
 #ifndef RDIOPARSER_H
 #define RDIOPARSER_H
-
+#include "jobview/JobStatusItem.h"
 #include <QtCore/QObject>
 #include <QStringList>
-
+#include <QSet>
 #include "query.h"
 
 class QNetworkReply;
 namespace Tomahawk
 {
 
+class DropJobNotifier;
 /**
  * Small class to parse spotify links into query_ptrs
  *
@@ -67,12 +68,23 @@ private slots:
     void expandedLinks( const QStringList& );
 
 private:
+    QPixmap pixmap() const;
+    void checkBrowseFinished();
     void parseUrl( const QString& url );
     void handleRdioLink( const QString url, linkType type);
     bool m_multi;
     int m_count, m_total;
     linkType m_linkType;
     QList< query_ptr > m_queries;
+    QSet< QNetworkReply* > m_reqQueries;
+    DropJobNotifier* m_browseJob;
+
+    static QPixmap* s_pixmap;
+
+    bool m_single;
+    bool m_trackMode;
+    QList< query_ptr > m_tracks;
+
 };
 
 }
