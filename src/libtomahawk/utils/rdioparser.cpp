@@ -113,7 +113,8 @@ RdioParser::handleRdioLink( const QString url, RdioParser::linkType type)
 
             if ( !artist.isEmpty() )
             {
-                djType = DropJob::Artist;
+                // Not Supported yet
+                //djType = DropJob::Artist;
                 qDebug() << "Parsing artist" << artist;
             }
             break;
@@ -133,25 +134,6 @@ RdioParser::handleRdioLink( const QString url, RdioParser::linkType type)
                 if ( !playlist.isEmpty() )
                 {
                    djType = DropJob::Playlist;
-
-                   /* QUrl signUrl( "POST&http://api.rdio.com/1/" );
-                    signUrl.addEncodedQueryItem("oauth_version",  "1.0");
-                    signUrl.addEncodedQueryItem("oauth_nonce", QString::number(qrand() % ((int(100000000) + 1) - int(0)) + int(0) ).toLatin1() );
-                    signUrl.addEncodedQueryItem("oauth_timestamp", QString::number(QDateTime::currentMSecsSinceEpoch() / 1000 ).toLatin1() );
-                    signUrl.addEncodedQueryItem("oauth_consumer_key", "gk8zmyzj5xztt8aj48csaart" );
-                    signUrl.addEncodedQueryItem("oauth_signature_method", "HMAC-SHA1");
-                    signUrl.addEncodedQueryItem("extras", "tracks" );
-                    signUrl.addEncodedQueryItem("url", QString(url).remove("#/").toLatin1() );
-                    signUrl.addEncodedQueryItem("method", "getObjectFromUrl" );
-                    //signUrl.addEncodedQueryItem("oauth_consumer_secret", "yt35kakDyW");
-                    qDebug() << "Rdio" << signUrl;
-
-                    signUrl.addEncodedQueryItem( "oauth_signature",  hmacSha1("yt35kakDyW", signUrl.toEncoded() ).toLatin1() );
-                    signUrl.removeEncodedQueryItem("oauth_consumer_secret");
-
-                    qDebug() << "RdioSigned" << signUrl.toEncoded();
-                    QNetworkReply* reply = TomahawkUtils::nam()->post( QNetworkRequest( signUrl.toString().remove( "POST&" ) ), "" );
-                    connect( reply, SIGNAL( finished() ), this, SLOT( rdioReturned() ) );*/
 
                 }
             break;
@@ -184,6 +166,25 @@ RdioParser::handleRdioLink( const QString url, RdioParser::linkType type)
 
     }
     if(djType != DropJob::Track){
+
+        /* QUrl signUrl( "POST&http://api.rdio.com/1/" );
+         signUrl.addEncodedQueryItem("oauth_version",  "1.0");
+         signUrl.addEncodedQueryItem("oauth_nonce", QString::number(qrand() % ((int(100000000) + 1) - int(0)) + int(0) ).toLatin1() );
+         signUrl.addEncodedQueryItem("oauth_timestamp", QString::number(QDateTime::currentMSecsSinceEpoch() / 1000 ).toLatin1() );
+         signUrl.addEncodedQueryItem("oauth_consumer_key", "gk8zmyzj5xztt8aj48csaart" );
+         signUrl.addEncodedQueryItem("oauth_signature_method", "HMAC-SHA1");
+         signUrl.addEncodedQueryItem("extras", "tracks" );
+         signUrl.addEncodedQueryItem("url", QString(url).remove("#/").toLatin1() );
+         signUrl.addEncodedQueryItem("method", "getObjectFromUrl" );
+         //signUrl.addEncodedQueryItem("oauth_consumer_secret", "yt35kakDyW");
+         qDebug() << "Rdio" << signUrl;
+
+         signUrl.addEncodedQueryItem( "oauth_signature",  hmacSha1("yt35kakDyW", signUrl.toEncoded() ).toLatin1() );
+         signUrl.removeEncodedQueryItem("oauth_consumer_secret");
+
+         qDebug() << "RdioSigned" << signUrl.toEncoded();
+         QNetworkReply* reply = TomahawkUtils::nam()->post( QNetworkRequest( signUrl.toString().remove( "POST&" ) ), "" );
+         connect( reply, SIGNAL( finished() ), this, SLOT( rdioReturned() ) );*/
 
         QUrl urlap = QUrl( QString( "http://localhost:8080/%1" ).arg( QString(url).remove("http://www.rdio.com/").remove("#/") ) );
         QNetworkReply* reply = TomahawkUtils::nam()->get( QNetworkRequest( urlap ) );
@@ -262,7 +263,7 @@ RdioParser::rdioReturned()
                 tLog() << "Didn't get an artist and track name from Rdio, not enough to build a query on. Aborting" << title << artist << album;
                 return;
             }
-            m_trackMode = false;
+            m_trackMode = true;
             m_single = false;
             Tomahawk::query_ptr q = Tomahawk::Query::get( artist, title, album, uuid(), m_trackMode );
             m_tracks << q;
