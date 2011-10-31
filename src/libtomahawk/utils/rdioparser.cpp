@@ -23,8 +23,6 @@
 #include "shortenedlinkparser.h"
 #include "utils/tomahawkutils.h"
 #include "utils/logger.h"
- #include <math.h>
-#include <stdlib.h>
 #include <QDateTime>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
@@ -141,23 +139,27 @@ RdioParser::handleRdioLink( const QString url, RdioParser::linkType type)
                 {
 
 
-                    QUrl rawurl = QUrl( QString( "POST&http://api.rdio.com/1/?extras=tracks&method=getObjectFromUrl&oauth_consumer_key=%1&oauth_nonce=%2&oauth_timestamp=%3&url=%4" )
-                                        .arg("gk8zmyzj5xztt8aj48csaart")
-                                        .arg( QString::number( qrand() % ((int(100000000) + 1) - int(0)) + int(0) ) )
-                                        .arg( QString::number( QDateTime::currentMSecsSinceEpoch() / 1000 ) )
-                                        .arg( QString( url ).remove( "http://www.rdio.com" ) )
-                                        //.arg ( "yt35kakDyW" )
-                                       );
+                    QUrl signUrl( "POST&http://api.rdio.com/1/" );
+                    signUrl.addEncodedQueryItem("oauth_version",  "1.0");
+                    signUrl.addEncodedQueryItem("oauth_nonce", QString::number(qrand() % ((int(100000000) + 1) - int(0)) + int(0) ).toLatin1() );
+                    signUrl.addEncodedQueryItem("oauth_timestamp", QString::number(QDateTime::currentMSecsSinceEpoch() / 1000 ).toLatin1() );
+                    signUrl.addEncodedQueryItem("oauth_consumer_key", "gk8zmyzj5xztt8aj48csaart" );
+                    signUrl.addEncodedQueryItem("oauth_signature_method", "HMAC-SHA1");
+                    signUrl.addEncodedQueryItem("extras", "tracks" );
+                    signUrl.addEncodedQueryItem("url", QUrl(url).toEncoded() );
+                    signUrl.addEncodedQueryItem("method", "getObjectFromUrl" );
+                    signUrl.addEncodedQueryItem("oauth_consumer_secret", "yt35kakDyW");
+                    qDebug() << "Rdio" << signUrl;
 
-                    qDebug() << "Rdio url" << rawurl.toString() << "hmac" << hmacSha1("yt35kakDyW", rawurl.toString().toLatin1() );
+                    signUrl.addEncodedQueryItem( "oauth_signature",  hmacSha1("yt35kakDyW", signUrl.toEncoded() ).toLatin1() );
+                    signUrl.removeEncodedQueryItem("oauth_consumer_secret");
 
-                    rawurl.addEncodedQueryItem( "oauth_signature",  hmacSha1("yt35kakDyW", rawurl.toString().toLatin1() ).toLatin1() );
-                    rawurl.addEncodedQueryItem( "oauth_signature_method", "HMAC-SHA1" );
-                    rawurl.addEncodedQueryItem( "oauth_version", "1.0" );
-                    QNetworkReply* reply = TomahawkUtils::nam()->post( QNetworkRequest( rawurl.toString().remove( "POST&" ) ), rawurl.encodedQuery() );
+                    qDebug() << "RdioSigned" << signUrl.toEncoded();
+
+                    QNetworkReply* reply = TomahawkUtils::nam()->post( QNetworkRequest( signUrl.toString().remove( "POST&" ) ), "" );
 
                     connect( reply, SIGNAL( finished() ), this, SLOT( rdioReturned() ) );
-                    qDebug() << "Parsing playlist"<< rawurl.toString() << playlist;
+
                 }
             break;
 
