@@ -20,10 +20,20 @@
 #ifndef RDIOPARSER_H
 #define RDIOPARSER_H
 #include "jobview/JobStatusItem.h"
+#include "query.h"
+#include "config.h"
+#include "dropjob.h"
+#include "typedefs.h"
+#include "playlist.h"
+
 #include <QtCore/QObject>
 #include <QStringList>
 #include <QSet>
-#include "query.h"
+
+#ifdef QCA2_FOUND
+#include <QtCrypto>
+#include <QNetworkRequest>
+#endif
 
 class QNetworkReply;
 namespace Tomahawk
@@ -44,47 +54,47 @@ public:
     explicit RdioParser( QObject* parent = 0 );
     virtual ~RdioParser();
 
-
-    enum linkType {
-        None =      0x00,
-        Track =     0x01,
-        Album =     0x02,
-        Artist =    0x04,
-        Playlist =  0x06
-    };
-    void setLinkType( linkType type ) { m_linkType = type; }
-    linkType LinkType() const { return m_linkType; }
-
-    QString hmacSha1(QByteArray key, QByteArray baseString);
     void parse( const QString& url );
     void parse( const QStringList& urls );
+
+    void setCreatePlaylist( bool createPlaylist ) { m_createPlaylist = createPlaylist; }
 
 signals:
     void track( const Tomahawk::query_ptr& track );
     void tracks( const QList< Tomahawk::query_ptr > tracks );
-public slots:
-    void rdioReturned();
+
 private slots:
     void expandedLinks( const QStringList& );
+    void rdioReturned();
 
+    void playlistCreated( Tomahawk::PlaylistRevision );
 private:
+    void parseTrack( const QString& url );
+    void fetchObjectsFromUrl( const QString& url, DropJob::DropType type );
+
+    QByteArray hmacSha1(QByteArray key, QByteArray baseString);
+    QNetworkRequest generateRequest( const QString& method, const QString& url, const QList< QPair< QByteArray, QByteArray > >& extraParams, QByteArray* postData );
     QPixmap pixmap() const;
-    void checkBrowseFinished();
+    void checkFinished();
     void parseUrl( const QString& url );
-    void handleRdioLink( const QString url, linkType type);
+
     bool m_multi;
     int m_count, m_total;
-    linkType m_linkType;
     QList< query_ptr > m_queries;
     QSet< QNetworkReply* > m_reqQueries;
     DropJobNotifier* m_browseJob;
 
+    QString m_title, m_creator;
+    playlist_ptr m_playlist;
+
     static QPixmap* s_pixmap;
 
-    bool m_single;
-    bool m_trackMode;
+    bool m_createPlaylist;
     QList< query_ptr > m_tracks;
 
+#ifdef QCA2_FOUND
+    static QCA::Initializer m_qcaInit;
+#endif
 };
 
 }
