@@ -25,7 +25,7 @@
 #include "source.h"
 #include "utils/tomahawkutils.h"
 #include "utils/logger.h"
-
+#include "libdavros/block.h"
 
 DatabaseCommand_AllAlbums::DatabaseCommand_AllAlbums( const Tomahawk::collection_ptr &collection, const Tomahawk::artist_ptr &artist, QObject *parent )
   : DatabaseCommand( parent )
@@ -51,6 +51,7 @@ DatabaseCommand_AllAlbums::setArtist( const Tomahawk::artist_ptr &artist )
 void
 DatabaseCommand_AllAlbums::execForArtist( DatabaseImpl* dbi )
 {
+    DAVROS_BLOCK
     TomahawkSqlQuery query = dbi->newquery();
     QList<Tomahawk::album_ptr> al;
     QString orderToken, sourceToken, filterToken, tables;
@@ -121,6 +122,7 @@ DatabaseCommand_AllAlbums::execForArtist( DatabaseImpl* dbi )
 void
 DatabaseCommand_AllAlbums::execForCollection( DatabaseImpl* dbi )
 {
+    DAVROS_BLOCK
     TomahawkSqlQuery query = dbi->newquery();
     QList<Tomahawk::album_ptr> al;
     QString orderToken, sourceToken;

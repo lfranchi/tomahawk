@@ -598,6 +598,7 @@ include_directories( . ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/.
 
     ${LIBPORTFWD_INCLUDE_DIR}
     ${THIRDPARTY_DIR}/qxt/qxtweb-standalone/qxtweb
+    ${THIRDPARTY_DIR}
     ${QuaZip_INCLUDE_DIR}
 )
 
@@ -704,6 +705,8 @@ ENDIF(LIBATTICA_FOUND)
 TARGET_LINK_LIBRARIES( tomahawklib
     # Thirdparty shipped with tomahawk
     ${LIBPORTFWD_LIBRARIES}
+    
+    davros
 
     # External deps
     ${QJSON_LIBRARIES}

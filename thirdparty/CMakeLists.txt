@@ -1,6 +1,7 @@
 ADD_SUBDIRECTORY( qxt )
 ADD_SUBDIRECTORY( liblastfm2 )
 ADD_SUBDIRECTORY( breakpad )
+ADD_SUBDIRECTORY( libdavros )
 IF( APPLE )
     ADD_SUBDIRECTORY( SPMediaKeyTap )
 ENDIF()
