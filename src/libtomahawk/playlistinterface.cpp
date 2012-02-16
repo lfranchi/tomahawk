@@ -17,6 +17,8 @@
  */
 
 #include "playlistinterface.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "result.h"
 

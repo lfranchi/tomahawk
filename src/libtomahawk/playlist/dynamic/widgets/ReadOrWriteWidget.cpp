@@ -21,6 +21,8 @@
 #include <QLabel>
 #include <QStackedLayout>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 

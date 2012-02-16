@@ -29,6 +29,8 @@
 #include "network/servent.h"
 #include "sourcelist.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -72,7 +74,7 @@ DatabaseCommand_AddFiles::postCommitHook()
 void
 DatabaseCommand_AddFiles::exec( DatabaseImpl* dbi )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     Q_ASSERT( !source().isNull() );
 
     TomahawkSqlQuery query_file = dbi->newquery();
@@ -85,7 +87,7 @@ DatabaseCommand_AddFiles::exec( DatabaseImpl* dbi )
 
     int added = 0;
     QVariant srcid = source()->isLocal() ? QVariant( QVariant::Int ) : source()->id();
-    qDebug() << "Adding" << m_files.length() << "files to db for source" << srcid;
+    Davros::debug() << "Adding" << m_files.length() << "files to db for source" << srcid;
 
     QList<QVariant>::iterator it;
     for ( it = m_files.begin(); it != m_files.end(); ++it )
@@ -121,7 +123,7 @@ DatabaseCommand_AddFiles::exec( DatabaseImpl* dbi )
         query_file.exec();
 
         if ( added % 1000 == 0 )
-            qDebug() << "Inserted" << added;
+            Davros::debug() << "Inserted" << added;
 
         // get internal IDs for art/alb/trk
         fileid = query_file.lastInsertId().toInt();
@@ -150,7 +152,7 @@ DatabaseCommand_AddFiles::exec( DatabaseImpl* dbi )
         query_filejoin.bindValue( 6, discnumber );
         if ( !query_filejoin.exec() )
         {
-            qDebug() << "Error inserting into file_join table";
+            Davros::debug() << "Error inserting into file_join table";
             continue;
         }
 
@@ -162,11 +164,11 @@ DatabaseCommand_AddFiles::exec( DatabaseImpl* dbi )
         m_ids << fileid;
         added++;
     }
-    qDebug() << "Inserted" << added << "tracks to database";
+    Davros::debug() << "Inserted" << added << "tracks to database";
 
     if ( added )
         source()->updateIndexWhenSynced();
 
-    tDebug() << "Committing" << added << "tracks...";
+    Davros::debug() << "Committing" << added << "tracks...";
     emit done( m_files, source()->collection() );
 }

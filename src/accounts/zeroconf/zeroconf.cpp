@@ -24,6 +24,8 @@
 #include <QtCore/QTimer>
 
 #include "tomahawksettings.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "zeroconfaccount.h"
 
@@ -36,7 +38,7 @@ ZeroconfPlugin::ZeroconfPlugin ( ZeroconfAccount* parent )
     , m_state( Account::Disconnected )
     , m_cachedNodes()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     m_advertisementTimer.setInterval( 60000 );
     m_advertisementTimer.setSingleShot( false );
     connect( &m_advertisementTimer, SIGNAL( timeout() ), this, SLOT( advertise() ) );
@@ -123,11 +125,11 @@ ZeroconfPlugin::lanHostFound( const QString& host, int port, const QString& name
     if ( sender() != m_zeroconf )
         return;
 
-    qDebug() << "Found LAN host:" << host << port << nodeid;
+    Davros::debug() << "Found LAN host:" << host << port << nodeid;
 
     if ( m_state != Account::Connected )
     {
-        qDebug() << "Not online, so not connecting.";
+        Davros::debug() << "Not online, so not connecting.";
         QStringList nodeSet;
         nodeSet << host << QString::number( port ) << name << nodeid;
         m_cachedNodes.append( nodeSet );
@@ -137,6 +139,6 @@ ZeroconfPlugin::lanHostFound( const QString& host, int port, const QString& name
     if ( !Servent::instance()->connectedToSession( nodeid ) )
         Servent::instance()->connectToPeer( host, port, "whitelist", name, nodeid );
     else
-        qDebug() << "Already connected to" << host;
+        Davros::debug() << "Already connected to" << host;
 }
 

@@ -23,6 +23,8 @@
 #include "database/database.h"
 #include "databaseimpl.h"
 #include "network/servent.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -31,7 +33,7 @@ using namespace Tomahawk;
 void
 DatabaseCommand_SocialAction::postCommitHook()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( source()->isLocal() )
     {
         Servent::instance()->triggerDBSync();
@@ -44,7 +46,7 @@ DatabaseCommand_SocialAction::postCommitHook()
 void
 DatabaseCommand_SocialAction::exec( DatabaseImpl* dbi )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     Q_ASSERT( !source().isNull() );
 
     TomahawkSqlQuery query = dbi->newquery();

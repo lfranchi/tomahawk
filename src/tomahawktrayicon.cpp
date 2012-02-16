@@ -26,6 +26,8 @@
 #include "tomahawkapp.h"
 #include "tomahawkwindow.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include <actioncollection.h>
 

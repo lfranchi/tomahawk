@@ -24,6 +24,8 @@
 #include "artist.h"
 #include "album.h"
 #include "query.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -44,7 +46,7 @@ void
 TrackProxyModel::setSourceModel( QAbstractItemModel* model )
 {
     Q_UNUSED( model );
-    qDebug() << "Explicitly use setSourceTrackModel instead";
+    Davros::debug() << "Explicitly use setSourceTrackModel instead";
     Q_ASSERT( false );
 }
 

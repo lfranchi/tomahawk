@@ -28,6 +28,8 @@
 #include "database/databasecommand_loadfiles.h"
 #include "database/database.h"
 #include "sourcelist.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -45,7 +47,7 @@ StreamConnection::StreamConnection( Servent* s, ControlConnection* cc, QString f
     , m_result( result )
     , m_transferRate( 0 )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     BufferIODevice* bio = new BufferIODevice( result->size() );
     m_iodev = QSharedPointer<QIODevice>( bio, &QObject::deleteLater ); // device audio data gets written to
@@ -85,10 +87,10 @@ StreamConnection::StreamConnection( Servent* s, ControlConnection* cc, QString f
 
 StreamConnection::~StreamConnection()
 {
-    qDebug() << Q_FUNC_INFO << "TX/RX:" << bytesSent() << bytesReceived();
+    Davros::debug() << Q_FUNC_INFO << "TX/RX:" << bytesSent() << bytesReceived();
     if( m_type == RECEIVING && !m_allok )
     {
-        qDebug() << "FTConnection closing before last data msg received, shame.";
+        Davros::debug() << "FTConnection closing before last data msg received, shame.";
         //TODO log the fact that our peer was bad-mannered enough to not finish the upload
 
         // protected, we could expose it:
@@ -121,7 +123,7 @@ StreamConnection::showStats( qint64 tx, qint64 rx )
 {
     if( tx > 0 || rx > 0 )
     {
-        qDebug() << id()
+        Davros::debug() << id()
                  << QString( "Down: %L1 bytes/sec," ).arg( rx )
                  << QString( "Up: %L1 bytes/sec" ).arg( tx );
     }
@@ -151,12 +153,12 @@ StreamConnection::setup()
     connect( this, SIGNAL( statsTick( qint64, qint64 ) ), SLOT( showStats( qint64, qint64 ) ) );
     if( m_type == RECEIVING )
     {
-        qDebug() << "in RX mode";
+        Davros::debug() << "in RX mode";
         emit updated();
         return;
     }
 
-    qDebug() << "in TX mode, fid:" << m_fid;
+    Davros::debug() << "in TX mode, fid:" << m_fid;
 
     DatabaseCommand_LoadFiles* cmd = new DatabaseCommand_LoadFiles( m_fid.toUInt() );
     connect( cmd, SIGNAL( result( Tomahawk::result_ptr ) ), SLOT( startSending( Tomahawk::result_ptr ) ) );
@@ -169,18 +171,18 @@ StreamConnection::startSending( const Tomahawk::result_ptr& result )
 {
     if ( result.isNull() )
     {
-        qDebug() << "Can't handle invalid result!";
+        Davros::debug() << "Can't handle invalid result!";
         shutdown();
         return;
     }
 
     m_result = result;
-    qDebug() << "Starting to transmit" << m_result->url();
+    Davros::debug() << "Starting to transmit" << m_result->url();
 
     QSharedPointer<QIODevice> io = Servent::instance()->getIODeviceForUrl( m_result );
     if( !io )
     {
-        qDebug() << "Couldn't read from source:" << m_result->url();
+        Davros::debug() << "Couldn't read from source:" << m_result->url();
         shutdown();
         return;
     }
@@ -202,7 +204,7 @@ StreamConnection::handleMsg( msg_ptr msg )
         int block = QString( msg->payload() ).mid( 5 ).toInt();
         m_readdev->seek( block * BufferIODevice::blockSize() );
 
-        qDebug() << "Seeked to block:" << block;
+        Davros::debug() << "Seeked to block:" << block;
 
         QByteArray sm;
         sm.append( QString( "doneblock%1" ).arg( block ) );
@@ -216,7 +218,7 @@ StreamConnection::handleMsg( msg_ptr msg )
         ((BufferIODevice*)m_iodev.data())->seeked( block );
 
         m_curBlock = block;
-        qDebug() << "Next block is now:" << block;
+        Davros::debug() << "Next block is now:" << block;
     }
     else if ( msg->payload().startsWith( "data" ) )
     {
@@ -224,7 +226,7 @@ StreamConnection::handleMsg( msg_ptr msg )
         ((BufferIODevice*)m_iodev.data())->addData( m_curBlock++, msg->payload().mid( 4 ) );
     }
 
-    //qDebug() << Q_FUNC_INFO << "flags" << (int) msg->flags()
+    //Davros::debug() << Q_FUNC_INFO << "flags" << (int) msg->flags()
     //         << "payload len" << msg->payload().length()
     //         << "written to device so far: " << m_badded;
 
@@ -275,7 +277,7 @@ StreamConnection::sendSome()
 void
 StreamConnection::onBlockRequest( int block )
 {
-    qDebug() << Q_FUNC_INFO << block;
+    Davros::debug() << Q_FUNC_INFO << block;
 
     if ( m_curBlock == block )
         return;

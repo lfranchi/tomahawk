@@ -24,6 +24,8 @@
 #include "playlist.h"
 #include "genericpageitems.h"
 #include "utils/tomahawkutilsgui.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "widgets/SocialPlaylistWidget.h"
 #include "playlist/customplaylistview.h"
@@ -248,7 +250,7 @@ SourceItem::playlistsAddedInternal( SourceTreeItem* parent, const QList< dynplay
     foreach ( const dynplaylist_ptr& p, playlists )
     {
         DynamicPlaylistItem* plItem = new DynamicPlaylistItem( model(), parent, p, parent->children().count() - addOffset );
-//        qDebug() << "Dynamic Playlist added:" << p->title() << p->creator() << p->info();
+//        Davros::debug() << "Dynamic Playlist added:" << p->title() << p->creator() << p->info();
         p->loadRevision();
         items << plItem;
 
@@ -318,7 +320,7 @@ SourceItem::playlistDeletedInternal( SourceTreeItem* parent, const T& p )
 void
 SourceItem::onPlaylistsAdded( const QList< playlist_ptr >& playlists )
 {
-//    qDebug() << Q_FUNC_INFO << m_source->friendlyName() << playlists.count();
+//    Davros::debug() << Q_FUNC_INFO << m_source->friendlyName() << playlists.count();
 
     if( playlists.isEmpty() )
         return;
@@ -340,7 +342,7 @@ SourceItem::onPlaylistsAdded( const QList< playlist_ptr >& playlists )
     foreach( const playlist_ptr& p, playlists )
     {
         PlaylistItem* plItem = new PlaylistItem( model(), m_playlists, p, m_playlists->children().count() - addOffset );
-//        qDebug() << "Playlist added:" << p->title() << p->creator() << p->info();
+//        Davros::debug() << "Playlist added:" << p->title() << p->creator() << p->info();
         p->loadRevision();
         items << plItem;
 
@@ -386,7 +388,7 @@ void
 SourceItem::onAutoPlaylistDeleted( const dynplaylist_ptr& playlist )
 {
     if( !m_playlists )
-        qDebug() << "NO playlist category item for a deleting playlist..";
+        Davros::debug() << "NO playlist category item for a deleting playlist..";
 
     playlistDeletedInternal( m_playlists, playlist );
 }

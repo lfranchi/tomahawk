@@ -22,6 +22,8 @@
 #include "tomahawksettings.h"
 #include "audio/audioengine.h"
 #include "sourcelist.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "dynamic/DynamicPlaylist.h"
 #include "database/database.h"
@@ -107,7 +109,7 @@ RecentPlaylistsModel::playlistsLoaded( const QList<DatabaseCommand_LoadAllSorted
 
         if ( pl.isNull() )
         {
-            qDebug() << "Found a playlist that is NOT LOADED FOR ANY SOURCE:" << plPair.first << plPair.second;
+            Davros::debug() << "Found a playlist that is NOT LOADED FOR ANY SOURCE:" << plPair.first << plPair.second;
             continue;
         }
         connect( pl.data(), SIGNAL( changed() ), this, SLOT( updatePlaylist() ) );

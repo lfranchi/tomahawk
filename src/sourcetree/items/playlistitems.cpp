@@ -27,6 +27,8 @@
 #include "categoryitems.h"
 #include "sourceitem.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "dropjob.h"
 #include "source.h"
@@ -222,10 +224,10 @@ PlaylistItem::dropMimeData( const QMimeData* data, Qt::DropAction action )
 void
 PlaylistItem::parsedDroppedTracks( const QList< query_ptr >& tracks )
 {
-    qDebug() << "adding" << tracks.count() << "tracks";
+    Davros::debug() << "adding" << tracks.count() << "tracks";
     if ( tracks.count() && !m_playlist.isNull() && m_playlist->author()->isLocal() )
     {
-        qDebug() << "on playlist:" << m_playlist->title() << m_playlist->guid() << m_playlist->currentrevision();
+        Davros::debug() << "on playlist:" << m_playlist->title() << m_playlist->guid() << m_playlist->currentrevision();
 
         m_playlist->addEntries( tracks, m_playlist->currentrevision() );
     }
@@ -330,8 +332,8 @@ DynamicPlaylistItem::checkReparentHackNeeded( const DynamicPlaylistRevision& rev
     //  we need to reparent this playlist to the correct category :-/.
     CategoryItem* cat = qobject_cast< CategoryItem* >( parent() );
 
-//    qDebug() << "with category" << cat;
-//    if( cat ) qDebug() << "and cat type:" << cat->categoryType();
+//    Davros::debug() << "with category" << cat;
+//    if( cat ) Davros::debug() << "and cat type:" << cat->categoryType();
     if( cat )
     {
         CategoryItem* from = cat;
@@ -350,7 +352,7 @@ DynamicPlaylistItem::checkReparentHackNeeded( const DynamicPlaylistRevision& rev
         } else if( cat->categoryType() == SourcesModel::StationsCategory && revision.mode == Static ) { // WRONG
             SourceItem* col = qobject_cast< SourceItem* >( cat->parent() );
             to = col->playlistsCategory();
-//            qDebug() << "TRYING TO HACK TO:" << to;
+//            Davros::debug() << "TRYING TO HACK TO:" << to;
             if( !to ) { // you have got to be fucking kidding me
                 int fme = col->children().count();
                 col->beginRowsAdded( fme, fme );
@@ -361,7 +363,7 @@ DynamicPlaylistItem::checkReparentHackNeeded( const DynamicPlaylistRevision& rev
             }
         }
         if( to ) {
-//            qDebug() << "HACKING! moving dynamic playlist from" << from->text() << "to:" << to->text();
+//            Davros::debug() << "HACKING! moving dynamic playlist from" << from->text() << "to:" << to->text();
             // remove and add
             int idx = from->children().indexOf( this );
             from->beginRowsRemoved( idx, idx );

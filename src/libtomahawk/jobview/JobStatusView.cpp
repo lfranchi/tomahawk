@@ -25,6 +25,8 @@
 #include "PipelineStatusItem.h"
 #include "TransferStatusItem.h"
 #include "LatchedStatusItem.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #include <QHeaderView>

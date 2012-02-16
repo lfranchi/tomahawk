@@ -27,6 +27,8 @@
 #include <qjson/parser.h>
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #include "sourcelist.h"
@@ -77,7 +79,7 @@ JSPFLoader::load( QFile& file )
     }
     else
     {
-        tLog() << "Failed to open jspf file";
+        Davros::debug() << "Failed to open jspf file";
         reportError();
     }
 }
@@ -103,7 +105,7 @@ JSPFLoader::networkLoadFinished()
 void
 JSPFLoader::networkError( QNetworkReply::NetworkError e )
 {
-    tLog() << Q_FUNC_INFO << "Network error loading jspf" << e;
+    Davros::debug() << Q_FUNC_INFO << "Network error loading jspf" << e;
     reportError();
 }
 
@@ -117,13 +119,13 @@ JSPFLoader::gotBody()
 
     if ( !retOk )
     {
-        tLog() << "Failed to parse jspf json:" << p.errorString() << "on line" << p.errorLine();
+        Davros::debug() << "Failed to parse jspf json:" << p.errorString() << "on line" << p.errorLine();
         return;
     }
 
     if ( !wrapper.contains( "playlist" ) )
     {
-        tLog() << "No playlist element in JSPF!";
+        Davros::debug() << "No playlist element in JSPF!";
         return;
     }
 

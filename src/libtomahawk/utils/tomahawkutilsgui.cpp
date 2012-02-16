@@ -18,6 +18,7 @@
 
 #include "config.h"
 #include "tomahawkutilsgui.h"
+#include "libdavros/davros.h"
 
 #include <QtGui/QLayout>
 #include <QtGui/QPainter>
@@ -193,7 +194,7 @@ tomahawkWindow()
 
     if ( i == widgetList.count() )
     {
-        qDebug() << Q_FUNC_INFO << "could not find main Tomahawk mainwindow";
+        Davros::debug() << Q_FUNC_INFO << "could not find main Tomahawk mainwindow";
         Q_ASSERT( false );
         return 0;
     }
@@ -209,7 +210,7 @@ bringToFront()
 {
 #if defined(Q_WS_X11)
     {
-        qDebug() << Q_FUNC_INFO;
+        Davros::debug() << Q_FUNC_INFO;
 
         QWidget* widget = tomahawkWindow();
         if ( !widget )
@@ -238,7 +239,7 @@ bringToFront()
     }
 #elif defined(Q_WS_WIN)
     {
-        qDebug() << Q_FUNC_INFO;
+        Davros::debug() << Q_FUNC_INFO;
 
         QWidget* widget = tomahawkWindow();
         if ( !widget )

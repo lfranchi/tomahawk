@@ -52,7 +52,7 @@ AccountModel::loadData()
         if ( !fac->allowUserCreation() )
             continue;
 
-        qDebug() << "Creating factory node:" << fac->prettyName();
+        Davros::debug() << "Creating factory node:" << fac->prettyName();
         m_accounts << new AccountModelNode( fac );
     }
 

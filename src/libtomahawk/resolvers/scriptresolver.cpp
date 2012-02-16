@@ -28,6 +28,8 @@
 #include "sourcelist.h"
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #ifdef Q_OS_WIN
@@ -43,7 +45,7 @@ ScriptResolver::ScriptResolver( const QString& exe )
     , m_configSent( false )
     , m_error( Tomahawk::ExternalResolver::NoError )
 {
-    tLog() << Q_FUNC_INFO << "Created script resolver:" << exe;
+    Davros::debug() << Q_FUNC_INFO << "Created script resolver:" << exe;
     connect( &m_proc, SIGNAL( readyReadStandardError() ), SLOT( readStderr() ) );
     connect( &m_proc, SIGNAL( readyReadStandardOutput() ), SLOT( readStdout() ) );
     connect( &m_proc, SIGNAL( finished( int, QProcess::ExitStatus ) ), SLOT( cmdExited( int, QProcess::ExitStatus ) ) );
@@ -81,7 +83,7 @@ ScriptResolver::factory( const QString& exe )
     if ( fi.suffix() != "js" && fi.suffix() != "script" )
     {
         res = new ScriptResolver( exe );
-        tLog() << Q_FUNC_INFO << exe << "Loaded.";
+        Davros::debug() << Q_FUNC_INFO << exe << "Loaded.";
     }
 
     return res;
@@ -147,7 +149,7 @@ ScriptResolver::running() const
 void
 ScriptResolver::readStderr()
 {
-    tLog() << "SCRIPT_STDERR" << filePath() << m_proc.readAllStandardError();
+    Davros::debug() << "SCRIPT_STDERR" << filePath() << m_proc.readAllStandardError();
 }
 
 
@@ -191,7 +193,7 @@ ScriptResolver::readStdout()
 void
 ScriptResolver::sendMsg( const QByteArray& msg )
 {
-//     qDebug() << Q_FUNC_INFO << m_ready << msg << msg.length();
+//     Davros::debug() << Q_FUNC_INFO << m_ready << msg << msg.length();
     if ( !m_proc.isOpen() )
         return;
 
@@ -205,7 +207,7 @@ ScriptResolver::sendMsg( const QByteArray& msg )
 void
 ScriptResolver::handleMsg( const QByteArray& msg )
 {
-//    qDebug() << Q_FUNC_INFO << msg.size() << QString::fromAscii( msg );
+//    Davros::debug() << Q_FUNC_INFO << msg.size() << QString::fromAscii( msg );
 
     bool ok;
     QVariant v = m_parser.parse( msg, &ok );
@@ -237,7 +239,7 @@ ScriptResolver::handleMsg( const QByteArray& msg )
         foreach( const QVariant& rv, reslist )
         {
             QVariantMap m = rv.toMap();
-            qDebug() << "Found result:" << m;
+            Davros::debug() << "Found result:" << m;
 
             Tomahawk::result_ptr rp = Tomahawk::Result::get( m.value( "url" ).toString() );
             Tomahawk::artist_ptr ap = Tomahawk::Artist::get( m.value( "artist" ).toString(), false );
@@ -272,7 +274,7 @@ void
 ScriptResolver::cmdExited( int code, QProcess::ExitStatus status )
 {
     m_ready = false;
-    tLog() << Q_FUNC_INFO << "SCRIPT EXITED, code" << code << "status" << status << filePath();
+    Davros::debug() << Q_FUNC_INFO << "SCRIPT EXITED, code" << code << "status" << status << filePath();
     Tomahawk::Pipeline::instance()->removeResolver( this );
 
     m_error = ExternalResolver::FailedToLoad;
@@ -280,7 +282,7 @@ ScriptResolver::cmdExited( int code, QProcess::ExitStatus status )
 
     if ( m_stopped )
     {
-        tLog() << "*** Script resolver stopped ";
+        Davros::debug() << "*** Script resolver stopped ";
         emit terminated();
 
         return;
@@ -289,13 +291,13 @@ ScriptResolver::cmdExited( int code, QProcess::ExitStatus status )
     if ( m_num_restarts < 10 )
     {
         m_num_restarts++;
-        tLog() << "*** Restart num" << m_num_restarts;
+        Davros::debug() << "*** Restart num" << m_num_restarts;
         startProcess();
         sendConfig();
     }
     else
     {
-        tLog() << "*** Reached max restarts, not restarting.";
+        Davros::debug() << "*** Reached max restarts, not restarting.";
     }
 }
 
@@ -327,12 +329,12 @@ ScriptResolver::resolve( const Tomahawk::query_ptr& query )
 void
 ScriptResolver::doSetup( const QVariantMap& m )
 {
-//    qDebug() << Q_FUNC_INFO << m;
+//    Davros::debug() << Q_FUNC_INFO << m;
 
     m_name    = m.value( "name" ).toString();
     m_weight  = m.value( "weight", 0 ).toUInt();
     m_timeout = m.value( "timeout", 5 ).toUInt() * 1000;
-    qDebug() << "SCRIPT" << filePath() << "READY," << "name" << m_name << "weight" << m_weight << "timeout" << m_timeout;
+    Davros::debug() << "SCRIPT" << filePath() << "READY," << "name" << m_name << "weight" << m_weight << "timeout" << m_timeout;
 
     m_ready = true;
     m_configSent = false;
@@ -348,7 +350,7 @@ void
 ScriptResolver::setupConfWidget( const QVariantMap& m )
 {
     bool compressed = m.value( "compressed", "false" ).toString() == "true";
-    qDebug() << "Resolver has a preferences widget! compressed?" << compressed;
+    Davros::debug() << "Resolver has a preferences widget! compressed?" << compressed;
 
     QByteArray uiData = m[ "widget" ].toByteArray();
     if( compressed )

@@ -20,6 +20,8 @@
 
 #include <IOKit/hidsystem/ev_keymap.h>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -35,15 +37,15 @@ MacShortcutHandler::macMediaKeyPressed( int key )
 {
     switch (key) {
       case NX_KEYTYPE_PLAY:
-        qDebug() << "emitting PlayPause pressed";
+        Davros::debug() << "emitting PlayPause pressed";
         emit playPause();
         break;
       case NX_KEYTYPE_FAST:
-        qDebug() << "emitting next pressed";
+        Davros::debug() << "emitting next pressed";
         emit next();
         break;
       case NX_KEYTYPE_REWIND:
-        qDebug() << "emitting prev pressed";
+        Davros::debug() << "emitting prev pressed";
         emit previous();
         break;
     }

@@ -35,6 +35,8 @@
 #include "network/servent.h"
 #include "sourcelist.h"
 #include "tomahawksettings.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "accounts/AccountManager.h"
 
@@ -62,7 +64,7 @@ SipHandler::SipHandler( QObject* parent )
 
 SipHandler::~SipHandler()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     s_instance = 0;
 }
 
@@ -71,16 +73,16 @@ SipHandler::~SipHandler()
 const QPixmap
 SipHandler::avatar( const QString& name ) const
 {
-//    qDebug() << Q_FUNC_INFO << "Getting avatar" << name; // << m_usernameAvatars.keys();
+//    Davros::debug() << Q_FUNC_INFO << "Getting avatar" << name; // << m_usernameAvatars.keys();
     if( m_usernameAvatars.contains( name ) )
     {
-//        qDebug() << Q_FUNC_INFO << "Getting avatar and avatar != null ";
+//        Davros::debug() << Q_FUNC_INFO << "Getting avatar and avatar != null ";
         Q_ASSERT(!m_usernameAvatars.value( name ).isNull());
         return m_usernameAvatars.value( name );
     }
     else
     {
-//        qDebug() << Q_FUNC_INFO << "Getting avatar and avatar == null :-(";
+//        Davros::debug() << Q_FUNC_INFO << "Getting avatar and avatar == null :-(";
         return QPixmap();
     }
 }
@@ -118,8 +120,8 @@ SipHandler::hookUpPlugin( SipPlugin* sip )
 void
 SipHandler::onPeerOnline( const QString& jid )
 {
-//    qDebug() << Q_FUNC_INFO;
-    tDebug() << "SIP online:" << jid;
+//    Davros::debug() << Q_FUNC_INFO;
+    Davros::debug() << "SIP online:" << jid;
 
     SipPlugin* sip = qobject_cast<SipPlugin*>(sender());
 
@@ -140,12 +142,12 @@ SipHandler::onPeerOnline( const QString& jid )
         m["key"] = key;
         m["uniqname"] = nodeid;
 
-        qDebug() << "Asking them to connect to us:" << m;
+        Davros::debug() << "Asking them to connect to us:" << m;
     }
     else
     {
         m["visible"] = false;
-        qDebug() << "We are not visible externally:" << m;
+        Davros::debug() << "We are not visible externally:" << m;
     }
 
     QJson::Serializer ser;
@@ -158,15 +160,15 @@ SipHandler::onPeerOnline( const QString& jid )
 void
 SipHandler::onPeerOffline( const QString& jid )
 {
-//    qDebug() << Q_FUNC_INFO;
-    qDebug() << "SIP offline:" << jid;
+//    Davros::debug() << Q_FUNC_INFO;
+    Davros::debug() << "SIP offline:" << jid;
 }
 
 
 void
 SipHandler::onSipInfo( const QString& peerId, const SipInfo& info )
 {
-    tDebug() << Q_FUNC_INFO << "SIP Message:" << peerId << info;
+    Davros::debug() << Q_FUNC_INFO << "SIP Message:" << peerId << info;
 
     /*
       If only one party is externally visible, connection is obvious
@@ -178,7 +180,7 @@ SipHandler::onSipInfo( const QString& peerId, const SipInfo& info )
         if( !Servent::instance()->visibleExternally() ||
             Servent::instance()->externalAddress() <= info.host().hostName() )
         {
-            qDebug() << "Initiate connection to" << peerId;
+            Davros::debug() << "Initiate connection to" << peerId;
             Servent::instance()->connectToPeer( info.host().hostName(),
                                           info.port(),
                                           info.key(),
@@ -187,12 +189,12 @@ SipHandler::onSipInfo( const QString& peerId, const SipInfo& info )
         }
         else
         {
-            qDebug() << Q_FUNC_INFO << "They should be conecting to us...";
+            Davros::debug() << Q_FUNC_INFO << "They should be conecting to us...";
         }
     }
     else
     {
-        qDebug() << Q_FUNC_INFO << "They are not visible, doing nothing atm";
+        Davros::debug() << Q_FUNC_INFO << "They are not visible, doing nothing atm";
     }
 
     m_peersSipInfos.insert( peerId, info );
@@ -206,17 +208,17 @@ void SipHandler::onSoftwareVersion(const QString& peerId, const QString& version
 void
 SipHandler::onMessage( const QString& from, const QString& msg )
 {
-    qDebug() << Q_FUNC_INFO << from << msg;
+    Davros::debug() << Q_FUNC_INFO << from << msg;
 }
 
 #ifndef ENABLE_HEADLESS
 void
 SipHandler::onAvatarReceived( const QString& from, const QPixmap& avatar )
 {
-//    qDebug() << Q_FUNC_INFO << "setting avatar on source for" << from;
+//    Davros::debug() << Q_FUNC_INFO << "setting avatar on source for" << from;
     if ( avatar.isNull() )
     {
-//        qDebug() << Q_FUNC_INFO << "got null pixmap, not adding anything";
+//        Davros::debug() << Q_FUNC_INFO << "got null pixmap, not adding anything";
         return;
     }
 
@@ -228,22 +230,22 @@ SipHandler::onAvatarReceived( const QString& from, const QPixmap& avatar )
     ControlConnection *conn = Servent::instance()->lookupControlConnection( from );
     if( conn )
     {
-//        qDebug() << Q_FUNC_INFO << from << "got control connection";
+//        Davros::debug() << Q_FUNC_INFO << from << "got control connection";
         Tomahawk::source_ptr source = conn->source();
         if( source )
         {
 
-//            qDebug() << Q_FUNC_INFO << from << "got source, setting avatar";
+//            Davros::debug() << Q_FUNC_INFO << from << "got source, setting avatar";
             source->setAvatar( avatar );
         }
         else
         {
-//            qDebug() << Q_FUNC_INFO << from << "no source found, not setting avatar";
+//            Davros::debug() << Q_FUNC_INFO << from << "no source found, not setting avatar";
         }
     }
     else
     {
-//        qDebug() << Q_FUNC_INFO << from << "no control connection setup yet";
+//        Davros::debug() << Q_FUNC_INFO << from << "no control connection setup yet";
     }
 }
 
@@ -251,7 +253,7 @@ SipHandler::onAvatarReceived( const QString& from, const QPixmap& avatar )
 void
 SipHandler::onAvatarReceived( const QPixmap& avatar )
 {
-//    qDebug() << Q_FUNC_INFO << "Set own avatar on MyCollection";
+//    Davros::debug() << Q_FUNC_INFO << "Set own avatar on MyCollection";
     SourceList::instance()->getLocal()->setAvatar( avatar );
 }
 #endif

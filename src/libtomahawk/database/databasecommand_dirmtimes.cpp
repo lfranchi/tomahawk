@@ -21,6 +21,8 @@
 #include <QSqlQuery>
 
 #include "databaseimpl.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -76,7 +78,7 @@ DatabaseCommand_DirMtimes::execSelectPath( DatabaseImpl *dbi, const QDir& path, 
 void
 DatabaseCommand_DirMtimes::execUpdate( DatabaseImpl* dbi )
 {
-    qDebug() << "Saving mtimes...";
+    Davros::debug() << "Saving mtimes...";
     TomahawkSqlQuery query = dbi->newquery();
     query.exec( "DELETE FROM dirs_scanned" );
     query.prepare( "INSERT INTO dirs_scanned(name, mtime) VALUES(?, ?)" );
@@ -88,6 +90,6 @@ DatabaseCommand_DirMtimes::execUpdate( DatabaseImpl* dbi )
         query.exec();
     }
 
-    qDebug() << "Saved mtimes for" << m_tosave.size() << "dirs.";
+    Davros::debug() << "Saved mtimes for" << m_tosave.size() << "dirs.";
     emit done( QMap< QString, unsigned int >() );
 }

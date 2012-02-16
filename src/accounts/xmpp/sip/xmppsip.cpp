@@ -53,6 +53,8 @@
 #endif
 
 #include <utils/tomahawkutilsgui.h>
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -66,7 +68,7 @@ XmppSipPlugin::XmppSipPlugin( Account *account )
 #endif
     , m_state( Account::Disconnected )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     m_currentUsername = readUsername();
 
@@ -114,9 +116,9 @@ XmppSipPlugin::XmppSipPlugin( Account *account )
     caps->setNode( TOMAHAWK_CAP_NODE_NAME );
 
     // print connection parameters
-    qDebug() << "Our JID set to:" << m_client->jid().full();
-    qDebug() << "Our Server set to:" << m_client->server();
-    qDebug() << "Our Port set to" << m_client->port();
+    Davros::debug() << "Our JID set to:" << m_client->jid().full();
+    Davros::debug() << "Our Server set to:" << m_client->server();
+    Davros::debug() << "Our Port set to" << m_client->port();
 
     // setup slots
     connect(m_client, SIGNAL(serverFeaturesReceived(QSet<QString>)), SLOT(onConnect()));
@@ -157,15 +159,15 @@ XmppSipPlugin::menu()
 void
 XmppSipPlugin::connectPlugin()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if( m_client->isConnected() )
     {
-        qDebug() << Q_FUNC_INFO << "Already connected to server, not connecting again...";
+        Davros::debug() << Q_FUNC_INFO << "Already connected to server, not connecting again...";
         return; //FIXME: should i return false here?!
     }
 
-    qDebug() << "Connecting to the Xmpp server..." << m_client->jid().full();
+    Davros::debug() << "Connecting to the Xmpp server..." << m_client->jid().full();
 
     //FIXME: we're badly workarounding some missing reconnection api here, to be fixed soon
     QTimer::singleShot( 1000, m_client, SLOT( connectToServer() ) );
@@ -208,7 +210,7 @@ XmppSipPlugin::disconnectPlugin()
 void
 XmppSipPlugin::onConnect()
 {
-//    qDebug() << Q_FUNC_INFO;
+//    Davros::debug() << Q_FUNC_INFO;
 
     // update jid resource, servers like gtalk use resource binding and may
     // have changed our requested /resource
@@ -218,7 +220,7 @@ XmppSipPlugin::onConnect()
         emit jidChanged( m_client->jid().full() );
     }
 
-    qDebug() << "Connected to xmpp as:" << m_client->jid().full();
+    Davros::debug() << "Connected to xmpp as:" << m_client->jid().full();
 
     // set presence to least valid value
     m_client->setPresence(Jreen::Presence::XA, "Got Tomahawk? http://gettomahawk.com", -127);
@@ -251,7 +253,7 @@ XmppSipPlugin::onConnect()
 void
 XmppSipPlugin::onDisconnect( Jreen::Client::DisconnectReason reason )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     switch( reason )
     {
@@ -274,7 +276,7 @@ XmppSipPlugin::onDisconnect( Jreen::Client::DisconnectReason reason )
             break;
 
         default:
-            qDebug() << "Not all Client::DisconnectReasons checked";
+            Davros::debug() << "Not all Client::DisconnectReasons checked";
             Q_ASSERT(false);
             break;
     }
@@ -293,7 +295,7 @@ XmppSipPlugin::onDisconnect( Jreen::Client::DisconnectReason reason )
 void
 XmppSipPlugin::onError( const Jreen::Connection::SocketError& e )
 {
-    tDebug() << "JABBER error:" << e;
+    Davros::debug() << "JABBER error:" << e;
 }
 
 
@@ -335,7 +337,7 @@ XmppSipPlugin::errorMessage( Jreen::Client::DisconnectReason reason )
             break;
 
         default:
-            qDebug() << "Not all Client::DisconnectReasons checked";
+            Davros::debug() << "Not all Client::DisconnectReasons checked";
             Q_ASSERT(false);
             break;
     }
@@ -350,7 +352,7 @@ XmppSipPlugin::errorMessage( Jreen::Client::DisconnectReason reason )
 void
 XmppSipPlugin::sendMsg( const QString& to, const QString& msg )
 {
-    qDebug() << Q_FUNC_INFO << to << msg;
+    Davros::debug() << Q_FUNC_INFO << to << msg;
 
     if ( !m_client ) {
         return;
@@ -364,7 +366,7 @@ XmppSipPlugin::sendMsg( const QString& to, const QString& msg )
     QVariant v = parser.parse( msg.toAscii(), &ok );
     if ( !ok  || v.type() != QVariant::Map )
     {
-        qDebug() << "Invalid JSON in Xmpp msg";
+        Davros::debug() << "Invalid JSON in Xmpp msg";
         return;
     }
     QVariantMap m = v.toMap();
@@ -384,7 +386,7 @@ XmppSipPlugin::sendMsg( const QString& to, const QString& msg )
         sipMessage = new TomahawkXmppMessage();
     }
 
-    qDebug() << "Send sip messsage to " << to;
+    Davros::debug() << "Send sip messsage to " << to;
     Jreen::IQ iq( Jreen::IQ::Set, to );
     iq.addExtension( sipMessage );
     Jreen::IQReply *reply = m_client->send( iq );
@@ -396,7 +398,7 @@ XmppSipPlugin::sendMsg( const QString& to, const QString& msg )
 void
 XmppSipPlugin::broadcastMsg( const QString& msg )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if ( !m_client )
         return;
@@ -434,7 +436,7 @@ XmppSipPlugin::showAddFriendDialog()
     if ( !ok )
         return;
 
-    qDebug() << "Attempting to add xmpp contact to roster:" << id;
+    Davros::debug() << "Attempting to add xmpp contact to roster:" << id;
     addContact( id );
 #endif
 }
@@ -508,12 +510,12 @@ XmppSipPlugin::configurationChanged()
 
     if ( reconnect )
     {
-        qDebug() << Q_FUNC_INFO << "Reconnecting jreen plugin...";
+        Davros::debug() << Q_FUNC_INFO << "Reconnecting jreen plugin...";
         disconnectPlugin();
 
         setupClientHelper();
 
-        qDebug() << Q_FUNC_INFO << "Updated settings";
+        Davros::debug() << Q_FUNC_INFO << "Updated settings";
         connectPlugin();
     }
 }
@@ -578,7 +580,7 @@ void XmppSipPlugin::onNewMessage( const Jreen::Message& message )
     if ( m_state != Account::Connected )
         return;
 
-//    qDebug() << Q_FUNC_INFO << "message type" << message.subtype();
+//    Davros::debug() << Q_FUNC_INFO << "message type" << message.subtype();
 
     QString from = message.from().full();
     QString msg = message.body();
@@ -588,7 +590,7 @@ void XmppSipPlugin::onNewMessage( const Jreen::Message& message )
 
     if( message.subtype() == Jreen::Message::Error )
     {
-        tDebug() << Q_FUNC_INFO << "Received error message from " << from << ", not answering... (Condition: "
+        Davros::debug() << Q_FUNC_INFO << "Received error message from " << from << ", not answering... (Condition: "
                  << ( message.error().isNull() ? -1 : message.error()->condition() ) << ")";
         return;
     }
@@ -609,7 +611,7 @@ void XmppSipPlugin::onNewMessage( const Jreen::Message& message )
         return;
     }
 
-    qDebug() << Q_FUNC_INFO << "From:" << message.from().full() << ":" << message.body();
+    Davros::debug() << Q_FUNC_INFO << "From:" << message.from().full() << ":" << message.body();
     emit sipInfoReceived( from, info );
 }
 
@@ -623,13 +625,13 @@ void XmppSipPlugin::onPresenceReceived( const Jreen::RosterItem::Ptr &item, cons
     Jreen::JID jid = presence.from();
     QString fulljid( jid.full() );
 
-    qDebug() << Q_FUNC_INFO << "* New presence:" << fulljid << presence.subtype();
+    Davros::debug() << Q_FUNC_INFO << "* New presence:" << fulljid << presence.subtype();
 
     if( jid == m_client->jid() )
         return;
 
     if ( presence.error() ) {
-        //qDebug() << Q_FUNC_INFO << fulljid << "Running tomahawk: no" << "presence error";
+        //Davros::debug() << Q_FUNC_INFO << fulljid << "Running tomahawk: no" << "presence error";
         return;
     }
 
@@ -637,7 +639,7 @@ void XmppSipPlugin::onPresenceReceived( const Jreen::RosterItem::Ptr &item, cons
     Jreen::Capabilities::Ptr caps = presence.payload<Jreen::Capabilities>();
     if( caps )
     {
-        qDebug() << Q_FUNC_INFO << fulljid << "Running tomahawk: maybe" << "caps " << caps->node() << "requesting disco...";
+        Davros::debug() << Q_FUNC_INFO << fulljid << "Running tomahawk: maybe" << "caps " << caps->node() << "requesting disco...";
 
         // request disco features
         QString node = caps->node() + '#' + caps->ver();
@@ -651,7 +653,7 @@ void XmppSipPlugin::onPresenceReceived( const Jreen::RosterItem::Ptr &item, cons
     }
     else if( !caps )
     {
-//        qDebug() << Q_FUNC_INFO << "Running tomahawk: no" << "no caps";
+//        Davros::debug() << Q_FUNC_INFO << "Running tomahawk: no" << "no caps";
         if ( presenceMeansOnline( m_peers[ jid ] ) )
             handlePeerStatus( jid, Jreen::Presence::Unavailable );
     }
@@ -663,11 +665,11 @@ void XmppSipPlugin::onSubscriptionReceived( const Jreen::RosterItem::Ptr& item, 
     if ( m_state != Account::Connected )
         return;
 
-//    qDebug() << Q_FUNC_INFO << "presence type:" << presence.subtype();
+//    Davros::debug() << Q_FUNC_INFO << "presence type:" << presence.subtype();
     if(item)
-        qDebug() << Q_FUNC_INFO << presence.from().full() << "subs" << item->subscription() << "ask" << item->ask();
+        Davros::debug() << Q_FUNC_INFO << presence.from().full() << "subs" << item->subscription() << "ask" << item->ask();
     else
-        qDebug() << Q_FUNC_INFO << "item empty";
+        Davros::debug() << Q_FUNC_INFO << "item empty";
 
     // don't do anything if the contact is already subscribed to us
     if( presence.subtype() != Jreen::Presence::Subscribe ||
@@ -687,7 +689,7 @@ void XmppSipPlugin::onSubscriptionReceived( const Jreen::RosterItem::Ptr& item, 
         )
     )
     {
-        qDebug() << Q_FUNC_INFO << presence.from().bare() << "already on the roster so we assume ack'ing subscription request is okay...";
+        Davros::debug() << Q_FUNC_INFO << presence.from().bare() << "already on the roster so we assume ack'ing subscription request is okay...";
         m_roster->allowSubscription(presence.from(), true);
 
         return;
@@ -715,7 +717,7 @@ void
 XmppSipPlugin::onSubscriptionRequestConfirmed( int result )
 {
 #ifndef ENABLE_HEADLESS
-    qDebug() << Q_FUNC_INFO << result;
+    Davros::debug() << Q_FUNC_INFO << result;
 
     QList< QMessageBox* > confirmBoxes = m_subscriptionConfirmBoxes.values();
     Jreen::JID jid;
@@ -736,12 +738,12 @@ XmppSipPlugin::onSubscriptionRequestConfirmed( int result )
 
     if ( allowSubscription == QMessageBox::Yes )
     {
-        qDebug() << Q_FUNC_INFO << jid.bare() << "accepted by user, adding to roster";
+        Davros::debug() << Q_FUNC_INFO << jid.bare() << "accepted by user, adding to roster";
         addContact(jid, "");
     }
     else
     {
-        qDebug() << Q_FUNC_INFO << jid.bare() << "declined by user";
+        Davros::debug() << Q_FUNC_INFO << jid.bare() << "declined by user";
     }
 
     m_roster->allowSubscription( jid, allowSubscription == QMessageBox::Yes );
@@ -759,7 +761,7 @@ void XmppSipPlugin::onNewIq( const Jreen::IQ& iq )
 
     if ( context == RequestDisco )
     {
-//        qDebug() << Q_FUNC_INFO << "Received disco IQ...";
+//        Davros::debug() << Q_FUNC_INFO << "Received disco IQ...";
         Jreen::Disco::Info *discoInfo = iq.payload< Jreen::Disco::Info >().data();
         if ( !discoInfo )
             return;
@@ -771,7 +773,7 @@ void XmppSipPlugin::onNewIq( const Jreen::IQ& iq )
 
         if ( discoInfo->features().contains( TOMAHAWK_FEATURE ) )
         {
-            qDebug() << Q_FUNC_INFO << jid.full() << "Running tomahawk/feature enabled: yes";
+            Davros::debug() << Q_FUNC_INFO << jid.full() << "Running tomahawk/feature enabled: yes";
 
             // the actual presence doesn't matter, it just needs to be "online"
             handlePeerStatus( jid, Jreen::Presence::Available );
@@ -783,21 +785,21 @@ void XmppSipPlugin::onNewIq( const Jreen::IQ& iq )
         if ( softwareVersion )
         {
             QString versionString = QString("%1 %2 %3").arg( softwareVersion->name(), softwareVersion->os(), softwareVersion->version() );
-            qDebug() << Q_FUNC_INFO << "Received software version for " << iq.from().full() << ":" << versionString;
+            Davros::debug() << Q_FUNC_INFO << "Received software version for " << iq.from().full() << ":" << versionString;
             emit softwareVersionReceived( iq.from().full(), versionString );
         }
     }
     else if ( context == RequestedDisco )
     {
-        qDebug() << "Sent IQ(Set), what should be happening here?";
+        Davros::debug() << "Sent IQ(Set), what should be happening here?";
     }
     else if( context == SipMessageSent )
     {
-        qDebug() << "Sent SipMessage... what now?!";
+        Davros::debug() << "Sent SipMessage... what now?!";
     }
     /*else if(context == RequestedVCard )
     {
-        qDebug() << "Requested VCard... what now?!";
+        Davros::debug() << "Requested VCard... what now?!";
     }*/
     else
     {
@@ -806,7 +808,7 @@ void XmppSipPlugin::onNewIq( const Jreen::IQ& iq )
         {
             iq.accept();
 
-            qDebug() << Q_FUNC_INFO << "Got SipMessage ..."
+            Davros::debug() << Q_FUNC_INFO << "Got SipMessage ..."
                      << "ip" << sipMessage->ip() << "port" << sipMessage->port() << "uniqname" << sipMessage->uniqname() << "key" << sipMessage->key() << "visible" << sipMessage->visible();
 
             SipInfo info;
@@ -824,7 +826,7 @@ void XmppSipPlugin::onNewIq( const Jreen::IQ& iq )
 
             Q_ASSERT( info.isValid() );
 
-            qDebug() << Q_FUNC_INFO << "From:" << iq.from().full() << ":" << info;
+            Davros::debug() << Q_FUNC_INFO << "From:" << iq.from().full() << ":" << info;
             emit sipInfoReceived( iq.from().full(), info );
         }
     }
@@ -858,7 +860,7 @@ void XmppSipPlugin::handlePeerStatus( const Jreen::JID& jid, Jreen::Presence::Ty
        )
     {
         m_peers[ jid ] = presenceType;
-        qDebug() << Q_FUNC_INFO << "* Peer goes offline:" << fulljid;
+        Davros::debug() << Q_FUNC_INFO << "* Peer goes offline:" << fulljid;
 
         emit peerOffline( fulljid );
         return;
@@ -872,7 +874,7 @@ void XmppSipPlugin::handlePeerStatus( const Jreen::JID& jid, Jreen::Presence::Ty
        )
     {
         m_peers[ jid ] = presenceType;
-        qDebug() << Q_FUNC_INFO << "* Peer goes online:" << fulljid;
+        Davros::debug() << Q_FUNC_INFO << "* Peer goes online:" << fulljid;
 
         emit peerOnline( fulljid );
 
@@ -891,7 +893,7 @@ void XmppSipPlugin::handlePeerStatus( const Jreen::JID& jid, Jreen::Presence::Ty
         return;
     }
 
-    //qDebug() << "Updating presence data for" << fulljid;
+    //Davros::debug() << "Updating presence data for" << fulljid;
     m_peers[ jid ] = presenceType;
 }
 
@@ -899,7 +901,7 @@ void XmppSipPlugin::handlePeerStatus( const Jreen::JID& jid, Jreen::Presence::Ty
 void XmppSipPlugin::onNewAvatar( const QString& jid )
 {
 #ifndef ENABLE_HEADLESS
-//    qDebug() << Q_FUNC_INFO << jid;
+//    Davros::debug() << Q_FUNC_INFO << jid;
     if ( m_state != Account::Connected )
         return;
 

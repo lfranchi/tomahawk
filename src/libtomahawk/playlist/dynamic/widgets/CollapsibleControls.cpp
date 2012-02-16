@@ -33,6 +33,8 @@
 #include <QtGui/QPaintEvent>
 #include <QtGui/QPainter>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -155,7 +157,7 @@ CollapsibleControls::setControls( const dynplaylist_ptr& playlist, bool isLocal 
 void
 CollapsibleControls::toggleCollapse()
 {
-//     qDebug() << "TOGGLING SIZEHINTS:" << m_controls->height() << m_summaryWidget->sizeHint();
+//     Davros::debug() << "TOGGLING SIZEHINTS:" << m_controls->height() << m_summaryWidget->sizeHint();
     m_timeline->setEasingCurve( QEasingCurve::OutBack );
     m_timeline->setFrameRange( m_summaryWidget->sizeHint().height(), m_controls->height() );
     if( m_layout->currentWidget() == m_controls ) {
@@ -181,7 +183,7 @@ CollapsibleControls::toggleCollapse()
 void
 CollapsibleControls::onAnimationStep( int step )
 {
-//     qDebug() << "ANIMATION STEP:" << step;
+//     Davros::debug() << "ANIMATION STEP:" << step;
     resize( width(), step );
     m_animHeight = step;
     setMaximumHeight( m_animHeight );
@@ -191,7 +193,7 @@ CollapsibleControls::onAnimationStep( int step )
 void
 CollapsibleControls::onAnimationFinished()
 {
-//     qDebug() << "ANIMATION DONE:" << m_animHeight;
+//     Davros::debug() << "ANIMATION DONE:" << m_animHeight;
     setMaximumHeight( m_animHeight );
     m_animHeight = -1;
 

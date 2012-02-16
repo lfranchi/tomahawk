@@ -31,6 +31,8 @@
 
 #include "utils/stylehelper.h"
 #include "utils/tomahawkutilsgui.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #include "widgets/OverlayButton.h"
@@ -231,7 +233,7 @@ ArtistInfoWidget::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData requestD
         const QString artist = requestData.input.toString();
         if ( trackInfo["artist"] != m_artist->name() && artist != m_artist->name() )
         {
-            qDebug() << "Returned info was for:" << trackInfo["artist"] << "- was looking for:" << m_artist->name();
+            Davros::debug() << "Returned info was for:" << trackInfo["artist"] << "- was looking for:" << m_artist->name();
             return;
         }
     }

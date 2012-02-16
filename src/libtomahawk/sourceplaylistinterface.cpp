@@ -22,6 +22,9 @@
 #include "pipeline.h"
 #include "audio/audioengine.h"
 
+
+#include "libdavros/davros.h"
+#include "utils/logger.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;

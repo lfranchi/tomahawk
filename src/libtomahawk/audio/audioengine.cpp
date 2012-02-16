@@ -32,6 +32,7 @@
 #include "infosystem/infosystem.h"
 #include "album.h"
 
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -58,7 +59,7 @@ AudioEngine::AudioEngine()
     , m_state( Stopped )
 {
     s_instance = this;
-    tDebug() << "Init AudioEngine";
+    Davros::debug() << "Init AudioEngine";
 
     qRegisterMetaType< AudioErrorCode >("AudioErrorCode");
     qRegisterMetaType< AudioState >("AudioState");
@@ -88,7 +89,7 @@ AudioEngine::AudioEngine()
 
 AudioEngine::~AudioEngine()
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     m_mediaObject->stop();
 //    stop();
 
@@ -387,7 +388,7 @@ AudioEngine::loadTrack( const Tomahawk::result_ptr& result )
 
                 if ( !io || io.isNull() )
                 {
-                    tLog() << "Error getting iodevice for" << result->url();
+                    Davros::debug() << "Error getting iodevice for" << result->url();
                     err = true;
                 }
             }
@@ -395,7 +396,7 @@ AudioEngine::loadTrack( const Tomahawk::result_ptr& result )
 
         if ( !err )
         {
-            tLog() << "Starting new song:" << m_currentTrack->url();
+            Davros::debug() << "Starting new song:" << m_currentTrack->url();
             emit loading( m_currentTrack );
 
             if ( !isHttpResult( m_currentTrack->url() ) && !isLocalResult( m_currentTrack->url() ) )
@@ -584,7 +585,7 @@ AudioEngine::onStateChanged( Phonon::State newState, Phonon::State oldState )
 
     if ( newState == Phonon::ErrorState )
     {
-        tLog() << "Phonon Error:" << m_mediaObject->errorString() << m_mediaObject->errorType();
+        Davros::debug() << "Phonon Error:" << m_mediaObject->errorString() << m_mediaObject->errorType();
         emit error( UnknownError );
 
         stop();

@@ -22,6 +22,8 @@
 #include <QSharedPointer>
 #include <QHostInfo>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "dllmacro.h"
 

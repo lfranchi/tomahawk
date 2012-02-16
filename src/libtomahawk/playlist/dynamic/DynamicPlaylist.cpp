@@ -27,6 +27,8 @@
 #include "database/databasecommand_loaddynamicplaylistentries.h"
 #include "database/databasecommand_deletedynamicplaylist.h"
 #include "tomahawksettings.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -35,7 +37,7 @@ using namespace Tomahawk;
 DynamicPlaylist::DynamicPlaylist( const Tomahawk::source_ptr& author, const QString& type )
     : Playlist( author )
 {
-    qDebug() << Q_FUNC_INFO << "JSON";
+    Davros::debug() << Q_FUNC_INFO << "JSON";
     m_generator = geninterface_ptr( GeneratorFactory::create( type ) );
 }
 
@@ -61,7 +63,7 @@ DynamicPlaylist::DynamicPlaylist ( const Tomahawk::source_ptr& src,
     : Playlist( src, currentrevision, title, info, creator, createdOn, shared, lastmod, guid )
     , m_autoLoad( false )
 {
-//    qDebug() << "Creating Dynamic Playlist 1";
+//    Davros::debug() << "Creating Dynamic Playlist 1";
     // TODO instantiate generator
     m_generator = geninterface_ptr( GeneratorFactory::create( type ) );
     m_generator->setMode( mode );
@@ -81,7 +83,7 @@ DynamicPlaylist::DynamicPlaylist ( const Tomahawk::source_ptr& author,
     : Playlist ( author, guid, title, info, creator, shared )
     , m_autoLoad( autoLoad )
 {
-//    qDebug() << "Creating Dynamic Playlist 2";
+//    Davros::debug() << "Creating Dynamic Playlist 2";
     m_generator = geninterface_ptr( GeneratorFactory::create( type ) );
     m_generator->setMode( mode );
 }
@@ -263,7 +265,7 @@ DynamicPlaylist::createNewRevision( const QString& newrev,
 void
 DynamicPlaylist::loadRevision( const QString& rev )
 {
-//    qDebug() << Q_FUNC_INFO << "Loading with:" << ( rev.isEmpty() ? currentrevision() : rev );
+//    Davros::debug() << Q_FUNC_INFO << "Loading with:" << ( rev.isEmpty() ? currentrevision() : rev );
 
     setBusy( true );
     DatabaseCommand_LoadDynamicPlaylistEntries* cmd = new DatabaseCommand_LoadDynamicPlaylistEntries( rev.isEmpty() ? currentrevision() : rev );
@@ -317,13 +319,13 @@ DynamicPlaylist::remove( const Tomahawk::dynplaylist_ptr& playlist )
 void
 DynamicPlaylist::reportCreated( const Tomahawk::dynplaylist_ptr& self )
 {
-//    qDebug() << Q_FUNC_INFO;
+//    Davros::debug() << Q_FUNC_INFO;
     Q_ASSERT( self.data() == this );
     Q_ASSERT( !author().isNull() );
     Q_ASSERT( !author()->collection().isNull() );
     // will emit Collection::playlistCreated(...)
-    //    qDebug() << "Creating dynplaylist belonging to:" << author().data() << author().isNull();
-    //    qDebug() << "REPORTING DYNAMIC PLAYLIST CREATED:" << this << author()->friendlyName();
+    //    Davros::debug() << "Creating dynplaylist belonging to:" << author().data() << author().isNull();
+    //    Davros::debug() << "REPORTING DYNAMIC PLAYLIST CREATED:" << this << author()->friendlyName();
     if( self->mode() == Static )
         author()->collection()->addAutoPlaylist( self );
     else
@@ -334,7 +336,7 @@ DynamicPlaylist::reportCreated( const Tomahawk::dynplaylist_ptr& self )
 void
 DynamicPlaylist::reportDeleted( const Tomahawk::dynplaylist_ptr& self )
 {
-//    qDebug() << Q_FUNC_INFO;
+//    Davros::debug() << Q_FUNC_INFO;
     Q_ASSERT( self.data() == this );
     // will emit Collection::playlistDeleted(...)
     if( self->mode() == Static )
@@ -410,7 +412,7 @@ DynamicPlaylist::setRevision( const QString& rev,
     if( applied )
         setCurrentrevision( rev );
 
-    //     qDebug() << "EMITTING REVISION LOADED 1!";
+    //     Davros::debug() << "EMITTING REVISION LOADED 1!";
     setBusy( false );
     emit dynamicRevisionLoaded( dpr );
 }
@@ -483,7 +485,7 @@ DynamicPlaylist::setRevision( const QString& rev,
     if( applied )
         setCurrentrevision( rev );
 
-    //     qDebug() << "EMITTING REVISION LOADED 2!";
+    //     Davros::debug() << "EMITTING REVISION LOADED 2!";
     setBusy( false );
     emit dynamicRevisionLoaded( dpr );
 }
@@ -520,7 +522,7 @@ DynamicPlaylist::variantsToControl( const QList< QVariantMap >& controlsV )
     QList<dyncontrol_ptr> realControls;
     foreach( QVariantMap controlV, controlsV ) {
         dyncontrol_ptr control = GeneratorFactory::createControl( controlV.value( "type" ).toString(), controlV.value( "selectedType" ).toString() );
-//        qDebug() << "Creating control with data:" << controlV;
+//        Davros::debug() << "Creating control with data:" << controlV;
         QJson::QObjectHelper::qvariant2qobject( controlV, control.data() );
         realControls << control;
     }

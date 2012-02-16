@@ -28,6 +28,8 @@
 #include "typedefs.h"
 #include "tomahawksettings.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define HYPEM_URL "http://hypem.com/playlist/"
@@ -96,7 +98,7 @@ hypemPlugin::hypemPlugin()
 
 hypemPlugin::~hypemPlugin()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 
@@ -111,8 +113,8 @@ hypemPlugin::dataError( Tomahawk::InfoSystem::InfoRequestData requestData )
 void
 hypemPlugin::getInfo( Tomahawk::InfoSystem::InfoRequestData requestData )
 {
-    qDebug() << Q_FUNC_INFO << requestData.caller;
-    qDebug() << Q_FUNC_INFO << requestData.customData;
+    Davros::debug() << Q_FUNC_INFO << requestData.caller;
+    Davros::debug() << Q_FUNC_INFO << requestData.customData;
 
     InfoStringHash hash = requestData.input.value< Tomahawk::InfoSystem::InfoStringHash >();
 
@@ -126,7 +128,7 @@ hypemPlugin::getInfo( Tomahawk::InfoSystem::InfoRequestData requestData )
                 dataError( requestData );
                 break;
             }
-            qDebug() << Q_FUNC_INFO << "InfoCHart req for" << hash["chart_source"];
+            Davros::debug() << Q_FUNC_INFO << "InfoCHart req for" << hash["chart_source"];
             fetchChart( requestData );
             break;
 
@@ -189,7 +191,7 @@ hypemPlugin::notInCacheSlot( QHash<QString, QString> criteria, Tomahawk::InfoSys
             /// Fetch the chart, we need source and id
             tDebug( LOGVERBOSE ) << Q_FUNC_INFO << "InfoChart not in cache! Fetching...";
             QUrl url = QUrl( QString( HYPEM_URL "%1/%2" ).arg( criteria["chart_id"].toLower() ).arg(HYPEM_END_URL) );
-            qDebug() << Q_FUNC_INFO << "Getting chart url" << url;
+            Davros::debug() << Q_FUNC_INFO << "Getting chart url" << url;
 
             QNetworkReply* reply = TomahawkUtils::nam()->get( QNetworkRequest( url ) );
             reply->setProperty( "requestData", QVariant::fromValue< Tomahawk::InfoSystem::InfoRequestData >( requestData ) );
@@ -204,7 +206,7 @@ hypemPlugin::notInCacheSlot( QHash<QString, QString> criteria, Tomahawk::InfoSys
             tDebug( LOGVERBOSE ) << Q_FUNC_INFO << "InfoChartCapabilities not in cache! Fetching...";
             if ( m_chartsFetchJobs > 0 )
             {
-                qDebug() << Q_FUNC_INFO << "InfoChartCapabilities still fetching!";
+                Davros::debug() << Q_FUNC_INFO << "InfoChartCapabilities still fetching!";
                 m_cachedRequests.append( requestData );
                 return;
             }
@@ -215,7 +217,7 @@ hypemPlugin::notInCacheSlot( QHash<QString, QString> criteria, Tomahawk::InfoSys
 
         default:
         {
-            tLog() << Q_FUNC_INFO << "Couldn't figure out what to do with this type of request after cache miss";
+            Davros::debug() << Q_FUNC_INFO << "Couldn't figure out what to do with this type of request after cache miss";
             emit info( requestData, QVariant() );
             return;
         }
@@ -227,7 +229,7 @@ void
 hypemPlugin::chartTypes()
 {
     /// Get possible chart type for specifichypemPlugin: InfoChart types returned chart source
-    tDebug() << Q_FUNC_INFO << "Got hypem types";
+    Davros::debug() << Q_FUNC_INFO << "Got hypem types";
 
     QVariantMap charts;
 
@@ -294,7 +296,7 @@ hypemPlugin::chartTypes()
 
 
     m_allChartsMap.insert( "Hype Machine", QVariant::fromValue<QVariantMap>( charts ) );
-    qDebug() << "hypemPlugin:Chartstype: " << m_allChartsMap;
+    Davros::debug() << "hypemPlugin:Chartstype: " << m_allChartsMap;
 
 
 }
@@ -315,7 +317,7 @@ hypemPlugin::chartReturned()
 
         if ( !ok )
         {
-            tLog() << "Failed to parse json from chart lookup:" << p.errorString() << "On line" << p.errorLine();
+            Davros::debug() << "Failed to parse json from chart lookup:" << p.errorString() << "On line" << p.errorLine();
             return;
         }
 
@@ -355,7 +357,7 @@ hypemPlugin::chartReturned()
 
         if ( chartType() == Track )
         {
-            tDebug() << "HypemPlugin:" << "\tgot " << top_tracks.size() << " tracks";
+            Davros::debug() << "HypemPlugin:" << "\tgot " << top_tracks.size() << " tracks";
             returnedData["tracks"] = QVariant::fromValue( top_tracks );
             returnedData["type"] = "tracks";
         }
@@ -364,7 +366,7 @@ hypemPlugin::chartReturned()
 
         if ( chartType() == Artist )
         {
-            tDebug() << "HypemPlugin:" << "\tgot " << top_artists.size() << " artists";
+            Davros::debug() << "HypemPlugin:" << "\tgot " << top_artists.size() << " artists";
             returnedData["artists"] = top_artists;
             returnedData["type"] = "artists";
         }
@@ -383,6 +385,6 @@ hypemPlugin::chartReturned()
         emit updateCache( criteria, 86400000, requestData.type, returnedData );
     }
     else
-        qDebug() << "Network error in fetching chart:" << reply->url().toString();
+        Davros::debug() << "Network error in fetching chart:" << reply->url().toString();
 
 }

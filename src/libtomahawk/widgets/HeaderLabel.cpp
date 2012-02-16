@@ -21,6 +21,8 @@
 #include <QApplication>
 #include <QPainter>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "utils/stylehelper.h"
 #include "utils/tomahawkutilsgui.h"

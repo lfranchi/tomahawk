@@ -23,6 +23,8 @@
 #include "databaseimpl.h"
 #include "query.h"
 #include "qjson/parser.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -86,7 +88,7 @@ DatabaseCommand_LoadPlaylistEntries::generateEntries( DatabaseImpl* dbi )
     }
     else
     {
-//        qDebug() << "Playlist has no current revision data";
+//        Davros::debug() << "Playlist has no current revision data";
     }
 
     if ( prevrev.length() )
@@ -113,5 +115,5 @@ DatabaseCommand_LoadPlaylistEntries::generateEntries( DatabaseImpl* dbi )
         m_islatest = query_entries_old.value( 1 ).toBool();
     }
 
-//    qDebug() << Q_FUNC_INFO << "entrymap:" << m_entrymap;
+//    Davros::debug() << Q_FUNC_INFO << "entrymap:" << m_entrymap;
 }

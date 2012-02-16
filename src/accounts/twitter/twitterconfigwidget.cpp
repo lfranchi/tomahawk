@@ -31,6 +31,8 @@
 
 #include <QMessageBox>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 namespace Tomahawk
@@ -97,7 +99,7 @@ TwitterConfigWidget::authDeauthTwitter()
 void
 TwitterConfigWidget::authenticateTwitter()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     TomahawkOAuthTwitter *twitAuth = new TomahawkOAuthTwitter( TomahawkUtils::nam(), this );
     twitAuth->authorizePin();
 
@@ -115,7 +117,7 @@ TwitterConfigWidget::authenticateTwitter()
 void
 TwitterConfigWidget::authenticateVerifyReply( const QTweetUser &user )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( user.id() == 0 )
     {
         QMessageBox::critical( this, tr("Tweetin' Error"), tr("The credentials could not be verified.\nYou may wish to try re-authenticating.") );
@@ -146,8 +148,8 @@ TwitterConfigWidget::authenticateVerifyReply( const QTweetUser &user )
 void
 TwitterConfigWidget::authenticateVerifyError( QTweetNetBase::ErrorCode code, const QString &errorMsg )
 {
-    qDebug() << Q_FUNC_INFO;
-    qDebug() << "Error validating credentials, error code is " << code << ", error message is " << errorMsg;
+    Davros::debug() << Q_FUNC_INFO;
+    Davros::debug() << "Error validating credentials, error code is " << code << ", error message is " << errorMsg;
     m_ui->twitterStatusLabel->setText(tr("Status: Error validating credentials"));
     emit twitterAuthed( false );
     return;
@@ -156,7 +158,7 @@ TwitterConfigWidget::authenticateVerifyError( QTweetNetBase::ErrorCode code, con
 void
 TwitterConfigWidget::deauthenticateTwitter()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     QVariantHash credentials = m_account->credentials();
     credentials[ "oauthtoken" ] = QString();
     credentials[ "oauthtokensecret" ] = QString();
@@ -191,7 +193,7 @@ TwitterConfigWidget::tweetComboBoxIndexChanged( int index )
 void
 TwitterConfigWidget::startPostGotTomahawkStatus()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     m_postGTtype = m_ui->twitterTweetComboBox->currentText();
 
     if ( m_postGTtype != "Global Tweet" && ( m_ui->twitterUserTweetLineEdit->text().isEmpty() || m_ui->twitterUserTweetLineEdit->text() == "@" ) )
@@ -200,7 +202,7 @@ TwitterConfigWidget::startPostGotTomahawkStatus()
         return;
     }
 
-    qDebug() << "Posting Got Tomahawk status";
+    Davros::debug() << "Posting Got Tomahawk status";
     QVariantHash credentials = m_account->credentials();
 
     if ( credentials[ "oauthtoken" ].toString().isEmpty() ||
@@ -222,7 +224,7 @@ TwitterConfigWidget::startPostGotTomahawkStatus()
 void
 TwitterConfigWidget::postGotTomahawkStatusAuthVerifyReply( const QTweetUser &user )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( user.id() == 0 )
     {
         QMessageBox::critical( this, tr("Tweetin' Error"), tr("Your saved credentials could not be verified.\nYou may wish to try re-authenticating.") );
@@ -284,8 +286,8 @@ TwitterConfigWidget::postGotTomahawkDirectMessageReply( const QTweetDMStatus& st
 void
 TwitterConfigWidget::postGotTomahawkStatusUpdateError( QTweetNetBase::ErrorCode code, const QString& errorMsg )
 {
-    qDebug() << Q_FUNC_INFO;
-    qDebug() << "Error posting Got Tomahawk message, error code is " << code << ", error message is " << errorMsg;
+    Davros::debug() << Q_FUNC_INFO;
+    Davros::debug() << "Error posting Got Tomahawk message, error code is " << code << ", error message is " << errorMsg;
     QMessageBox::critical( this, tr("Tweetin' Error"), tr("There was an error posting your status -- sorry!") );
 }
 

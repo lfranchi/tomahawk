@@ -23,6 +23,8 @@
 #include "databaseimpl.h"
 #include "source.h"
 #include "dynamic/DynamicPlaylist.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -59,7 +61,7 @@ Tomahawk::DatabaseCommand_LoadDynamicPlaylist::exec( DatabaseImpl* dbi )
                                                 query.value(5).toInt(),     //lastmod
                                                 query.value(0).toString() ) );  //GUID
 
-        tLog() << "Loaded individual dynamic playlist:" <<      query.value(7).toString()  //current rev
+        Davros::debug() << "Loaded individual dynamic playlist:" <<      query.value(7).toString()  //current rev
         <<      query.value(1).toString()  //title
         <<      query.value(2).toString()  //info
         <<      query.value(3).toString()  //creator

@@ -22,6 +22,8 @@
 #include <QtCore/QTimeLine>
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 

@@ -24,6 +24,8 @@
 #include "artist.h"
 #include "album.h"
 #include "sourcelist.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -162,7 +164,7 @@ DatabaseCommand_AllTracks::exec( DatabaseImpl* dbi )
         ql << qry;
     }
 
-    qDebug() << Q_FUNC_INFO << ql.length();
+    Davros::debug() << Q_FUNC_INFO << ql.length();
 
     emit tracks( ql, data() );
     emit done( m_collection );

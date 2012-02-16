@@ -113,7 +113,7 @@ TopTracksContext::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData requestD
     {
         if ( trackInfo["artist"] != m_artist->name() )
         {
-            qDebug() << "Returned info was for:" << trackInfo["artist"] << "- was looking for:" << m_artist->name();
+            Davros::debug() << "Returned info was for:" << trackInfo["artist"] << "- was looking for:" << m_artist->name();
             return;
         }
     }

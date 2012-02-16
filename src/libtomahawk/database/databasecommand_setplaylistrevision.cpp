@@ -24,6 +24,8 @@
 #include "databaseimpl.h"
 #include "tomahawksqlquery.h"
 #include "network/servent.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -60,7 +62,7 @@ DatabaseCommand_SetPlaylistRevision::DatabaseCommand_SetPlaylistRevision(
 void
 DatabaseCommand_SetPlaylistRevision::postCommitHook()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( m_localOnly )
         return;
 
@@ -72,7 +74,7 @@ DatabaseCommand_SetPlaylistRevision::postCommitHook()
     playlist_ptr playlist = source()->collection()->playlist( m_playlistguid );
     if ( playlist.isNull() )
     {
-        qDebug() << m_playlistguid;
+        Davros::debug() << m_playlistguid;
         Q_ASSERT( !playlist.isNull() );
         return;
     }
@@ -100,11 +102,11 @@ DatabaseCommand_SetPlaylistRevision::exec( DatabaseImpl* lib )
     if( chkq.exec() && chkq.next() )
     {
         m_currentRevision = chkq.value( 0 ).toString();
-        qDebug() << Q_FUNC_INFO << "pl guid" << m_playlistguid << "- curr rev" << m_currentRevision;
+        Davros::debug() << Q_FUNC_INFO << "pl guid" << m_playlistguid << "- curr rev" << m_currentRevision;
     }
     else
     {
-        tDebug() << "Playlist:" << m_playlistguid << m_currentRevision << source()->friendlyName() << source()->id();
+        Davros::debug() << "Playlist:" << m_playlistguid << m_currentRevision << source()->friendlyName() << source()->id();
         throw "No such playlist, WTF?";
         return;
     }
@@ -139,7 +141,7 @@ DatabaseCommand_SetPlaylistRevision::exec( DatabaseImpl* lib )
                       "VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
         adde.prepare( sql );
 
-        qDebug() << "Num new playlist_items to add:" << m_addedentries.length();
+        Davros::debug() << "Num new playlist_items to add:" << m_addedentries.length();
         foreach( const plentry_ptr& e, m_addedentries )
         {
             m_addedmap.insert( e->guid(), e ); // needed in postcommithook
@@ -178,11 +180,11 @@ DatabaseCommand_SetPlaylistRevision::exec( DatabaseImpl* lib )
     query.addBindValue( m_oldrev.isEmpty() ? QVariant(QVariant::String) : m_oldrev );
     query.exec();
 
-    qDebug() << "Currentrevision:" << m_currentRevision << "oldrev:" << m_oldrev;
+    Davros::debug() << "Currentrevision:" << m_currentRevision << "oldrev:" << m_oldrev;
     // if optimistic locking is ok, update current revision to this new one
     if ( m_currentRevision == m_oldrev )
     {
-        qDebug() << "Updating current revision, optimistic locking ok";
+        Davros::debug() << "Updating current revision, optimistic locking ok";
 
         TomahawkSqlQuery query2 = lib->newquery();
         query2.prepare( "UPDATE playlist SET currentrevision = ? WHERE guid = ?" );
@@ -212,7 +214,7 @@ DatabaseCommand_SetPlaylistRevision::exec( DatabaseImpl* lib )
     }
     else if ( !m_oldrev.isEmpty() )
     {
-        tDebug() << "Not updating current revision, optimistic locking fail";
+        Davros::debug() << "Not updating current revision, optimistic locking fail";
 //        Q_ASSERT( false );
     }
 }

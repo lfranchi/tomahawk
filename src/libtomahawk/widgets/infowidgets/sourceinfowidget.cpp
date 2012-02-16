@@ -31,6 +31,8 @@
 #include "database/databasecommand_allalbums.h"
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #include "widgets/overlaywidget.h"

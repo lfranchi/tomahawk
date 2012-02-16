@@ -41,6 +41,8 @@
 #include "tomahawksettings.h"
 #include "globalactionmanager.h"
 #include "dropjob.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "items/genericpageitems.h"
 #include "items/temporarypageitem.h"
@@ -282,7 +284,7 @@ SourceTreeView::loadPlaylist()
 void
 SourceTreeView::deletePlaylist( const QModelIndex& idxIn )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     QModelIndex idx = idxIn.isValid() ? idxIn : m_contextMenuIndex;
     if ( !idx.isValid() )
@@ -391,7 +393,7 @@ void
 SourceTreeView::latchOff()
 {
     disconnect( this, SLOT( latchOff() ) );
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( !m_contextMenuIndex.isValid() )
         return;
 
@@ -428,7 +430,7 @@ SourceTreeView::latchModeToggled( bool checked )
 {
 
     disconnect( this, SLOT( latchOff() ) );
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( !m_contextMenuIndex.isValid() )
         return;
     
@@ -455,7 +457,7 @@ SourceTreeView::renamePlaylist()
 void
 SourceTreeView::onCustomContextMenu( const QPoint& pos )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     QModelIndex idx = m_contextMenuIndex = indexAt( pos );
     if ( !idx.isValid() )
@@ -487,7 +489,7 @@ SourceTreeView::onCustomContextMenu( const QPoint& pos )
 void
 SourceTreeView::dragEnterEvent( QDragEnterEvent* event )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     QTreeView::dragEnterEvent( event );
 
     if ( DropJob::acceptsMimeData( event->mimeData(), DropJob::Track | DropJob::Artist | DropJob::Album | DropJob::Playlist,  DropJob::Create ) )
@@ -496,7 +498,7 @@ SourceTreeView::dragEnterEvent( QDragEnterEvent* event )
            m_dropRect = QRect();
            m_dropIndex = QPersistentModelIndex();
 
-           qDebug() << Q_FUNC_INFO << "Accepting Drag Event";
+           Davros::debug() << Q_FUNC_INFO << "Accepting Drag Event";
            event->setDropAction( Qt::CopyAction );
            event->acceptProposedAction();
      }
@@ -563,13 +565,13 @@ SourceTreeView::dragMoveEvent( QDragMoveEvent* event )
         if ( accept || DropJob::isDropType( DropJob::Playlist, event->mimeData() ) )
         {
             // Playlists are accepted always since they can be dropped anywhere
-            //tDebug() << Q_FUNC_INFO << "Accepting";
+            //Davros::debug() << Q_FUNC_INFO << "Accepting";
             event->setDropAction( Qt::CopyAction );
             event->accept();
         }
         else
         {
-//             tDebug() << Q_FUNC_INFO << "Ignoring";
+//             Davros::debug() << Q_FUNC_INFO << "Ignoring";
             event->ignore();
         }
     }
@@ -595,13 +597,13 @@ SourceTreeView::dropEvent( QDropEvent* event )
         Q_ASSERT( item );
 
         item->setDropType( m_delegate->hoveredDropType() );
-        qDebug() << Q_FUNC_INFO << "dropType is " << m_delegate->hoveredDropType();
+        Davros::debug() << Q_FUNC_INFO << "dropType is " << m_delegate->hoveredDropType();
     }
 
     // if it's a playlist drop, accept it anywhere in the sourcetree by manually parsing it.
     if ( DropJob::isDropType( DropJob::Playlist, event->mimeData()  ) )
     {
-        qDebug() << Q_FUNC_INFO << "Current Event";
+        Davros::debug() << Q_FUNC_INFO << "Current Event";
         DropJob *dropThis = new DropJob;
         dropThis->setDropTypes( DropJob::Playlist );
         dropThis->setDropAction( DropJob::Create );

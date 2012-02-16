@@ -20,6 +20,8 @@
 
 #include "databaseimpl.h"
 #include "tomahawksqlquery.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 

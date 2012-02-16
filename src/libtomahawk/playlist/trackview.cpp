@@ -31,6 +31,8 @@
 #include "widgets/overlaywidget.h"
 #include "dynamic/widgets/LoadingSpinner.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "dropjob.h"
 #include "artist.h"
@@ -89,7 +91,7 @@ TrackView::TrackView( QWidget* parent )
 
 TrackView::~TrackView()
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 
@@ -117,7 +119,7 @@ void
 TrackView::setModel( QAbstractItemModel* model )
 {
     Q_UNUSED( model );
-    tDebug() << "Explicitly use setTrackModel instead";
+    Davros::debug() << "Explicitly use setTrackModel instead";
     Q_ASSERT( false );
 }
 
@@ -177,7 +179,7 @@ TrackView::onItemActivated( const QModelIndex& index )
     TrackModelItem* item = m_model->itemFromIndex( m_proxyModel->mapToSource( index ) );
     if ( item && !item->query().isNull() && item->query()->numResults() )
     {
-        tDebug() << "Result activated:" << item->query()->toString() << item->query()->results().first()->url();
+        Davros::debug() << "Result activated:" << item->query()->toString() << item->query()->results().first()->url();
         m_proxyModel->setCurrentIndex( index );
         AudioEngine::instance()->playItem( m_proxyModel->playlistInterface(), item->query()->results().first() );
     }
@@ -204,7 +206,7 @@ TrackView::keyPressEvent( QKeyEvent* event )
 void
 TrackView::onItemResized( const QModelIndex& index )
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     m_delegate->updateRowSize( index );
 }
 
@@ -243,7 +245,7 @@ TrackView::resizeEvent( QResizeEvent* event )
 void
 TrackView::dragEnterEvent( QDragEnterEvent* event )
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     QTreeView::dragEnterEvent( event );
 
     if ( DropJob::acceptsMimeData( event->mimeData() ) )
@@ -305,7 +307,7 @@ TrackView::dropEvent( QDropEvent* event )
 
     if ( event->isAccepted() )
     {
-        tDebug() << "Ignoring accepted event!";
+        Davros::debug() << "Ignoring accepted event!";
     }
     else
     {
@@ -314,7 +316,7 @@ TrackView::dropEvent( QDropEvent* event )
             const QPoint pos = event->pos();
             const QModelIndex index = indexAt( pos );
 
-            tDebug() << Q_FUNC_INFO << "Drop Event accepted at row:" << index.row();
+            Davros::debug() << Q_FUNC_INFO << "Drop Event accepted at row:" << index.row();
             event->acceptProposedAction();
 
             if ( !model()->isReadOnly() )
@@ -394,7 +396,7 @@ TrackView::startDrag( Qt::DropActions supportedActions )
     if ( indexes.count() == 0 )
         return;
 
-    tDebug() << "Dragging" << indexes.count() << "indexes";
+    Davros::debug() << "Dragging" << indexes.count() << "indexes";
     QMimeData* data = m_proxyModel->mimeData( indexes );
     if ( !data )
         return;

@@ -20,6 +20,8 @@
 
 #include "databaseimpl.h"
 #include "collection.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -45,7 +47,7 @@ DatabaseCommand_LoadFiles::exec( DatabaseImpl* dbi )
     // file ids internally are really ints, at least for now:
     foreach ( unsigned int id, m_ids )
     {
-        qDebug() << "Loading file from db with id:" << id;
+        Davros::debug() << "Loading file from db with id:" << id;
         resultList << dbi->file( id );
     }
 

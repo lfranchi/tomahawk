@@ -54,6 +54,8 @@
 #include "accounts/AccountManager.h"
 #include <accounts/AccountModelFilterProxy.h>
 #include <accounts/ResolverAccount.h>
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "AccountFactoryWrapper.h"
 
@@ -198,7 +200,7 @@ SettingsDialog::SettingsDialog( QWidget *parent )
 
 SettingsDialog::~SettingsDialog()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if ( !m_rejected )
     {
@@ -227,7 +229,7 @@ SettingsDialog::~SettingsDialog()
         s->sync();
     }
     else
-        qDebug() << "Settings dialog cancelled, NOT saving prefs.";
+        Davros::debug() << "Settings dialog cancelled, NOT saving prefs.";
 
     delete ui;
 }
@@ -394,7 +396,7 @@ SettingsDialog::onLastFmFinished()
     QNetworkReply* authJob = dynamic_cast<QNetworkReply*>( sender() );
     if( !authJob )
     {
-        qDebug() << Q_FUNC_INFO << "No auth job returned!";
+        Davros::debug() << Q_FUNC_INFO << "No auth job returned!";
         return;
     }
     if( authJob->error() == QNetworkReply::NoError )
@@ -403,7 +405,7 @@ SettingsDialog::onLastFmFinished()
 
         if( lfm.children( "error" ).size() > 0 )
         {
-            qDebug() << "ERROR from last.fm:" << lfm.text();
+            Davros::debug() << "ERROR from last.fm:" << lfm.text();
             ui->pushButtonTestLastfmLogin->setText( tr( "Failed" ) );
             ui->pushButtonTestLastfmLogin->setEnabled( true );
         }
@@ -424,7 +426,7 @@ SettingsDialog::onLastFmFinished()
                 break;
 
             default:
-                qDebug() << "Couldn't get last.fm auth result";
+                Davros::debug() << "Couldn't get last.fm auth result";
                 ui->pushButtonTestLastfmLogin->setText( tr( "Could not contact server" ) );
                 ui->pushButtonTestLastfmLogin->setEnabled( true );
                 return;
@@ -712,7 +714,7 @@ ProxyDialog::proxyTypeChangedSlot( int index )
 void
 ProxyDialog::saveSettings()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     QNetworkProxy::ProxyType type = static_cast< QNetworkProxy::ProxyType>( m_backwardMap[ ui->typeBox->currentIndex() ] );
 
@@ -730,20 +732,20 @@ ProxyDialog::saveSettings()
     s->sync();
 
     TomahawkUtils::NetworkProxyFactory* proxyFactory = TomahawkUtils::proxyFactory();
-    tDebug() << Q_FUNC_INFO << "Got proxyFactory: " << proxyFactory;
+    Davros::debug() << Q_FUNC_INFO << "Got proxyFactory: " << proxyFactory;
     if ( type == QNetworkProxy::NoProxy )
     {
-        tDebug() << Q_FUNC_INFO << "Got NoProxy selected";
+        Davros::debug() << Q_FUNC_INFO << "Got NoProxy selected";
         proxyFactory->setProxy( QNetworkProxy::NoProxy );
     }
     else
     {
-        tDebug() << Q_FUNC_INFO << "Got Socks5Proxy selected";
+        Davros::debug() << Q_FUNC_INFO << "Got Socks5Proxy selected";
         proxyFactory->setProxy( QNetworkProxy( type, s->proxyHost(), s->proxyPort(), s->proxyUsername(), s->proxyPassword() ) );
         if ( !ui->noHostLineEdit->text().isEmpty() )
         {
-            tDebug() << Q_FUNC_INFO << "hosts line edit is " << ui->noHostLineEdit->text();
-            tDebug() << Q_FUNC_INFO << "split hosts line edit is " << ui->noHostLineEdit->text().split( ' ', QString::SkipEmptyParts );
+            Davros::debug() << Q_FUNC_INFO << "hosts line edit is " << ui->noHostLineEdit->text();
+            Davros::debug() << Q_FUNC_INFO << "split hosts line edit is " << ui->noHostLineEdit->text().split( ' ', QString::SkipEmptyParts );
             proxyFactory->setNoProxyHosts( ui->noHostLineEdit->text().split( ' ', QString::SkipEmptyParts ) );
         }
     }

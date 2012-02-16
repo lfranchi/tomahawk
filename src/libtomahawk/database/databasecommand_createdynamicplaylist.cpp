@@ -29,6 +29,8 @@
 
 #include "source.h"
 #include "network/servent.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #ifndef ENABLE_HEADLESS
@@ -42,7 +44,7 @@ DatabaseCommand_CreateDynamicPlaylist::DatabaseCommand_CreateDynamicPlaylist( QO
     : DatabaseCommand_CreatePlaylist( parent )
     , m_autoLoad( true )
 {
-    tDebug() << Q_FUNC_INFO << "creating dynamiccreatecommand 1";
+    Davros::debug() << Q_FUNC_INFO << "creating dynamiccreatecommand 1";
 }
 
 
@@ -52,7 +54,7 @@ DatabaseCommand_CreateDynamicPlaylist::DatabaseCommand_CreateDynamicPlaylist( co
     , m_playlist( playlist )
     , m_autoLoad( autoLoad )
 {
-    tDebug() << Q_FUNC_INFO << "creating dynamiccreatecommand 2";
+    Davros::debug() << Q_FUNC_INFO << "creating dynamiccreatecommand 2";
 }
 
 DatabaseCommand_CreateDynamicPlaylist::~DatabaseCommand_CreateDynamicPlaylist()
@@ -70,14 +72,14 @@ DatabaseCommand_CreateDynamicPlaylist::playlistV() const
 void
 DatabaseCommand_CreateDynamicPlaylist::exec( DatabaseImpl* lib )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     Q_ASSERT( !( m_playlist.isNull() && m_v.isNull() ) );
     Q_ASSERT( !source().isNull() );
 
     DatabaseCommand_CreatePlaylist::createPlaylist( lib, true );
-    qDebug() << "Created normal playlist, now creating additional dynamic info!";
+    Davros::debug() << "Created normal playlist, now creating additional dynamic info!";
 
-    qDebug() << "Create dynamic execing!" << m_playlist << m_v;
+    Davros::debug() << "Create dynamic execing!" << m_playlist << m_v;
     TomahawkSqlQuery cre = lib->newquery();
 
     cre.prepare( "INSERT INTO dynamic_playlist( guid, pltype, plmode, autoload ) "
@@ -101,17 +103,17 @@ DatabaseCommand_CreateDynamicPlaylist::exec( DatabaseImpl* lib )
 void
 DatabaseCommand_CreateDynamicPlaylist::postCommitHook()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( source().isNull() || source()->collection().isNull() )
     {
-        qDebug() << "Source has gone offline, not emitting to GUI.";
+        Davros::debug() << "Source has gone offline, not emitting to GUI.";
         return;
     }
 
     if(  !DatabaseCommand_CreatePlaylist::report() || report() == false )
         return;
 
-    qDebug() << Q_FUNC_INFO << "..reporting..";
+    Davros::debug() << Q_FUNC_INFO << "..reporting..";
     if( m_playlist.isNull() ) {
         source_ptr src = source();
 #ifndef ENABLE_HEADLESS

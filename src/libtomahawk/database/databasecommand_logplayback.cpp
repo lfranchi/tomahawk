@@ -24,6 +24,8 @@
 #include "database/database.h"
 #include "databaseimpl.h"
 #include "network/servent.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define STARTED_THRESHOLD 600   // Don't advertise tracks older than X seconds as currently playing
@@ -85,7 +87,7 @@ DatabaseCommand_LogPlayback::exec( DatabaseImpl* dbi )
                    "VALUES (?, ?, ?, ?)" );
 
     QVariant srcid = source()->isLocal() ? QVariant( QVariant::Int ) : source()->id();
-    qDebug() << "Logging playback of" << m_artist << "-" << m_track << "for source" << srcid;
+    Davros::debug() << "Logging playback of" << m_artist << "-" << m_track << "for source" << srcid;
     query.bindValue( 0, srcid );
 
     // If there's no artist, becuase it's a resolver result with bad metadata for example, don't save it

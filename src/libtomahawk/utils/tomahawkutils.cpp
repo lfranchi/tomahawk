@@ -21,6 +21,8 @@
 #include "tomahawksettings.h"
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #ifdef LIBLASTFM_FOUND
@@ -86,7 +88,7 @@ appConfigDir()
     }
     else
     {
-        qDebug() << "Error, $HOME not set.";
+        Davros::debug() << "Error, $HOME not set.";
         throw "$HOME not set";
         return QDir( "/tmp" );
     }
@@ -106,7 +108,7 @@ appConfigDir()
     }
     else
     {
-        qDebug() << "Error, $HOME or $XDG_CONFIG_HOME not set.";
+        Davros::debug() << "Error, $HOME or $XDG_CONFIG_HOME not set.";
         throw "Error, $HOME or $XDG_CONFIG_HOME not set.";
         ret = QDir( "/tmp" );
     }
@@ -327,14 +329,14 @@ void
 NetworkProxyFactory::setNoProxyHosts( const QStringList& hosts )
 {
     QStringList newList;
-    tDebug() << Q_FUNC_INFO << "No-proxy hosts:" << hosts;
+    Davros::debug() << Q_FUNC_INFO << "No-proxy hosts:" << hosts;
     foreach( QString host, hosts )
     {
         QString munge = host.simplified();
         newList << munge;
         //TODO: wildcard support
     }
-    tDebug() << Q_FUNC_INFO << "New no-proxy hosts:" << newList;
+    Davros::debug() << Q_FUNC_INFO << "New no-proxy hosts:" << newList;
     m_noProxyHosts = newList;
 }
 
@@ -345,15 +347,15 @@ NetworkProxyFactory::setProxy( const QNetworkProxy& proxy )
     m_proxy = proxy;
     if ( !TomahawkSettings::instance()->proxyDns() )
         m_proxy.setCapabilities( QNetworkProxy::TunnelingCapability | QNetworkProxy::ListeningCapability | QNetworkProxy::UdpTunnelingCapability );
-    tDebug() << Q_FUNC_INFO << "Proxy using host" << proxy.hostName() << "and port" << proxy.port();
-    tDebug() << Q_FUNC_INFO << "setting proxy to use proxy DNS?" << (TomahawkSettings::instance()->proxyDns() ? "true" : "false");
+    Davros::debug() << Q_FUNC_INFO << "Proxy using host" << proxy.hostName() << "and port" << proxy.port();
+    Davros::debug() << Q_FUNC_INFO << "setting proxy to use proxy DNS?" << (TomahawkSettings::instance()->proxyDns() ? "true" : "false");
 }
 
 
 NetworkProxyFactory&
 NetworkProxyFactory::operator=( const NetworkProxyFactory& rhs )
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( this != &rhs )
     {
         m_proxy = QNetworkProxy( rhs.m_proxy );
@@ -366,7 +368,7 @@ NetworkProxyFactory::operator=( const NetworkProxyFactory& rhs )
 
 bool NetworkProxyFactory::operator==( const NetworkProxyFactory& other ) const
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( m_noProxyHosts != other.m_noProxyHosts || m_proxy != other.m_proxy )
         return false;
 
@@ -381,7 +383,7 @@ NetworkProxyFactory*
 proxyFactory( bool noMutexLocker )
 {
     // Don't lock if being called from nam()
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     QMutex otherMutex;
     QMutexLocker locker( noMutexLocker ? &otherMutex : &s_namAccessMutex );
 
@@ -405,7 +407,7 @@ proxyFactory( bool noMutexLocker )
 void
 setProxyFactory( NetworkProxyFactory* factory, bool noMutexLocker )
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     Q_ASSERT( factory );
     // Don't lock if being called from setNam()
     QMutex otherMutex;
@@ -568,7 +570,7 @@ removeDirectory( const QString& dir )
 {
     const QDir aDir(dir);
 
-    tLog() << "Deleting DIR:" << dir;
+    Davros::debug() << "Deleting DIR:" << dir;
     bool has_err = false;
     if (aDir.exists()) {
         foreach(const QFileInfo& entry, aDir.entryInfoList(QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files | QDir::NoSymLinks)) {

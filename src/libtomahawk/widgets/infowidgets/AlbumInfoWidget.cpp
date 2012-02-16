@@ -29,6 +29,8 @@
 #include "database/databasecommand_allalbums.h"
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #include "widgets/OverlayButton.h"
@@ -158,9 +160,9 @@ AlbumInfoWidget::onLoadingFinished()
 bool
 AlbumInfoWidget::isBeingPlayed() const
 {
-    //tDebug() << Q_FUNC_INFO << "audioengine playlistInterface = " << AudioEngine::instance()->currentTrackPlaylist()->id();
-    //tDebug() << Q_FUNC_INFO << "albumsView playlistInterface = " << ui->albumsView->playlistInterface()->id();
-    //tDebug() << Q_FUNC_INFO << "tracksView playlistInterface = " << ui->tracksView->playlistInterface()->id();
+    //Davros::debug() << Q_FUNC_INFO << "audioengine playlistInterface = " << AudioEngine::instance()->currentTrackPlaylist()->id();
+    //Davros::debug() << Q_FUNC_INFO << "albumsView playlistInterface = " << ui->albumsView->playlistInterface()->id();
+    //Davros::debug() << Q_FUNC_INFO << "tracksView playlistInterface = " << ui->tracksView->playlistInterface()->id();
     if ( ui->albumsView->playlistInterface() == AudioEngine::instance()->currentTrackPlaylist() )
         return true;
 
@@ -277,7 +279,7 @@ AlbumInfoWidget::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData requestDa
     {
         if ( requestData.type == InfoSystem::InfoArtistReleases && trackInfo["artist"] != m_album->artist()->name() )
         {
-            qDebug() << "Returned info was for:" << trackInfo["artist"] << "- was looking for:" << m_album->artist()->name();
+            Davros::debug() << "Returned info was for:" << trackInfo["artist"] << "- was looking for:" << m_album->artist()->name();
             return;
         }
     }
@@ -305,12 +307,12 @@ AlbumInfoWidget::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData requestDa
 
             if ( al.count() )
             {
-                tDebug() << "Adding" << al.count() << "albums";
+                Davros::debug() << "Adding" << al.count() << "albums";
                 gotAlbums( al );
             }
             else if ( requestData.customData[ "refetch" ].toInt() > 0 )
             {
-                tDebug() << "Auto refetching";
+                Davros::debug() << "Auto refetching";
                 m_buttonAlbums->setChecked( false );
                 onAlbumsModeToggle();
             }

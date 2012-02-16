@@ -24,6 +24,8 @@
 #include "collectionproxymodel.h"
 #include "trackmodel.h"
 #include "widgets/overlaywidget.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -40,7 +42,7 @@ CollectionView::CollectionView( QWidget* parent )
 
 CollectionView::~CollectionView()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 
@@ -48,7 +50,7 @@ void
 CollectionView::setModel( QAbstractItemModel* model )
 {
     Q_UNUSED( model );
-    qDebug() << "Explicitly use setTrackModel instead";
+    Davros::debug() << "Explicitly use setTrackModel instead";
     Q_ASSERT( false );
 }
 

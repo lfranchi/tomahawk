@@ -29,6 +29,8 @@
 #include "artist.h"
 #include "album.h"
 #include "pipeline.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -313,7 +315,7 @@ TrackModel::mimeTypes() const
 QMimeData*
 TrackModel::mimeData( const QModelIndexList &indexes ) const
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     QByteArray queryData;
     QDataStream queryStream( &queryData, QIODevice::WriteOnly );

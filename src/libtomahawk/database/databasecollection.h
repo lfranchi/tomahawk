@@ -35,7 +35,7 @@ public:
     explicit DatabaseCollection( const Tomahawk::source_ptr& source, QObject* parent = 0 );
     ~DatabaseCollection()
     {
-        qDebug() << Q_FUNC_INFO;
+        Davros::debug() << Q_FUNC_INFO;
     }
 
     virtual void loadPlaylists();

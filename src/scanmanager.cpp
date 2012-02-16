@@ -31,6 +31,8 @@
 #include "database/databasecommand_filemtimes.h"
 #include "database/databasecommand_deletefiles.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 ScanManager* ScanManager::s_instance = 0;
@@ -69,7 +71,7 @@ ScanManager::ScanManager( QObject* parent )
 
 ScanManager::~ScanManager()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if ( !m_scanner.isNull() )
     {
@@ -80,7 +82,7 @@ ScanManager::~ScanManager()
         delete m_musicScannerThreadController;
         m_musicScannerThreadController = 0;
     }
-    qDebug() << Q_FUNC_INFO << "scanner thread controller finished, exiting ScanManager";
+    Davros::debug() << Q_FUNC_INFO << "scanner thread controller finished, exiting ScanManager";
 }
 
 
@@ -107,7 +109,7 @@ ScanManager::onSettingsChanged()
 void
 ScanManager::runStartupScan()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( !Database::instance() || ( Database::instance() && !Database::instance()->isReady() ) )
         QTimer::singleShot( 1000, this, SLOT( runStartupScan() ) );
     else
@@ -118,7 +120,7 @@ ScanManager::runStartupScan()
 void
 ScanManager::scanTimerTimeout()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( !TomahawkSettings::instance()->watchForChanges() ||
          !Database::instance() ||
          ( Database::instance() && !Database::instance()->isReady() ) )
@@ -131,7 +133,7 @@ ScanManager::scanTimerTimeout()
 void
 ScanManager::runScan( bool manualFull )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( !Database::instance() || ( Database::instance() && !Database::instance()->isReady() ) )
         return;
 
@@ -153,7 +155,7 @@ ScanManager::runScan( bool manualFull )
     }
     else
     {
-        qDebug() << "Could not run dir scan, old scan still running";
+        Davros::debug() << "Could not run dir scan, old scan still running";
         return;
     }
 }
@@ -187,7 +189,7 @@ ScanManager::filesDeleted()
 void
 ScanManager::runDirScan()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     QStringList paths = TomahawkSettings::instance()->scannerPaths();
 
@@ -203,7 +205,7 @@ ScanManager::runDirScan()
     }
     else
     {
-        qDebug() << "Could not run dir scan, old scan still running";
+        Davros::debug() << "Could not run dir scan, old scan still running";
         return;
     }
 }
@@ -212,7 +214,7 @@ ScanManager::runDirScan()
 void
 ScanManager::scannerFinished()
 {
-    tDebug() << "deleting scanner";
+    Davros::debug() << "deleting scanner";
     if ( !m_scanner.isNull() )
     {
         m_musicScannerThreadController->quit();

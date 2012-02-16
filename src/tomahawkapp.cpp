@@ -58,6 +58,8 @@
 #include "audio/audioengine.h"
 #include "utils/xspfloader.h"
 #include "utils/jspfloader.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "utils/tomahawkutilsgui.h"
 
@@ -110,7 +112,7 @@ increaseMaxFileDescriptors()
     int ret = setrlimit( RLIMIT_NOFILE, &limit );
 
     if ( ret == 0 )
-      qDebug() << "Max fd:" << max_fd;
+      Davros::debug() << "Max fd:" << max_fd;
 #endif
 }
 
@@ -138,11 +140,11 @@ TomahawkApp::init()
         ::exit( 0 );
     }
 
-    qDebug() << "TomahawkApp thread:" << thread();
-    Logger::setupLogfile();
+    Davros::debug() << "TomahawkApp thread:" << thread();
+  //  Logger::setupLogfile();
     qsrand( QTime( 0, 0, 0 ).secsTo( QTime::currentTime() ) );
 
-    tLog() << "Starting Tomahawk...";
+    Davros::debug() << "Starting Tomahawk...";
 
 #ifdef ENABLE_HEADLESS
     m_headless = true;
@@ -181,7 +183,7 @@ TomahawkApp::init()
     m_servent = QWeakPointer<Servent>( new Servent( this ) );
     connect( m_servent.data(), SIGNAL( ready() ), SLOT( initSIP() ) );
 
-    tDebug() << "Init Database.";
+    Davros::debug() << "Init Database.";
     initDatabase();
 
     QByteArray magic = QByteArray::fromBase64( enApiSecret );
@@ -191,10 +193,10 @@ TomahawkApp::init()
     Echonest::Config::instance()->setAPIKey( magic );
 
 #ifndef ENABLE_HEADLESS
-    tDebug() << "Init Echonest Factory.";
+    Davros::debug() << "Init Echonest Factory.";
     GeneratorFactory::registerFactory( "echonest", new EchonestFactory );
 #endif
-    tDebug() << "Init Database Factory.";
+    Davros::debug() << "Init Database Factory.";
     GeneratorFactory::registerFactory( "database", new DatabaseFactory );
 
     // Register shortcut handler for this platform
@@ -219,11 +221,11 @@ TomahawkApp::init()
         connect( m_shortcutHandler.data(), SIGNAL( mute() ), m_audioEngine.data(), SLOT( mute() ) );
     }
 
-    tDebug() << "Init AccountManager.";
+    Davros::debug() << "Init AccountManager.";
     m_accountManager = QWeakPointer< Tomahawk::Accounts::AccountManager >( new Tomahawk::Accounts::AccountManager( this ) );
     Tomahawk::Accounts::AccountManager::instance()->loadFromConfig();
 
-    tDebug() << "Init InfoSystem.";
+    Davros::debug() << "Init InfoSystem.";
     m_infoSystem = QWeakPointer<Tomahawk::InfoSystem::InfoSystem>( new Tomahawk::InfoSystem::InfoSystem( this ) );
 
     Echonest::Config::instance()->setNetworkAccessManager( TomahawkUtils::nam() );
@@ -232,7 +234,7 @@ TomahawkApp::init()
 
     if ( !m_headless )
     {
-        tDebug() << "Init MainWindow.";
+        Davros::debug() << "Init MainWindow.";
         m_mainwindow = new TomahawkWindow();
         m_mainwindow->setWindowTitle( "Tomahawk" );
         m_mainwindow->setObjectName( "TH_Main_Window" );
@@ -243,9 +245,9 @@ TomahawkApp::init()
     }
 #endif
 
-    tDebug() << "Init Local Collection.";
+    Davros::debug() << "Init Local Collection.";
     initLocalCollection();
-    tDebug() << "Init Pipeline.";
+    Davros::debug() << "Init Pipeline.";
     initPipeline();
 
 #ifndef ENABLE_HEADLESS
@@ -266,7 +268,7 @@ TomahawkApp::init()
 #endif
 
 #ifdef LIBLASTFM_FOUND
-    tDebug() << "Init Scrobbler.";
+    Davros::debug() << "Init Scrobbler.";
     m_scrobbler = new Scrobbler( this );
 #endif
 
@@ -296,7 +298,7 @@ TomahawkApp::init()
 
 TomahawkApp::~TomahawkApp()
 {
-    tLog() << "Shutting down Tomahawk...";
+    Davros::debug() << "Shutting down Tomahawk...";
 
     if ( !m_servent.isNull() )
         delete m_servent.data();
@@ -325,7 +327,7 @@ TomahawkApp::~TomahawkApp()
 
     delete Pipeline::instance();
 
-    tLog() << "Finished shutdown.";
+    Davros::debug() << "Finished shutdown.";
 }
 
 
@@ -460,7 +462,7 @@ TomahawkApp::initHTTP()
     Api_v1* api = new Api_v1( &m_session );
     m_session.setStaticContentService( api );
 
-    tLog() << "Starting HTTPd on" << m_session.listenInterface().toString() << m_session.port();
+    Davros::debug() << "Starting HTTPd on" << m_session.listenInterface().toString() << m_session.port();
     m_session.start();
 
 }
@@ -505,13 +507,13 @@ TomahawkApp::initLocalCollection()
 void
 TomahawkApp::initServent()
 {
-    tDebug() << "Init Servent.";
+    Davros::debug() << "Init Servent.";
 
     bool upnp = !arguments().contains( "--noupnp" ) && TomahawkSettings::instance()->value( "network/upnp", true ).toBool() && !TomahawkSettings::instance()->preferStaticHostPort();
     int port = TomahawkSettings::instance()->externalPort();
     if ( !Servent::instance()->startListening( QHostAddress( QHostAddress::Any ), upnp, port ) )
     {
-        tLog() << "Failed to start listening with servent";
+        Davros::debug() << "Failed to start listening with servent";
         exit( 1 );
     }
 }
@@ -520,7 +522,7 @@ TomahawkApp::initServent()
 void
 TomahawkApp::initSIP()
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     //FIXME: jabber autoconnect is really more, now that there is sip -- should be renamed and/or split out of jabber-specific settings
     if ( !arguments().contains( "--nosip" ) )
     {

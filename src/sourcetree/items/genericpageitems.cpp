@@ -19,6 +19,8 @@
 #include "genericpageitems.h"
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "viewmanager.h"
 #include "audio/audioengine.h"

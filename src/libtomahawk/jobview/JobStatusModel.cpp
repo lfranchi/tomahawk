@@ -19,6 +19,8 @@
 #include "JobStatusModel.h"
 
 #include "JobStatusItem.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -47,7 +49,7 @@ JobStatusModel::addJob( JobStatusItem* item )
         if ( m_collapseCount.contains( item->type() ) )
         {
             m_collapseCount[ item->type() ].append( item );
-//             qDebug() << "Adding item:" << item << "TO COLLAPSE ONLY";
+//             Davros::debug() << "Adding item:" << item << "TO COLLAPSE ONLY";
             return; // we're done, no new rows
         }
         else
@@ -56,7 +58,7 @@ JobStatusModel::addJob( JobStatusItem* item )
         }
 
     }
-    qDebug() << "Adding item:" << item;
+    Davros::debug() << "Adding item:" << item;
 
     beginInsertRows( QModelIndex(), m_items.count(), m_items.count() );
     m_items.append( item );
@@ -120,33 +122,33 @@ JobStatusModel::itemFinished()
     JobStatusItem* item = qobject_cast< JobStatusItem* >( sender() );
     Q_ASSERT( item );
 
-//     tDebug() << "Got item finished:" << item->type() << item->mainText() << item;
+//     Davros::debug() << "Got item finished:" << item->type() << item->mainText() << item;
     if ( !m_items.contains( item ) && !m_collapseCount.contains( item->type() ) )
         return;
 
 //     foreach( JobStatusItem* item, m_items )
 //     {
-//         qDebug() << "ITEM #:" << item;
+//         Davros::debug() << "ITEM #:" << item;
 //     }
 //     foreach( const QString& str, m_collapseCount.keys() )
 //     {
-//         tDebug() << "\t" << str;
+//         Davros::debug() << "\t" << str;
 //         foreach( JobStatusItem* chain, m_collapseCount[ str ] )
-//             qDebug() << "\t\t" << chain;
+//             Davros::debug() << "\t\t" << chain;
 //     }
     if ( m_collapseCount.contains( item->type() ) )
     {
         const int indexOf = m_items.indexOf( m_collapseCount[ item->type() ].first() );
-//         tDebug() << "index in main list of collapsed irst item:" << indexOf;
+//         Davros::debug() << "index in main list of collapsed irst item:" << indexOf;
         if ( m_collapseCount[ item->type() ].first() == item &&
              m_items.contains( m_collapseCount[ item->type() ].first() ) && m_collapseCount[ item->type() ].size() > 1 )
         {
             // the placeholder we use that links m_items and m_collapsecount is done, so choose another one
             m_items.replace( m_items.indexOf( m_collapseCount[ item->type() ].first() ), m_collapseCount[ item->type() ][ 1 ] );
-//             qDebug() << "Replaced" << m_collapseCount[ item->type() ].first() << "with:" << m_collapseCount[ item->type() ][ 1 ] << m_items;
+//             Davros::debug() << "Replaced" << m_collapseCount[ item->type() ].first() << "with:" << m_collapseCount[ item->type() ][ 1 ] << m_items;
         }
         m_collapseCount[ item->type() ].removeAll( item );
-//         tDebug() << "New collapse count list:" << m_collapseCount[ item->type() ];
+//         Davros::debug() << "New collapse count list:" << m_collapseCount[ item->type() ];
         if ( m_collapseCount[ item->type() ].isEmpty() )
             m_collapseCount.remove( item->type() );
         else
@@ -160,7 +162,7 @@ JobStatusModel::itemFinished()
 
     // Remove row completely
     const int idx = m_items.indexOf( item );
-//     tDebug() << "Got index of item:" << idx;
+//     Davros::debug() << "Got index of item:" << idx;
     Q_ASSERT( idx >= 0 );
 
     beginRemoveRows( QModelIndex(), idx, idx );

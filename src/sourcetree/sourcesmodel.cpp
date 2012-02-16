@@ -35,6 +35,8 @@
 #include "source.h"
 #include "viewmanager.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "globalactionmanager.h"
 #include "dropjob.h"
@@ -222,7 +224,7 @@ bool
 SourcesModel::dropMimeData( const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent )
 {
     SourceTreeItem* item = 0;
-//    qDebug() << "Got mime data dropped:" << row << column << parent << itemFromIndex( parent )->text();
+//    Davros::debug() << "Got mime data dropped:" << row << column << parent << itemFromIndex( parent )->text();
     if( row == -1 && column == -1 )
         item = itemFromIndex( parent );
     else if( column == 0 )
@@ -232,7 +234,7 @@ SourcesModel::dropMimeData( const QMimeData* data, Qt::DropAction action, int ro
 
     Q_ASSERT( item );
 
-//    qDebug() << "Dropping on:" << item->text();
+//    Davros::debug() << "Dropping on:" << item->text();
     return item->dropMimeData( data, action );
 }
 
@@ -315,7 +317,7 @@ SourcesModel::appendItem( const Tomahawk::source_ptr& source )
 bool
 SourcesModel::removeItem( const Tomahawk::source_ptr& source )
 {
-//    qDebug() << "Removing source item from SourceTree:" << source->friendlyName();
+//    Davros::debug() << "Removing source item from SourceTree:" << source->friendlyName();
 
     QModelIndex idx;
     int rows = rowCount();
@@ -325,7 +327,7 @@ SourcesModel::removeItem( const Tomahawk::source_ptr& source )
         SourceItem* item = static_cast< SourceItem* >( idx.internalPointer() );
         if ( item && item->source() == source )
         {
-//            qDebug() << "Found removed source item:" << item->source()->userName();
+//            Davros::debug() << "Found removed source item:" << item->source()->userName();
             beginRemoveRows( QModelIndex(), row, row );
             m_rootItem->removeChild( item );
             endRemoveRows();
@@ -360,7 +362,7 @@ SourcesModel::viewPageActivated( Tomahawk::ViewPage* page )
     if ( m_sourceTreeLinks.contains( page ) )
     {
         Q_ASSERT( m_sourceTreeLinks[ page ] );
-//        qDebug() << "Got view page activated for item:" << m_sourceTreeLinks[ page ]->text();
+//        Davros::debug() << "Got view page activated for item:" << m_sourceTreeLinks[ page ]->text();
         QModelIndex idx = indexFromItem( m_sourceTreeLinks[ page ] );
 
         if ( !idx.isValid() )
@@ -390,20 +392,20 @@ SourcesModel::viewPageActivated( Tomahawk::ViewPage* page )
                 // show the collection now... yeah.
                 if ( !item->parent() || !item->parent()->parent() )
                 {
-                    tLog() << "Found playlist item with no category parent or collection parent!" << item->text();
+                    Davros::debug() << "Found playlist item with no category parent or collection parent!" << item->text();
                     return;
                 }
 
                 SourceTreeItem* collectionOfPlaylist = item->parent()->parent();
                 if ( !m_rootItem->children().contains( collectionOfPlaylist ) ) // verification to make sure we're not stranded
                 {
-                    tLog() << "Got what we assumed to be a parent col of a playlist not as a child of our root node...:" << collectionOfPlaylist;
+                    Davros::debug() << "Got what we assumed to be a parent col of a playlist not as a child of our root node...:" << collectionOfPlaylist;
                     return;
                 }
 
                 QModelIndex idx = indexFromItem( collectionOfPlaylist );
                 m_sourcesWithViewPageItems[ s ] = collectionOfPlaylist;
-                tDebug() << "Emitting dataChanged for offline source:" << idx << idx.isValid() << collectionOfPlaylist << collectionOfPlaylist->text();
+                Davros::debug() << "Emitting dataChanged for offline source:" << idx << idx.isValid() << collectionOfPlaylist << collectionOfPlaylist->text();
                 emit dataChanged( idx, idx );
             }
         }
@@ -547,7 +549,7 @@ void
 SourcesModel::onWidgetDestroyed( QWidget* w )
 {
     int ret = m_sourceTreeLinks.remove( dynamic_cast< Tomahawk::ViewPage* > ( w ) );
-    qDebug() << "REMOVED STALE SOURCE PAGE?" << ret;
+    Davros::debug() << "REMOVED STALE SOURCE PAGE?" << ret;
 }
 
 
@@ -605,14 +607,14 @@ SourcesModel::indexFromItem( SourceTreeItem* item ) const
 
         curItem = curItem->parent();
     }
-//     qDebug() << "build child index list:" << childIndexList;
+//     Davros::debug() << "build child index list:" << childIndexList;
     // now rebuild the qmodelindex we need
     QModelIndex idx;
     for( int i = childIndexList.size() - 1; i >= 0 ; i-- ) {
         idx = index( childIndexList[ i ], 0, idx );
     }
-//     qDebug() << "Got index from item:" << idx << idx.data( Qt::DisplayRole ).toString();
-//     qDebug() << "parent:" << idx.parent();
+//     Davros::debug() << "Got index from item:" << idx << idx.data( Qt::DisplayRole ).toString();
+//     Davros::debug() << "parent:" << idx.parent();
     return idx;
 }
 

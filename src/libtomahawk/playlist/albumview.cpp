@@ -31,6 +31,8 @@
 #include "albumitemdelegate.h"
 #include "albummodel.h"
 #include "viewmanager.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "dynamic/widgets/LoadingSpinner.h"
 
@@ -69,7 +71,7 @@ AlbumView::AlbumView( QWidget* parent )
 
 AlbumView::~AlbumView()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 
@@ -89,7 +91,7 @@ void
 AlbumView::setModel( QAbstractItemModel* model )
 {
     Q_UNUSED( model );
-    qDebug() << "Explicitly use setAlbumModel instead";
+    Davros::debug() << "Explicitly use setAlbumModel instead";
     Q_ASSERT( false );
 }
 
@@ -119,7 +121,7 @@ AlbumView::onItemActivated( const QModelIndex& index )
     AlbumItem* item = m_model->itemFromIndex( m_proxyModel->mapToSource( index ) );
     if ( item )
     {
-//        qDebug() << "Result activated:" << item->album()->tracks().first()->toString() << item->album()->tracks().first()->results().first()->url();
+//        Davros::debug() << "Result activated:" << item->album()->tracks().first()->toString() << item->album()->tracks().first()->results().first()->url();
 //        APP->audioEngine()->playItem( item->album().data(), item->album()->tracks().first()->results().first() );
 
         if ( !item->album().isNull() )
@@ -213,7 +215,7 @@ AlbumView::startDrag( Qt::DropActions supportedActions )
     if ( indexes.count() == 0 )
         return;
 
-    qDebug() << "Dragging" << indexes.count() << "indexes";
+    Davros::debug() << "Dragging" << indexes.count() << "indexes";
     QMimeData* data = m_proxyModel->mimeData( indexes );
     if ( !data )
         return;

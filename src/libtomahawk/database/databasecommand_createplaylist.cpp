@@ -24,6 +24,8 @@
 #include "databaseimpl.h"
 #include "tomahawksqlquery.h"
 #include "network/servent.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #ifndef ENABLE_HEADLESS
@@ -70,7 +72,7 @@ DatabaseCommand_CreatePlaylist::playlistV() const
 void
 DatabaseCommand_CreatePlaylist::postCommitHook()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if ( source()->isLocal() )
         Servent::instance()->triggerDBSync();
@@ -78,7 +80,7 @@ DatabaseCommand_CreatePlaylist::postCommitHook()
     if ( m_report == false )
         return;
 
-    tDebug() << Q_FUNC_INFO << "reporting...";
+    Davros::debug() << Q_FUNC_INFO << "reporting...";
     if ( m_playlist.isNull() )
     {
         source_ptr src = source();

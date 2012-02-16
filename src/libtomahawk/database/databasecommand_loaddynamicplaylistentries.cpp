@@ -27,6 +27,8 @@
 #include "dynamic/GeneratorInterface.h"
 #include "dynamic/GeneratorFactory.h"
 #include "qjson/parser.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -35,7 +37,7 @@ using namespace Tomahawk;
 void
 DatabaseCommand_LoadDynamicPlaylistEntries::exec( DatabaseImpl* dbi )
 {
-//    qDebug() << "Loading dynamic playlist guid" << guid();
+//    Davros::debug() << "Loading dynamic playlist guid" << guid();
     // load the entries first
     generateEntries( dbi );
 
@@ -53,8 +55,8 @@ DatabaseCommand_LoadDynamicPlaylistEntries::exec( DatabaseImpl* dbi )
 
     QList< QVariantMap > controls;
     QString playlist_guid;
-//    qDebug() << "Loading controls..." << revisionGuid();
-//    qDebug() << "SELECT playlist_revision.playlist, controls, plmode, pltype "
+//    Davros::debug() << "Loading controls..." << revisionGuid();
+//    Davros::debug() << "SELECT playlist_revision.playlist, controls, plmode, pltype "
 //    "FROM dynamic_playlist_revision, playlist_revision "
 //    "WHERE dynamic_playlist_revision.guid = "<< revisionGuid() << " AND playlist_revision.guid = dynamic_playlist_revision.guid";
 
@@ -71,7 +73,7 @@ DatabaseCommand_LoadDynamicPlaylistEntries::exec( DatabaseImpl* dbi )
         mode = static_cast<GeneratorMode>( controlsQuery.value( 2 ).toInt() );
 
         QStringList controlIds = v.toStringList();
-//        qDebug() << "Got controls in dynamic playlist, loading:" << controlIds << controlsQuery.value(1);
+//        Davros::debug() << "Got controls in dynamic playlist, loading:" << controlIds << controlsQuery.value(1);
         foreach( const QString& controlId, controlIds )
         {
             TomahawkSqlQuery controlQuery = dbi->newquery();

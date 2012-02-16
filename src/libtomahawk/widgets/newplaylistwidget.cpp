@@ -29,6 +29,8 @@
 
 #include "utils/xspfloader.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define FILTER_TIMEOUT 280

@@ -37,6 +37,8 @@
 #include "remotecollection.h"
 #include "source.h"
 #include "sourcelist.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -47,7 +49,7 @@ DBSyncConnection::DBSyncConnection( Servent* s, const source_ptr& src )
     , m_source( src )
     , m_state( UNKNOWN )
 {
-    qDebug() << Q_FUNC_INFO << src->id() << thread();
+    Davros::debug() << Q_FUNC_INFO << src->id() << thread();
 
     connect( this,            SIGNAL( stateChanged( DBSyncConnection::State, DBSyncConnection::State, QString ) ),
              m_source.data(),   SLOT( onStateChanged( DBSyncConnection::State, DBSyncConnection::State, QString ) ) );
@@ -63,7 +65,7 @@ DBSyncConnection::DBSyncConnection( Servent* s, const source_ptr& src )
 
 DBSyncConnection::~DBSyncConnection()
 {
-    tDebug() << "DTOR" << Q_FUNC_INFO << m_source->id() << m_source->friendlyName();
+    Davros::debug() << "DTOR" << Q_FUNC_INFO << m_source->id() << m_source->friendlyName();
     m_state = SHUTDOWN;
 }
 
@@ -76,7 +78,7 @@ DBSyncConnection::changeState( State newstate )
 
     State s = m_state;
     m_state = newstate;
-    qDebug() << "DBSYNC State changed from" << s << "to" << newstate << "- source:" << m_source->id();
+    Davros::debug() << "DBSYNC State changed from" << s << "to" << newstate << "- source:" << m_source->id();
     emit stateChanged( newstate, s, "" );
 }
 
@@ -104,15 +106,15 @@ DBSyncConnection::trigger()
 void
 DBSyncConnection::check()
 {
-    qDebug() << Q_FUNC_INFO << this << m_source->id();
+    Davros::debug() << Q_FUNC_INFO << this << m_source->id();
     if ( m_state != UNKNOWN && m_state != SYNCED )
     {
-        qDebug() << "Syncing in progress already.";
+        Davros::debug() << "Syncing in progress already.";
         return;
     }
     if ( m_state == SHUTDOWN )
     {
-        qDebug() << "Aborting sync due to shutdown.";
+        Davros::debug() << "Aborting sync due to shutdown.";
         return;
     }
 
@@ -161,7 +163,7 @@ DBSyncConnection::fetchOpsData( const QString& sinceguid )
 {
     changeState( FETCHING );
 
-    tLog() << "Sending a FETCHOPS cmd since:" << sinceguid << "- source:" << m_source->id();
+    Davros::debug() << "Sending a FETCHOPS cmd since:" << sinceguid << "- source:" << m_source->id();
 
     QVariantMap msg;
     msg.insert( "method", "fetchops" );
@@ -199,7 +201,7 @@ DBSyncConnection::handleMsg( msg_ptr msg )
     QVariantMap m = msg->json().toMap();
     if ( m.empty() )
     {
-        tLog() << "Failed to parse msg in dbsync" << m_source->id() << m_source->friendlyName();
+        Davros::debug() << "Failed to parse msg in dbsync" << m_source->id() << m_source->friendlyName();
         Q_ASSERT( false );
         return;
     }
@@ -236,7 +238,7 @@ DBSyncConnection::handleMsg( msg_ptr msg )
         return;
     }
 
-    tLog() << Q_FUNC_INFO << "Unhandled msg:" << msg->payload();
+    Davros::debug() << Q_FUNC_INFO << "Unhandled msg:" << msg->payload();
     Q_ASSERT( false );
 }
 

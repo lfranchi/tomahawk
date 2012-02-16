@@ -2,6 +2,8 @@
 
 #include <QtGui/QInputDialog>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -26,7 +28,7 @@ TomahawkOAuthTwitter::authorizationWidget()
 void
 TomahawkOAuthTwitter::error()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     setOAuthToken( QString().toLatin1() );
     setOAuthTokenSecret( QString().toLatin1() );
 }

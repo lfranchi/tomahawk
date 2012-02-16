@@ -21,6 +21,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QTimer>
+#include <QStringList>
 
 #include <phonon/MediaObject>
 #include <phonon/AudioOutput>

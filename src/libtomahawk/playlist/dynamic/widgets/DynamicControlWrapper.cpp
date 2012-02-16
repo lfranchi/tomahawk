@@ -28,6 +28,8 @@
 
 #include "dynamic/DynamicControl.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -42,7 +44,7 @@ DynamicControlWrapper::DynamicControlWrapper( const Tomahawk::dyncontrol_ptr& co
      , m_typeSelector( 0 )
      , m_layout( QWeakPointer< QGridLayout >( layout ) )
 {
-    qDebug() << "CREATING DYNAMIC CONTROL WRAPPER WITH ROW:" << row << layout;
+    Davros::debug() << "CREATING DYNAMIC CONTROL WRAPPER WITH ROW:" << row << layout;
 
     m_typeSelector = new QComboBox( m_parent );
 

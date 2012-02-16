@@ -35,7 +35,7 @@ public:
     explicit DatabaseCommand_LoadDynamicPlaylistEntries( QString revision_guid, QObject* parent = 0 )
     : DatabaseCommand_LoadPlaylistEntries( revision_guid, parent )
     {
-//        qDebug() << "loaded with:" << revision_guid << guid();
+//        Davros::debug() << "loaded with:" << revision_guid << guid();
     }
 
     virtual void exec( DatabaseImpl* );

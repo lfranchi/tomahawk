@@ -90,7 +90,7 @@ SipInfo::clear()
 bool
 SipInfo::isValid() const
 {
-//    qDebug() << Q_FUNC_INFO << d->visible << d->host.hostName() << d->port << d->uniqname << d->key;
+//    Davros::debug() << Q_FUNC_INFO << d->visible << d->host.hostName() << d->port << d->uniqname << d->key;
     if( !d->visible.isNull() )
     {
         if(
@@ -218,7 +218,7 @@ SipInfo::fromJson( QString json )
     QVariant v = parser.parse( json.toAscii(), &ok );
     if ( !ok  || v.type() != QVariant::Map )
     {
-        qDebug() << Q_FUNC_INFO << "Invalid JSON: " << json;
+        Davros::debug() << Q_FUNC_INFO << "Invalid JSON: " << json;
         return info;
     }
     QVariantMap m = v.toMap();

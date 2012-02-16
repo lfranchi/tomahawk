@@ -40,6 +40,8 @@
 #include "tomahawksettings.h"
 #include <aclsystem.h>
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -108,8 +110,8 @@ Servent::startListening( QHostAddress ha, bool upnp, int port )
         {
             if ( !listen( ha, defPort ) )
             {
-                tLog() << "Failed to listen on both port" << m_port << "and port" << defPort;
-                tLog() << "Error string is:" << errorString();
+                Davros::debug() << "Failed to listen on both port" << m_port << "and port" << defPort;
+                Davros::debug() << "Error string is:" << errorString();
                 return false;
             }
             else
@@ -117,7 +119,7 @@ Servent::startListening( QHostAddress ha, bool upnp, int port )
         }
     }
 
-    tLog() << "Servent listening on port" << m_port << "- servent thread:" << thread()
+    Davros::debug() << "Servent listening on port" << m_port << "- servent thread:" << thread()
            << "- address mode:" << (int)( TomahawkSettings::instance()->externalAddressMode() );
 
     // --lanhack means to advertise your LAN IP as if it were externally visible
@@ -142,7 +144,7 @@ Servent::startListening( QHostAddress ha, bool upnp, int port )
 
         case TomahawkSettings::Upnp:
             // TODO check if we have a public/internet IP on this machine directly
-            tLog() << "External address mode set to upnp...";
+            Davros::debug() << "External address mode set to upnp...";
             m_portfwd = new PortFwdThread( m_port );
             connect( m_portfwd, SIGNAL( externalAddressDetected( QHostAddress, unsigned int ) ),
                                   SLOT( setExternalAddress( QHostAddress, unsigned int ) ) );
@@ -196,7 +198,7 @@ Servent::setInternalAddress()
 
         if ( m_lanHack && isValidExternalIP( ha ) )
         {
-            tLog() << "LANHACK: set external address to lan address" << ha.toString();
+            Davros::debug() << "LANHACK: set external address to lan address" << ha.toString();
             setExternalAddress( ha, m_port );
         }
         else
@@ -225,11 +227,11 @@ Servent::setExternalAddress( QHostAddress ha, unsigned int port )
         {
             m_externalHostname = TomahawkSettings::instance()->externalHostname();
             m_externalPort = TomahawkSettings::instance()->externalPort();
-            tDebug() << "UPnP failed, have external address/port - falling back" << m_externalHostname << m_externalPort << m_externalAddress;
+            Davros::debug() << "UPnP failed, have external address/port - falling back" << m_externalHostname << m_externalPort << m_externalAddress;
         }
         else
         {
-            tLog() << "No external access, LAN and outbound connections only!";
+            Davros::debug() << "No external access, LAN and outbound connections only!";
             setInternalAddress();
             return;
         }
@@ -334,7 +336,7 @@ Servent::readyRead()
     QVariantMap m = parser.parse( sock->_msg->payload(), &ok ).toMap();
     if( !ok )
     {
-        tDebug() << "Invalid JSON on new connection, aborting";
+        Davros::debug() << "Invalid JSON on new connection, aborting";
         goto closeconnection;
     }
 
@@ -363,7 +365,7 @@ Servent::readyRead()
 
         if ( dupe )
         {
-            tLog() << "Duplicate control connection detected, dropping:" << nodeid << conntype;
+            Davros::debug() << "Duplicate control connection detected, dropping:" << nodeid << conntype;
             goto closeconnection;
         }
     }
@@ -385,7 +387,7 @@ Servent::readyRead()
         Connection* conn = claimOffer( cc, nodeid, key, sock->peerAddress() );
         if( !conn )
         {
-            tLog() << "claimOffer FAILED, key:" << key << nodeid;
+            Davros::debug() << "claimOffer FAILED, key:" << key << nodeid;
             goto closeconnection;
         }
         tDebug( LOGVERBOSE ) << "claimOffer OK:" << key << nodeid;
@@ -399,12 +401,12 @@ Servent::readyRead()
     }
     else
     {
-        tLog() << "Invalid or unhandled conntype";
+        Davros::debug() << "Invalid or unhandled conntype";
     }
 
     // fallthru to cleanup:
 closeconnection:
-    tLog() << "Closing incoming connection, something was wrong.";
+    Davros::debug() << "Closing incoming connection, something was wrong.";
     sock->_msg.clear();
     sock->disconnectFromHost();
 }
@@ -427,7 +429,7 @@ Servent::createParallelConnection( Connection* orig_conn, Connection* new_conn, 
     else // ask them to connect to us:
     {
         QString tmpkey = uuid();
-        tLog() << "Asking them to connect to us using" << tmpkey ;
+        Davros::debug() << "Asking them to connect to us using" << tmpkey ;
         registerOffer( tmpkey, new_conn );
 
         QVariantMap m;
@@ -482,14 +484,14 @@ Servent::socketError( QAbstractSocket::SocketError e )
     QTcpSocketExtra* sock = (QTcpSocketExtra*)sender();
     if ( !sock )
     {
-        tLog() << "SocketError, sock is null";
+        Davros::debug() << "SocketError, sock is null";
         return;
     }
 
     if ( !sock->_conn.isNull() )
     {
         Connection* conn = sock->_conn.data();
-        tLog() << "Servent::SocketError:" << e << conn->id() << conn->name();
+        Davros::debug() << "Servent::SocketError:" << e << conn->id() << conn->name();
 
         if ( !sock->_disowned )
         {
@@ -501,7 +503,7 @@ Servent::socketError( QAbstractSocket::SocketError e )
     }
     else
     {
-        tLog() << "SocketError, connection is null";
+        Davros::debug() << "SocketError, connection is null";
         sock->deleteLater();
     }
 }
@@ -541,7 +543,7 @@ Servent::connectToPeer( const QString& ha, int port, const QString &key, Connect
     if ( ( ha == m_externalAddress.toString() || ha == m_externalHostname ) &&
          ( port == m_externalPort ) )
     {
-        tDebug() << "ERROR: Tomahawk won't try to connect to" << ha << ":" << port << ": identified as ourselves.";
+        Davros::debug() << "ERROR: Tomahawk won't try to connect to" << ha << ":" << port << ": identified as ourselves.";
         return;
     }
 
@@ -581,7 +583,7 @@ Servent::reverseOfferRequest( ControlConnection* orig_conn, const QString& their
     Connection* new_conn = claimOffer( orig_conn, theirdbid, key );
     if ( !new_conn )
     {
-        tDebug() << "claimOffer failed, killing requesting connection out of spite";
+        Davros::debug() << "claimOffer failed, killing requesting connection out of spite";
         orig_conn->shutdown();
         return;
     }
@@ -619,7 +621,7 @@ Servent::claimOffer( ControlConnection* cc, const QString &nodeid, const QString
             }
             if( !authed )
             {
-                tLog() << "File transfer request rejected, invalid source IP";
+                Davros::debug() << "File transfer request rejected, invalid source IP";
                 return NULL;
             }
         }
@@ -633,14 +635,14 @@ Servent::claimOffer( ControlConnection* cc, const QString &nodeid, const QString
     {
         if( isIPWhitelisted( peer ) )
         {
-            tDebug() << "Connection is from whitelisted IP range (LAN)";
+            Davros::debug() << "Connection is from whitelisted IP range (LAN)";
             Connection* conn = new ControlConnection( this, peer.toString() );
             conn->setName( peer.toString() );
             return conn;
         }
         else
         {
-            tDebug() << "Connection claimed to be whitelisted, but wasn't.";
+            Davros::debug() << "Connection claimed to be whitelisted, but wasn't.";
             return NULL;
         }
     }
@@ -653,7 +655,7 @@ Servent::claimOffer( ControlConnection* cc, const QString &nodeid, const QString
             // This can happen if it's a streamconnection, but the audioengine has
             // already closed the iodevice, causing the connection to be deleted before
             // the peer connects and provides the first byte
-            tLog() << Q_FUNC_INFO << "invalid/expired offer:" << key;
+            Davros::debug() << Q_FUNC_INFO << "invalid/expired offer:" << key;
             return NULL;
         }
 
@@ -662,7 +664,7 @@ Servent::claimOffer( ControlConnection* cc, const QString &nodeid, const QString
             // If there isn't a nodeid it's not the first connection and will already have been stopped
             if( !checkACL( conn.data(), nodeid, true ) )
             {
-                tLog() << "Connection not allowed due to ACL";
+                Davros::debug() << "Connection not allowed due to ACL";
                 return NULL;
             }
         }
@@ -686,7 +688,7 @@ Servent::claimOffer( ControlConnection* cc, const QString &nodeid, const QString
     }
     else
     {
-        tLog() << "Invalid offer key:" << key;
+        Davros::debug() << "Invalid offer key:" << key;
         return NULL;
     }
 }
@@ -804,12 +806,12 @@ void
 Servent::printCurrentTransfers()
 {
     int k = 1;
-//    qDebug() << "~~~ Active file transfer connections:" << m_scsessions.length();
+//    Davros::debug() << "~~~ Active file transfer connections:" << m_scsessions.length();
     foreach( StreamConnection* i, m_scsessions )
     {
-        qDebug() << k << ") " << i->id();
+        Davros::debug() << k << ") " << i->id();
     }
-    qDebug() << endl;
+    Davros::debug() << endl;
 }
 
 

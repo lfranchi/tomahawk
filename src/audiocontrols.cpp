@@ -28,6 +28,8 @@
 #include "database/database.h"
 #include "widgets/imagebutton.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "album.h"
 #include "dropjob.h"
@@ -554,7 +556,7 @@ AudioControls::dragMoveEvent( QDragMoveEvent* /* e */ )
 void
 AudioControls::dropEvent( QDropEvent* e )
 {
-    tDebug() << "AudioControls got drop:" << e->mimeData()->formats();
+    Davros::debug() << "AudioControls got drop:" << e->mimeData()->formats();
     if ( DropJob::acceptsMimeData( e->mimeData() ) )
     {
         DropJob *dj = new DropJob();

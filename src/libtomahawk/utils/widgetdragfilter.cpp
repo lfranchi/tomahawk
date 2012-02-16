@@ -22,6 +22,8 @@
 #include <QApplication>
 #include <QMenuBar>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 

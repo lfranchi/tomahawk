@@ -25,6 +25,8 @@
 
 #include "databaseimpl.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace lucene::analysis;
@@ -70,10 +72,10 @@ FuzzyIndex::beginIndexing()
 
     try
     {
-        qDebug() << Q_FUNC_INFO << "Starting indexing.";
+        Davros::debug() << Q_FUNC_INFO << "Starting indexing.";
         if ( m_luceneReader != 0 )
         {
-            qDebug() << "Deleting old lucene stuff.";
+            Davros::debug() << "Deleting old lucene stuff.";
             m_luceneSearcher->close();
             m_luceneReader->close();
             delete m_luceneSearcher;
@@ -82,12 +84,12 @@ FuzzyIndex::beginIndexing()
             m_luceneReader = 0;
         }
 
-        qDebug() << "Creating new index writer.";
+        Davros::debug() << "Creating new index writer.";
         IndexWriter luceneWriter = IndexWriter( m_luceneDir, m_analyzer, true );
     }
     catch( CLuceneError& error )
     {
-        qDebug() << "Caught CLucene error:" << error.what();
+        Davros::debug() << "Caught CLucene error:" << error.what();
         Q_ASSERT( false );
     }
 }
@@ -106,7 +108,7 @@ FuzzyIndex::appendFields( const QString& table, const QMap< unsigned int, QStrin
 {
     try
     {
-        qDebug() << "Appending to index:" << fields.count();
+        Davros::debug() << "Appending to index:" << fields.count();
         bool create = !IndexReader::indexExists( TomahawkUtils::appDataDir().absoluteFilePath( "tomahawk.lucene" ).toStdString().c_str() );
         IndexWriter luceneWriter = IndexWriter( m_luceneDir, m_analyzer, create );
         Document doc;
@@ -138,7 +140,7 @@ FuzzyIndex::appendFields( const QString& table, const QMap< unsigned int, QStrin
     }
     catch( CLuceneError& error )
     {
-        qDebug() << "Caught CLucene error:" << error.what();
+        Davros::debug() << "Caught CLucene error:" << error.what();
         Q_ASSERT( false );
     }
 }
@@ -163,7 +165,7 @@ FuzzyIndex::search( const QString& table, const QString& name )
         {
             if ( !IndexReader::indexExists( TomahawkUtils::appDataDir().absoluteFilePath( "tomahawk.lucene" ).toStdString().c_str() ) )
             {
-                qDebug() << Q_FUNC_INFO << "index didn't exist.";
+                Davros::debug() << Q_FUNC_INFO << "index didn't exist.";
                 return resultsmap;
             }
 
@@ -197,7 +199,7 @@ FuzzyIndex::search( const QString& table, const QString& name )
             if ( score > 0.05 )
             {
                 resultsmap.insert( id, score );
-//                qDebug() << "Hitres:" << result << id << score << table << name;
+//                Davros::debug() << "Hitres:" << result << id << score << table << name;
             }
         }
 
@@ -206,7 +208,7 @@ FuzzyIndex::search( const QString& table, const QString& name )
     }
     catch( CLuceneError& error )
     {
-        tDebug() << "Caught CLucene error:" << error.what();
+        Davros::debug() << "Caught CLucene error:" << error.what();
         Q_ASSERT( false );
     }
 

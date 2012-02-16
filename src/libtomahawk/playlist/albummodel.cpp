@@ -28,6 +28,8 @@
 #include "sourcelist.h"
 #include "database/database.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -203,7 +205,7 @@ AlbumModel::mimeData( const QModelIndexList &indexes ) const
 void
 AlbumModel::removeIndex( const QModelIndex& index )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if ( index.column() > 0 )
         return;
@@ -233,7 +235,7 @@ AlbumModel::removeIndexes( const QList<QModelIndex>& indexes )
 void
 AlbumModel::addCollection( const collection_ptr& collection, bool overwrite )
 {
-    qDebug() << Q_FUNC_INFO << collection->name()
+    Davros::debug() << Q_FUNC_INFO << collection->name()
                             << collection->source()->id()
                             << collection->source()->userName();
 
@@ -270,7 +272,7 @@ AlbumModel::addCollection( const collection_ptr& collection, bool overwrite )
 void
 AlbumModel::addFilteredCollection( const collection_ptr& collection, unsigned int amount, DatabaseCommand_AllAlbums::SortOrder order, bool overwrite )
 {
-/*    qDebug() << Q_FUNC_INFO << collection->name()
+/*    Davros::debug() << Q_FUNC_INFO << collection->name()
                             << collection->source()->id()
                             << collection->source()->userName()
                             << amount << order;*/

@@ -23,6 +23,9 @@
 #include "network/remotecollection.h"
 #include "network/controlconnection.h"
 
+
+#include "libdavros/davros.h"
+#include "utils/logger.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -94,7 +97,7 @@ SourceList::setSources( const QList<Tomahawk::source_ptr>& sources )
             add( src );
         }
 
-        tLog() << Q_FUNC_INFO << "- Total sources now:" << m_sources.size();
+        Davros::debug() << Q_FUNC_INFO << "- Total sources now:" << m_sources.size();
     }
 
     emit ready();
@@ -125,7 +128,7 @@ SourceList::add( const source_ptr& source )
 {
     Q_ASSERT( m_isReady );
 
-//    qDebug() << "Adding to sources:" << source->userName() << source->id();
+//    Davros::debug() << "Adding to sources:" << source->userName() << source->id();
     m_sources.insert( source->userName(), source );
 
     if ( source->id() > 0 )
@@ -146,7 +149,7 @@ SourceList::removeAllRemote()
 {
     foreach( const source_ptr& s, m_sources )
     {
-        qDebug() << "Disconnecting" << s->friendlyName() << s->isLocal() << s->controlConnection() << s->isOnline();
+        Davros::debug() << "Disconnecting" << s->friendlyName() << s->isLocal() << s->controlConnection() << s->isOnline();
         if ( !s->isLocal() && s->controlConnection() )
         {
             s->controlConnection()->shutdown( true );

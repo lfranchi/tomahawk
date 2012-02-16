@@ -20,6 +20,8 @@
 
 #include "groovesharkparser.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "utils/tomahawkutils.h"
 #include "query.h"
@@ -89,15 +91,15 @@ GroovesharkParser::lookupUrl( const QString& link )
 void
 GroovesharkParser::lookupGroovesharkPlaylist( const QString& linkRaw )
 {
-    tLog() << "Parsing Grooveshark Playlist URI:" << linkRaw;
+    Davros::debug() << "Parsing Grooveshark Playlist URI:" << linkRaw;
 
     QString urlFragment = QUrl( linkRaw ).fragment( );
     if ( urlFragment.isEmpty() ) {
-        tDebug() << "no fragment, setting fragment to path";
+        Davros::debug() << "no fragment, setting fragment to path";
         urlFragment = QUrl(linkRaw).path();
     }
     
-    tDebug() << urlFragment;
+    Davros::debug() << urlFragment;
 
     int paramStartingPostition = urlFragment.indexOf( "?" );
 
@@ -108,12 +110,12 @@ GroovesharkParser::lookupGroovesharkPlaylist( const QString& linkRaw )
 
     QStringList urlParts = urlFragment.split( "/", QString::SkipEmptyParts );
     
-    tDebug() << urlParts;
+    Davros::debug() << urlParts;
     
     int playlistID = urlParts.at( 2 ).toInt( &ok, 10 );
     if (!ok)
     {
-        tDebug() << "incorrect grooveshark url";
+        Davros::debug() << "incorrect grooveshark url";
         return;
     }
     
@@ -121,7 +123,7 @@ GroovesharkParser::lookupGroovesharkPlaylist( const QString& linkRaw )
     
     m_title = urlParts.at( 1 );
     
-    tDebug() << "should get playlist " << playlistID;
+    Davros::debug() << "should get playlist " << playlistID;
     
     DropJob::DropType type;
 
@@ -141,7 +143,7 @@ GroovesharkParser::lookupGroovesharkPlaylist( const QString& linkRaw )
     QString hash = QCA::arrayToHex( resultArray.toByteArray() );
     QUrl url = QUrl( base_url + hash );
 
-    tDebug() << "Looking up URL..." << url.toString();
+    Davros::debug() << "Looking up URL..." << url.toString();
 
     QNetworkReply* reply = TomahawkUtils::nam()->post( QNetworkRequest( url ), data );
     connect( reply, SIGNAL( finished() ), this, SLOT( groovesharkLookupFinished() ) );
@@ -169,7 +171,7 @@ GroovesharkParser::groovesharkLookupFinished()
 
         if ( !ok )
         {
-            tLog() << "Failed to parse json from Grooveshark browse item :" << p.errorString() << "On line" << p.errorLine();
+            Davros::debug() << "Failed to parse json from Grooveshark browse item :" << p.errorString() << "On line" << p.errorLine();
             checkTrackFinished();
             return;
         }
@@ -187,7 +189,7 @@ GroovesharkParser::groovesharkLookupFinished()
 
             if ( title.isEmpty() && artist.isEmpty() ) // don't have enough...
             {
-                tLog() << "Didn't get an artist and track name from grooveshark, not enough to build a query on. Aborting" << title << artist << album;
+                Davros::debug() << "Didn't get an artist and track name from grooveshark, not enough to build a query on. Aborting" << title << artist << album;
                 return;
             }
 
@@ -198,7 +200,7 @@ GroovesharkParser::groovesharkLookupFinished()
 
     } else
     {
-        tLog() << "Error in network request to grooveshark for track decoding:" << r->errorString();
+        Davros::debug() << "Error in network request to grooveshark for track decoding:" << r->errorString();
     }
 
     if ( m_trackMode )
@@ -210,7 +212,7 @@ GroovesharkParser::groovesharkLookupFinished()
 void
 GroovesharkParser::checkPlaylistFinished()
 {
-    tDebug() << "Checking for grooveshark batch playlist job finished" << m_queries.isEmpty() << m_createNewPlaylist;
+    Davros::debug() << "Checking for grooveshark batch playlist job finished" << m_queries.isEmpty() << m_createNewPlaylist;
     if ( m_queries.isEmpty() ) // we're done
     {
         if ( m_browseJob )
@@ -239,7 +241,7 @@ GroovesharkParser::checkPlaylistFinished()
 void
 GroovesharkParser::checkTrackFinished()
 {
-    tDebug() << "Checking for grooveshark batch track job finished" << m_queries.isEmpty();
+    Davros::debug() << "Checking for grooveshark batch track job finished" << m_queries.isEmpty();
     if ( m_queries.isEmpty() ) // we're done
     {
         if ( m_browseJob )

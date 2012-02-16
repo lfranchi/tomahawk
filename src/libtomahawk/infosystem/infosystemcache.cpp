@@ -28,6 +28,8 @@
 
 #include "infosystemcache.h"
 #include "tomahawksettings.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -43,11 +45,11 @@ InfoSystemCache::InfoSystemCache( QObject* parent )
     , m_cacheBaseDir( TomahawkSettings::instance()->storageCacheLocation() + "/InfoSystemCache/" )
     , m_cacheVersion( 2 )
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     TomahawkSettings *s = TomahawkSettings::instance();
     if ( s->infoSystemCacheVersion() != m_cacheVersion )
     {
-        tLog() << "Cache version outdated, old:" << s->infoSystemCacheVersion()
+        Davros::debug() << "Cache version outdated, old:" << s->infoSystemCacheVersion()
                << "new:" << m_cacheVersion
                << "Doing upgrade, if any...";
 
@@ -69,17 +71,17 @@ InfoSystemCache::InfoSystemCache( QObject* parent )
 
 InfoSystemCache::~InfoSystemCache()
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 void
 InfoSystemCache::doUpgrade( uint oldVersion, uint newVersion )
 {
     Q_UNUSED( newVersion );
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( oldVersion == 0 || oldVersion == 1  )
     {
-        qDebug() << Q_FUNC_INFO << "Wiping cache";
+        Davros::debug() << Q_FUNC_INFO << "Wiping cache";
 
         for ( int i = InfoNoInfo; i <= InfoLastInfo; i++ )
         {
@@ -89,7 +91,7 @@ InfoSystemCache::doUpgrade( uint oldVersion, uint newVersion )
             foreach ( QFileInfo file, fileList )
             {
                 if ( !QFile::remove( file.canonicalFilePath() ) )
-                    tLog() << "During upgrade, failed to remove cache file " << file.canonicalFilePath();
+                    Davros::debug() << "During upgrade, failed to remove cache file " << file.canonicalFilePath();
             }
         }
     }
@@ -99,7 +101,7 @@ InfoSystemCache::doUpgrade( uint oldVersion, uint newVersion )
 void
 InfoSystemCache::pruneTimerFired()
 {
-    qDebug() << Q_FUNC_INFO << "Pruning infosystemcache";
+    Davros::debug() << Q_FUNC_INFO << "Pruning infosystemcache";
     qlonglong currentMSecsSinceEpoch = QDateTime::currentMSecsSinceEpoch();
 
     for ( int i = InfoNoInfo; i <= InfoLastInfo; i++ )
@@ -114,9 +116,9 @@ InfoSystemCache::pruneTimerFired()
             if ( file.suffix().toLongLong() < currentMSecsSinceEpoch )
             {
                 if ( !QFile::remove( file.canonicalFilePath() ) )
-                    tLog() << "Failed to remove stale cache file" << file.canonicalFilePath();
+                    Davros::debug() << "Failed to remove stale cache file" << file.canonicalFilePath();
                 else
-                    qDebug() << "Removed stale cache file" << file.canonicalFilePath();
+                    Davros::debug() << "Removed stale cache file" << file.canonicalFilePath();
             }
             if ( fileLocationHash.contains( baseName ) )
                 fileLocationHash.remove( baseName );
@@ -138,7 +140,7 @@ InfoSystemCache::getCachedInfoSlot( Tomahawk::InfoSystem::InfoStringHash criteri
         if ( !fileLocationHash.isEmpty() )
         {
             //We already know of some values, so no need to re-read the directory again as it's already happened
-            qDebug() << Q_FUNC_INFO << "notInCache -- filelocationhash empty";
+            Davros::debug() << Q_FUNC_INFO << "notInCache -- filelocationhash empty";
             notInCache( sendingObj, criteria, requestData );
             return;
         }
@@ -148,7 +150,7 @@ InfoSystemCache::getCachedInfoSlot( Tomahawk::InfoSystem::InfoStringHash criteri
         if ( !dir.exists() )
         {
             //Dir doesn't exist so clearly not in cache
-            qDebug() << Q_FUNC_INFO << "notInCache -- dir doesn't exist";
+            Davros::debug() << Q_FUNC_INFO << "notInCache -- dir doesn't exist";
             notInCache( sendingObj, criteria, requestData );
             return;
         }
@@ -165,7 +167,7 @@ InfoSystemCache::getCachedInfoSlot( Tomahawk::InfoSystem::InfoStringHash criteri
         if ( !fileLocationHash.contains( criteriaHashVal ) )
         {
             //Still didn't find it? It's really not in the cache then
-            qDebug() << Q_FUNC_INFO << "notInCache -- filelocationhash doesn't contain criteria val";
+            Davros::debug() << Q_FUNC_INFO << "notInCache -- filelocationhash doesn't contain criteria val";
             notInCache( sendingObj, criteria, requestData );
             return;
         }
@@ -177,15 +179,15 @@ InfoSystemCache::getCachedInfoSlot( Tomahawk::InfoSystem::InfoStringHash criteri
     if ( currMaxAge < QDateTime::currentMSecsSinceEpoch() )
     {
         if ( !QFile::remove( file.canonicalFilePath() ) )
-            tLog() << "Failed to remove stale cache file" << file.canonicalFilePath();
+            Davros::debug() << "Failed to remove stale cache file" << file.canonicalFilePath();
         else
-            qDebug() << "Removed stale cache file" << file.canonicalFilePath();
+            Davros::debug() << "Removed stale cache file" << file.canonicalFilePath();
 
         fileLocationHash.remove( criteriaHashVal );
         m_fileLocationCache[ requestData.type ] = fileLocationHash;
         m_dataCache.remove( criteriaHashValWithType );
 
-        qDebug() << Q_FUNC_INFO << "notInCache -- file was stale";
+        Davros::debug() << Q_FUNC_INFO << "notInCache -- file was stale";
         notInCache( sendingObj, criteria, requestData );
         return;
     }
@@ -195,7 +197,7 @@ InfoSystemCache::getCachedInfoSlot( Tomahawk::InfoSystem::InfoStringHash criteri
 
         if ( !QFile::rename( file.canonicalFilePath(), newFilePath ) )
         {
-            qDebug() << Q_FUNC_INFO << "notInCache -- failed to move old cache file to new location";
+            Davros::debug() << Q_FUNC_INFO << "notInCache -- failed to move old cache file to new location";
             notInCache( sendingObj, criteria, requestData );
             return;
         }
@@ -229,7 +231,7 @@ InfoSystemCache::notInCache( QObject *receiver, Tomahawk::InfoSystem::InfoString
 void
 InfoSystemCache::updateCacheSlot( Tomahawk::InfoSystem::InfoStringHash criteria, qint64 maxAge, Tomahawk::InfoSystem::InfoType type, QVariant output )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     const QString criteriaHashVal = criteriaMd5( criteria );
     const QString criteriaHashValWithType = criteriaMd5( criteria, type );
     const QString cacheDir = m_cacheBaseDir + QString::number( (int)type );
@@ -240,7 +242,7 @@ InfoSystemCache::updateCacheSlot( Tomahawk::InfoSystem::InfoStringHash criteria,
     {
         if ( !QFile::rename( fileLocationHash[ criteriaHashVal ], settingsFilePath ) )
         {
-            tLog() << "Failed to move old cache file to new location!";
+            Davros::debug() << "Failed to move old cache file to new location!";
             return;
         }
         fileLocationHash[ criteriaHashVal ] = settingsFilePath;
@@ -257,10 +259,10 @@ InfoSystemCache::updateCacheSlot( Tomahawk::InfoSystem::InfoStringHash criteria,
     QDir dir( cacheDir );
     if( !dir.exists( cacheDir ) )
     {
-        qDebug() << "Creating cache directory " << cacheDir;
+        Davros::debug() << "Creating cache directory " << cacheDir;
         if( !dir.mkpath( cacheDir ) )
         {
-            tLog() << "Failed to create cache dir! Bailing...";
+            Davros::debug() << "Failed to create cache dir! Bailing...";
             return;
         }
     }

@@ -28,6 +28,8 @@
 #include "audio/audioengine.h"
 #include "tomahawksettings.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #include <lastfm/ws.h>
@@ -78,7 +80,7 @@ LastFmPlugin::LastFmPlugin()
 
 LastFmPlugin::~LastFmPlugin()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     delete m_scrobbler;
     m_scrobbler = 0;
 }
@@ -156,9 +158,9 @@ LastFmPlugin::nowPlaying( const QVariant &input )
 {
     if ( !input.canConvert< Tomahawk::InfoSystem::InfoStringHash >() || !m_scrobbler )
     {
-        tLog() << "LastFmPlugin::nowPlaying no m_scrobbler, or cannot convert input!";
+        Davros::debug() << "LastFmPlugin::nowPlaying no m_scrobbler, or cannot convert input!";
         if ( !m_scrobbler )
-            tLog() << "No scrobbler!";
+            Davros::debug() << "No scrobbler!";
         return;
     }
 
@@ -186,7 +188,7 @@ LastFmPlugin::scrobble()
     if ( !m_scrobbler || m_track.isNull() )
         return;
 
-    tLog() << Q_FUNC_INFO << "Scrobbling now:" << m_track.toString();
+    Davros::debug() << Q_FUNC_INFO << "Scrobbling now:" << m_track.toString();
     m_scrobbler->cache( m_track );
     m_scrobbler->submit();
 }
@@ -195,11 +197,11 @@ LastFmPlugin::scrobble()
 void
 LastFmPlugin::sendLoveSong( const InfoType type, QVariant input )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if ( !input.canConvert< Tomahawk::InfoSystem::InfoStringHash >() )
     {
-        tLog() << "LastFmPlugin::nowPlaying cannot convert input!";
+        Davros::debug() << "LastFmPlugin::nowPlaying cannot convert input!";
         return;
     }
 
@@ -356,7 +358,7 @@ LastFmPlugin::notInCacheSlot( QHash<QString, QString> criteria, Tomahawk::InfoSy
 {
     if ( !TomahawkUtils::nam() )
     {
-        tLog() << "Have a null QNAM, uh oh";
+        Davros::debug() << "Have a null QNAM, uh oh";
         emit info( requestData, QVariant() );
         return;
     }
@@ -475,7 +477,7 @@ LastFmPlugin::notInCacheSlot( QHash<QString, QString> criteria, Tomahawk::InfoSy
 
         default:
         {
-            tLog() << "Couldn't figure out what to do with this type of request after cache miss";
+            Davros::debug() << "Couldn't figure out what to do with this type of request after cache miss";
             emit info( requestData, QVariant() );
             return;
         }
@@ -556,7 +558,7 @@ LastFmPlugin::chartReturned()
     }
     else
     {
-        tDebug() << Q_FUNC_INFO << "got non tracks and non artists";
+        Davros::debug() << Q_FUNC_INFO << "got non tracks and non artists";
     }
 
     Tomahawk::InfoSystem::InfoRequestData requestData = reply->property( "requestData" ).value< Tomahawk::InfoSystem::InfoRequestData >();
@@ -596,7 +598,7 @@ LastFmPlugin::coverArtReturned()
         QByteArray ba = reply->readAll();
         if ( ba.isNull() || !ba.length() )
         {
-            tLog() << Q_FUNC_INFO << "Uh oh, null byte array";
+            Davros::debug() << Q_FUNC_INFO << "Uh oh, null byte array";
             emit info( reply->property( "requestData" ).value< Tomahawk::InfoSystem::InfoRequestData >(), QVariant() );
             return;
         }
@@ -624,7 +626,7 @@ LastFmPlugin::coverArtReturned()
     {
         if ( !TomahawkUtils::nam() )
         {
-            tLog() << Q_FUNC_INFO << "Uh oh, nam is null";
+            Davros::debug() << Q_FUNC_INFO << "Uh oh, nam is null";
             emit info( reply->property( "requestData" ).value< Tomahawk::InfoSystem::InfoRequestData >(), QVariant() );
             return;
         }
@@ -649,7 +651,7 @@ LastFmPlugin::artistImagesReturned()
         QByteArray ba = reply->readAll();
         if ( ba.isNull() || !ba.length() )
         {
-            tLog() << Q_FUNC_INFO << "Uh oh, null byte array";
+            Davros::debug() << Q_FUNC_INFO << "Uh oh, null byte array";
             emit info( reply->property( "requestData" ).value< Tomahawk::InfoSystem::InfoRequestData >(), QVariant() );
             return;
         }
@@ -675,7 +677,7 @@ LastFmPlugin::artistImagesReturned()
     {
         if ( !TomahawkUtils::nam() )
         {
-            tLog() << Q_FUNC_INFO << "Uh oh, nam is null";
+            Davros::debug() << Q_FUNC_INFO << "Uh oh, nam is null";
             emit info( reply->property( "requestData" ).value< Tomahawk::InfoSystem::InfoRequestData >(), QVariant() );
             return;
         }
@@ -728,7 +730,7 @@ LastFmPlugin::onAuthenticated()
     QNetworkReply* authJob = dynamic_cast<QNetworkReply*>( sender() );
     if ( !authJob )
     {
-        tLog() << Q_FUNC_INFO << "Help! No longer got a last.fm auth job!";
+        Davros::debug() << Q_FUNC_INFO << "Help! No longer got a last.fm auth job!";
         return;
     }
 
@@ -738,7 +740,7 @@ LastFmPlugin::onAuthenticated()
 
         if ( lfm.children( "error" ).size() > 0 )
         {
-            tLog() << "Error from authenticating with Last.fm service:" << lfm.text();
+            Davros::debug() << "Error from authenticating with Last.fm service:" << lfm.text();
             TomahawkSettings::instance()->setLastFmSessionKey( QByteArray() );
         }
         else
@@ -747,14 +749,14 @@ LastFmPlugin::onAuthenticated()
 
             TomahawkSettings::instance()->setLastFmSessionKey( lastfm::ws::SessionKey.toLatin1() );
 
-//            qDebug() << "Got session key from last.fm";
+//            Davros::debug() << "Got session key from last.fm";
             if ( TomahawkSettings::instance()->scrobblingEnabled() )
                 m_scrobbler = new lastfm::Audioscrobbler( "thk" );
         }
     }
     else
     {
-        tLog() << "Got error in Last.fm authentication job:" << authJob->errorString();
+        Davros::debug() << "Got error in Last.fm authentication job:" << authJob->errorString();
     }
 
     authJob->deleteLater();
@@ -766,7 +768,7 @@ LastFmPlugin::createScrobbler()
 {
     if ( TomahawkSettings::instance()->lastFmSessionKey().isEmpty() ) // no session key, so get one
     {
-        qDebug() << "LastFmPlugin::createScrobbler Session key is empty";
+        Davros::debug() << "LastFmPlugin::createScrobbler Session key is empty";
         QString authToken = TomahawkUtils::md5( ( lastfm::ws::Username.toLower() + TomahawkUtils::md5( m_pw.toUtf8() ) ).toUtf8() );
 
         QMap<QString, QString> query;
@@ -779,7 +781,7 @@ LastFmPlugin::createScrobbler()
     }
     else
     {
-        qDebug() << "LastFmPlugin::createScrobbler Already have session key";
+        Davros::debug() << "LastFmPlugin::createScrobbler Already have session key";
         lastfm::ws::SessionKey = TomahawkSettings::instance()->lastFmSessionKey();
 
         m_scrobbler = new lastfm::Audioscrobbler( "thk" );

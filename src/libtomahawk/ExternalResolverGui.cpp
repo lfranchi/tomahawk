@@ -26,6 +26,8 @@
 #include <QtGui/QIcon>
 #include <QtGui/QWidget>
 #include <QUiLoader>
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 Tomahawk::ExternalResolverGui::ExternalResolverGui(const QString& filePath)
@@ -43,7 +45,7 @@ Tomahawk::ExternalResolverGui::configMsgFromWidget( QWidget* w )
     // generate a qvariantmap of all the widgets in the hierarchy, and for each one include the list of properties and values
     QVariantMap widgetMap;
     addChildProperties( w, widgetMap );
-//     qDebug() << "Generated widget variant:" << widgetMap;
+//     Davros::debug() << "Generated widget variant:" << widgetMap;
     return widgetMap;
 }
 
@@ -58,7 +60,7 @@ Tomahawk::ExternalResolverGui::addChildProperties( QObject* widget, QVariantMap&
 
     if( qstrcmp( widget->metaObject()->className(), "QWidget" ) != 0 )
     {
-//         qDebug() << "Adding properties for this:" << widget->metaObject()->className();
+//         Davros::debug() << "Adding properties for this:" << widget->metaObject()->className();
         // add this widget's properties
         QVariantMap props;
         for( int i = 0; i < widget->metaObject()->propertyCount(); i++ )
@@ -69,7 +71,7 @@ Tomahawk::ExternalResolverGui::addChildProperties( QObject* widget, QVariantMap&
             if( val.canConvert< QPixmap >() || val.canConvert< QImage >() || val.canConvert< QIcon >() )
                 continue;
             props[ prop ] = val.toString();
-//             qDebug() << QString( "%1: %2" ).arg( prop ).arg( props[ prop ].toString() );
+//             Davros::debug() << QString( "%1: %2" ).arg( prop ).arg( props[ prop ].toString() );
         }
         m[ widget->objectName() ] = props;
     }
@@ -112,7 +114,7 @@ Tomahawk::ExternalResolverGui::fixDataImagePaths( const QByteArray& data, bool c
         }
         QByteArray data = images[ filename ].toByteArray();
 
-//        qDebug() << "expanding data:" << data << compressed;
+//        Davros::debug() << "expanding data:" << data << compressed;
         data = compressed ? qUncompress( QByteArray::fromBase64( data ) ) : QByteArray::fromBase64( data );
         imgF.write( data );
         imgF.close();

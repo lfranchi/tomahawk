@@ -31,6 +31,8 @@
 #include "dynamic/GeneratorInterface.h"
 #include "dropjob.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -404,7 +406,7 @@ PlaylistModel::endPlaylistChanges()
     }
     else
     {
-        tDebug() << "Called" << Q_FUNC_INFO << "unexpectedly!";
+        Davros::debug() << "Called" << Q_FUNC_INFO << "unexpectedly!";
         Q_ASSERT( false );
     }
 

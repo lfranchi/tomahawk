@@ -29,6 +29,8 @@
 #include "audio/audioengine.h"
 #include "tomahawksettings.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "chartsplugin_data_p.h"
 
@@ -51,7 +53,7 @@ SpotifyPlugin::SpotifyPlugin()
 
 SpotifyPlugin::~SpotifyPlugin()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 
@@ -66,8 +68,8 @@ SpotifyPlugin::dataError( Tomahawk::InfoSystem::InfoRequestData requestData )
 void
 SpotifyPlugin::getInfo( Tomahawk::InfoSystem::InfoRequestData requestData )
 {
-    qDebug() << Q_FUNC_INFO << requestData.caller;
-    qDebug() << Q_FUNC_INFO << requestData.customData;
+    Davros::debug() << Q_FUNC_INFO << requestData.caller;
+    Davros::debug() << Q_FUNC_INFO << requestData.customData;
 
     InfoStringHash hash = requestData.input.value< Tomahawk::InfoSystem::InfoStringHash >();
 
@@ -80,7 +82,7 @@ SpotifyPlugin::getInfo( Tomahawk::InfoSystem::InfoRequestData requestData )
                 dataError( requestData );
                 break;
             }
-            qDebug() << Q_FUNC_INFO << "InfoCHart req for" << hash["chart_source"];
+            Davros::debug() << Q_FUNC_INFO << "InfoCHart req for" << hash["chart_source"];
             fetchChart( requestData );
             break;
 
@@ -143,7 +145,7 @@ SpotifyPlugin::notInCacheSlot( Tomahawk::InfoSystem::InfoStringHash criteria, To
             /// Fetch the chart, we need source and id
             tDebug( LOGVERBOSE ) << Q_FUNC_INFO << "InfoChart not in cache! Fetching...";
             QUrl url = QUrl( QString( SPOTIFY_API_URL "toplist/%1/" ).arg( criteria["chart_id"] ) );
-            qDebug() << Q_FUNC_INFO << "Getting chart url" << url;
+            Davros::debug() << Q_FUNC_INFO << "Getting chart url" << url;
 
             QNetworkReply* reply = TomahawkUtils::nam()->get( QNetworkRequest( url ) );
             reply->setProperty( "requestData", QVariant::fromValue< Tomahawk::InfoSystem::InfoRequestData >( requestData ) );
@@ -161,17 +163,17 @@ SpotifyPlugin::notInCacheSlot( Tomahawk::InfoSystem::InfoStringHash criteria, To
                 return;
 
             /// We need to fetch possible types before they are asked for
-            tDebug() << "SpotifyPlugin: InfoChart fetching possible resources";
+            Davros::debug() << "SpotifyPlugin: InfoChart fetching possible resources";
 
             QUrl url = QUrl( QString( SPOTIFY_API_URL "toplist/charts" )  );
             QNetworkReply* reply = TomahawkUtils::nam()->get( QNetworkRequest( url ) );
-            tDebug() << Q_FUNC_INFO << "fetching:" << url;
+            Davros::debug() << Q_FUNC_INFO << "fetching:" << url;
             connect( reply, SIGNAL( finished() ), SLOT( chartTypes() ) );
             m_chartsFetchJobs++;
 
             if ( m_chartsFetchJobs > 0 )
             {
-                qDebug() << Q_FUNC_INFO << "InfoChartCapabilities still fetching!";
+                Davros::debug() << Q_FUNC_INFO << "InfoChartCapabilities still fetching!";
                 m_cachedRequests.append( requestData );
                 return;
             }
@@ -182,7 +184,7 @@ SpotifyPlugin::notInCacheSlot( Tomahawk::InfoSystem::InfoStringHash criteria, To
 
         default:
         {
-            tLog() << Q_FUNC_INFO << "Couldn't figure out what to do with this type of request after cache miss";
+            Davros::debug() << Q_FUNC_INFO << "Couldn't figure out what to do with this type of request after cache miss";
             emit info( requestData, QVariant() );
             return;
         }
@@ -194,7 +196,7 @@ void
 SpotifyPlugin::chartTypes()
 {
     /// Get possible chart type for specificSpotifyPlugin: InfoChart types returned chart source
-    tDebug() << Q_FUNC_INFO << "Got spotifychart type result";
+    Davros::debug() << Q_FUNC_INFO << "Got spotifychart type result";
     QNetworkReply* reply = qobject_cast<QNetworkReply*>( sender() );
 
     if ( reply->error() == QNetworkReply::NoError )
@@ -206,7 +208,7 @@ SpotifyPlugin::chartTypes()
 
         if ( !ok )
         {
-            tLog() << Q_FUNC_INFO << "Failed to parse resources" << p.errorString() << "On line" << p.errorLine();
+            Davros::debug() << Q_FUNC_INFO << "Failed to parse resources" << p.errorString() << "On line" << p.errorLine();
 
             return;
         }
@@ -266,7 +268,7 @@ SpotifyPlugin::chartTypes()
     }
     else
     {
-        tLog() << Q_FUNC_INFO << "Error fetching charts:" << reply->errorString();
+        Davros::debug() << Q_FUNC_INFO << "Error fetching charts:" << reply->errorString();
     }
 
     m_chartsFetchJobs--;
@@ -300,7 +302,7 @@ SpotifyPlugin::chartReturned()
 
         if ( !ok )
         {
-            tLog() << "Failed to parse json from chart lookup:" << p.errorString() << "On line" << p.errorLine();
+            Davros::debug() << "Failed to parse json from chart lookup:" << p.errorString() << "On line" << p.errorLine();
             return;
         }
 
@@ -336,7 +338,7 @@ SpotifyPlugin::chartReturned()
                     pair["track"] = title;
                     top_tracks << pair;
 
-                    qDebug() << "SpotifyChart type is track";
+                    Davros::debug() << "SpotifyChart type is track";
                 }
 
                 if( chartType() == Album )
@@ -346,14 +348,14 @@ SpotifyPlugin::chartReturned()
                     pair["artist"] = artist;
                     pair["album"] = title;
                     top_albums << pair;
-                    qDebug() << "SpotifyChart type is album";
+                    Davros::debug() << "SpotifyChart type is album";
                 }
 
                 if( chartType() == Artist )
                 {
 
                     top_artists << chartMap.value( "name" ).toString();
-                    qDebug() << "SpotifyChart type is artist";
+                    Davros::debug() << "SpotifyChart type is artist";
 
                 }
             }
@@ -361,21 +363,21 @@ SpotifyPlugin::chartReturned()
 
         if( chartType() == Track )
         {
-            tDebug() << "ChartsPlugin:" << "\tgot " << top_tracks.size() << " tracks";
+            Davros::debug() << "ChartsPlugin:" << "\tgot " << top_tracks.size() << " tracks";
             returnedData["tracks"] = QVariant::fromValue( top_tracks );
             returnedData["type"] = "tracks";
         }
 
         if( chartType() == Album )
         {
-            tDebug() << "ChartsPlugin:" << "\tgot " << top_albums.size() << " albums";
+            Davros::debug() << "ChartsPlugin:" << "\tgot " << top_albums.size() << " albums";
             returnedData["albums"] = QVariant::fromValue( top_albums );
             returnedData["type"] = "albums";
         }
 
         if( chartType() == Artist )
         {
-            tDebug() << "ChartsPlugin:" << "\tgot " << top_artists.size() << " artists";
+            Davros::debug() << "ChartsPlugin:" << "\tgot " << top_artists.size() << " artists";
             returnedData["artists"] = top_artists;
             returnedData["type"] = "artists";
         }
@@ -392,6 +394,6 @@ SpotifyPlugin::chartReturned()
         emit updateCache( criteria, 86400000, requestData.type, returnedData );
     }
     else
-        qDebug() << "Network error in fetching chart:" << reply->url().toString();
+        Davros::debug() << "Network error in fetching chart:" << reply->url().toString();
 
 }

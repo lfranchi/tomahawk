@@ -77,12 +77,12 @@ EchonestCatalogSynchronizer::checkSettingsChanged()
         // enable, and upload whole db
         m_syncing = true;
 
-        tDebug() << "Echonest Catalog sync pref changed, uploading!!";
+        Davros::debug() << "Echonest Catalog sync pref changed, uploading!!";
         uploadDb();
     } else if ( !TomahawkSettings::instance()->enableEchonestCatalogs() && m_syncing )
     {
 
-        tDebug() << "Found echonest change, doing catalog deletes!";
+        Davros::debug() << "Found echonest change, doing catalog deletes!";
         // delete all track nums and catalog ids from our peers
         {
             DatabaseCommand_SetTrackAttributes* cmd = new DatabaseCommand_SetTrackAttributes( DatabaseCommand_SetTrackAttributes::EchonestCatalogId );
@@ -125,7 +125,7 @@ EchonestCatalogSynchronizer::catalogDeleted()
         TomahawkSettings::instance()->setValue( toDel, QString() );
     } catch ( const Echonest::ParseError& e )
     {
-        tLog() << "Error in libechonest parsing catalog delete:" << e.what();
+        Davros::debug() << "Error in libechonest parsing catalog delete:" << e.what();
     }
 }
 
@@ -147,7 +147,7 @@ EchonestCatalogSynchronizer::songCreateFinished()
     QNetworkReply* r = qobject_cast< QNetworkReply* >( sender() );
     Q_ASSERT( r );
 
-    tDebug() << "Finished creating song catalog, updating data now!!";
+    Davros::debug() << "Finished creating song catalog, updating data now!!";
     try
     {
         m_songCatalog = Echonest::Catalog::parseCreate( r );
@@ -157,7 +157,7 @@ EchonestCatalogSynchronizer::songCreateFinished()
         Database::instance()->enqueue( cmd );
     } catch ( const Echonest::ParseError& e )
     {
-        tLog() << "Echonest threw an exception parsing song catalog create:" << e.what();
+        Davros::debug() << "Echonest threw an exception parsing song catalog create:" << e.what();
         return;
     }
 
@@ -195,7 +195,7 @@ EchonestCatalogSynchronizer::artistCreateFinished()
 //        Database::instance()->enqueue( cmd );
     } catch ( const Echonest::ParseError& e )
     {
-        tLog() << "Echonest threw an exception parsing artist catalog create:" << e.what();
+        Davros::debug() << "Echonest threw an exception parsing artist catalog create:" << e.what();
         return;
     }*/
 }
@@ -203,7 +203,7 @@ EchonestCatalogSynchronizer::artistCreateFinished()
 void
 EchonestCatalogSynchronizer::rawTracksAdd( const QList< QStringList >& tracks )
 {
-    tDebug() << "Got raw tracks, num:" << tracks.size();
+    Davros::debug() << "Got raw tracks, num:" << tracks.size();
 
 //     int limit = ( tracks.size() < 1000 ) ? tracks.size() : 1000;
 
@@ -213,7 +213,7 @@ EchonestCatalogSynchronizer::rawTracksAdd( const QList< QStringList >& tracks )
         int prev = cur;
         cur = ( cur + 2000 > tracks.size() ) ? tracks.size() : cur + 2000;
 
-        tDebug() << "Enqueueing a batch of tracks to upload to echonest catalog:" << cur - prev;
+        Davros::debug() << "Enqueueing a batch of tracks to upload to echonest catalog:" << cur - prev;
         Echonest::CatalogUpdateEntries entries;
         for ( int i = prev; i < cur; i++ )
         {
@@ -221,7 +221,7 @@ EchonestCatalogSynchronizer::rawTracksAdd( const QList< QStringList >& tracks )
                 continue;
             entries.append( entryFromTrack( tracks[i], Echonest::CatalogTypes::Update ) );
         }
-        tDebug() << "Done queuing:" << entries.size() << "tracks";
+        Davros::debug() << "Done queuing:" << entries.size() << "tracks";
         m_queuedUpdates.enqueue( entries );
     }
 
@@ -236,7 +236,7 @@ EchonestCatalogSynchronizer::doUploadJob()
         return;
 
     Echonest::CatalogUpdateEntries entries = m_queuedUpdates.dequeue();
-    tDebug() << "Updating number of entries:" << entries.count();
+    Davros::debug() << "Updating number of entries:" << entries.count();
 
     QNetworkReply* updateJob = m_songCatalog.update( entries );
     connect( updateJob, SIGNAL( finished() ), this, SLOT( songUpdateFinished() ) );
@@ -246,7 +246,7 @@ EchonestCatalogSynchronizer::doUploadJob()
 Echonest::CatalogUpdateEntry
 EchonestCatalogSynchronizer::entryFromTrack( const QStringList& track, Echonest::CatalogTypes::Action action ) const
 {
-    //qDebug() << "UPLOADING:" << track[0] << track[1] << track[2];
+    //Davros::debug() << "UPLOADING:" << track[0] << track[1] << track[2];
     Echonest::CatalogUpdateEntry entry;
     entry.setAction( action );
     entry.setItemId(track[ 0 ].toLatin1() ); // track dbid
@@ -271,7 +271,7 @@ EchonestCatalogSynchronizer::songUpdateFinished()
         connect( tJob, SIGNAL( finished() ), this, SLOT( checkTicket() ) );
     } catch ( const Echonest::ParseError& e )
     {
-        tLog() << "Echonest threw an exception parsing catalog update finished:" << e.what();
+        Davros::debug() << "Echonest threw an exception parsing catalog update finished:" << e.what();
     }
 
     doUploadJob();
@@ -287,10 +287,10 @@ EchonestCatalogSynchronizer::checkTicket()
     {
         Echonest::CatalogStatus status = m_songCatalog.parseStatus( r );
 
-        tLog() << "Catalog status update:" << status.status << status.details << status.items;
+        Davros::debug() << "Catalog status update:" << status.status << status.details << status.items;
     } catch ( const Echonest::ParseError& e )
     {
-        tLog() << "Echonest threw an exception parsing catalog create:" << e.what();
+        Davros::debug() << "Echonest threw an exception parsing catalog create:" << e.what();
         return;
     }
 }
@@ -301,7 +301,7 @@ EchonestCatalogSynchronizer::tracksAdded( const QList< unsigned int >& tracks )
     if ( !m_syncing || m_songCatalog.id().isEmpty() || tracks.isEmpty() )
         return;
 
-    qDebug() << Q_FUNC_INFO << "Got tracks added from db, fetching metadata" << tracks;
+    Davros::debug() << Q_FUNC_INFO << "Got tracks added from db, fetching metadata" << tracks;
     // Get the result_ptrs from the tracks
     DatabaseCommand_LoadFiles* cmd = new DatabaseCommand_LoadFiles( tracks );
     connect( cmd, SIGNAL( results( QList<Tomahawk::result_ptr> ) ), this, SLOT( loadedResults( QList<Tomahawk::result_ptr> ) ) );
@@ -313,14 +313,14 @@ void
 EchonestCatalogSynchronizer::loadedResults( const QList<result_ptr>& results )
 {
     QList< QStringList > rawTracks;
-    qDebug() << Q_FUNC_INFO << "Got track metadata..." << results.size();
+    Davros::debug() << Q_FUNC_INFO << "Got track metadata..." << results.size();
 
     foreach( const result_ptr& result, results )
     {
         if ( result.isNull() )
             continue;
 
-        qDebug() << "Metadata for item:" << result->fileId();
+        Davros::debug() << "Metadata for item:" << result->fileId();
 
         const QString artist = result->artist().isNull() ? QString() : result->artist()->name();
         const QString album = result->album().isNull() ? QString() : result->album()->name();

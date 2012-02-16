@@ -29,6 +29,8 @@
 #include <QCryptographicHash>
 #include <QPixmap>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -58,7 +60,7 @@ void AvatarManager::onNewConnection()
 
 void AvatarManager::fetchVCard(const QString &jid)
 {
-//    qDebug() << Q_FUNC_INFO;
+//    Davros::debug() << Q_FUNC_INFO;
 
     Jreen::IQ iq(Jreen::IQ::Get, jid );
     iq.addExtension(new Jreen::VCard());
@@ -71,15 +73,15 @@ void AvatarManager::onNewPresence(const Jreen::Presence& presence)
     Jreen::VCardUpdate::Ptr update = presence.payload<Jreen::VCardUpdate>();
     if(update)
     {
-//        qDebug() << "vcard: found update for" << presence.from().full();
+//        Davros::debug() << "vcard: found update for" << presence.from().full();
         if(!isCached(update->photoHash()))
         {
-//            qDebug() << presence.from().full() << "vcard: photo not cached, starting request..." << update->photoHash();
+//            Davros::debug() << presence.from().full() << "vcard: photo not cached, starting request..." << update->photoHash();
             fetchVCard( presence.from().bare() );
         }
         else
         {
-//            qDebug() << presence.from().full() << "vcard: photo already cached no request necessary " << update->photoHash();
+//            Davros::debug() << presence.from().full() << "vcard: photo already cached no request necessary " << update->photoHash();
             m_JidsAvatarHashes.insert( update->photoHash(), presence.from().bare() );
 
             if ( !this->avatar( presence.from().bare() ).isNull() )
@@ -88,7 +90,7 @@ void AvatarManager::onNewPresence(const Jreen::Presence& presence)
     }
     else
     {
-//        qDebug() << Q_FUNC_INFO << presence.from().full() << "got no statusupdateextension";
+//        Davros::debug() << Q_FUNC_INFO << presence.from().full() << "got no statusupdateextension";
 
         //TODO: do we want this? might fetch avatars for broken clients
         fetchVCard( presence.from().bare() );
@@ -102,14 +104,14 @@ void AvatarManager::onNewIq(const Jreen::IQ& iq)
     {
         iq.accept();
 
-//        qDebug() << Q_FUNC_INFO << "Got vcard from " << iq.from().full();
+//        Davros::debug() << Q_FUNC_INFO << "Got vcard from " << iq.from().full();
 
         QString id = iq.from().full();
         QString avatarHash;
 
         const Jreen::VCard::Photo &photo = vcard->photo();
         if (!photo.data().isEmpty()) {
-//            qDebug() << "vcard: got photo data" << id;
+//            Davros::debug() << "vcard: got photo data" << id;
 
             avatarHash = QCryptographicHash::hash(photo.data(), QCryptographicHash::Sha1).toHex();
 
@@ -131,19 +133,19 @@ void AvatarManager::onNewIq(const Jreen::IQ& iq)
         }
         else
         {
-//            qDebug() << "vcard: got no photo data" << id;
+//            Davros::debug() << "vcard: got no photo data" << id;
         }
 
         // got own presence
         if ( m_client->jid().bare() == id )
         {
-//            qDebug() << Q_FUNC_INFO << "got own vcard";
+//            Davros::debug() << Q_FUNC_INFO << "got own vcard";
 
             Jreen::Presence presence = m_client->presence();
             Jreen::VCardUpdate::Ptr update = presence.payload<Jreen::VCardUpdate>();
             if (update->photoHash() != avatarHash)
             {
-                qDebug() << Q_FUNC_INFO << "Updating own presence...";
+                Davros::debug() << Q_FUNC_INFO << "Updating own presence...";
 
                 update->setPhotoHash(avatarHash);
                 m_client->send(presence);
@@ -166,7 +168,7 @@ QPixmap AvatarManager::avatar(const QString &jid) const
 
 QString AvatarManager::avatarHash(const QString &jid) const
 {
-    //qDebug() << Q_FUNC_INFO << jid << m_JidsAvatarHashes.key(jid);
+    //Davros::debug() << Q_FUNC_INFO << jid << m_JidsAvatarHashes.key(jid);
     return m_JidsAvatarHashes.key(jid);
 }
 
@@ -188,5 +190,5 @@ bool AvatarManager::isCached(const QString &avatarHash) const
 
 void AvatarManager::onNewAvatar(const QString&)
 {
-//    qDebug() << Q_FUNC_INFO <<  "Found new Avatar..." << jid;
+//    Davros::debug() << Q_FUNC_INFO <<  "Found new Avatar..." << jid;
 }

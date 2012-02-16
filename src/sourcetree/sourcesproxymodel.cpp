@@ -25,6 +25,8 @@
 #include "sourcesmodel.h"
 #include "sourcetree/items/sourceitem.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 

@@ -51,6 +51,8 @@
 #include "widgets/newplaylistwidget.h"
 #include "widgets/animatedsplitter.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define FILTER_TIMEOUT 280
@@ -243,7 +245,7 @@ ViewManager::show( const Tomahawk::album_ptr& album, Tomahawk::ModelMode initial
 Tomahawk::ViewPage*
 ViewManager::show( const Tomahawk::collection_ptr& collection )
 {
-    qDebug() << Q_FUNC_INFO << m_currentMode;
+    Davros::debug() << Q_FUNC_INFO << m_currentMode;
     m_currentCollection = collection;
     ViewPage* shown = 0;
     if ( m_currentMode == PlaylistInterface::Flat )
@@ -436,7 +438,7 @@ ViewManager::showTopLovedPage()
 void
 ViewManager::setTableMode()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     m_currentMode = PlaylistInterface::Flat;
 
@@ -450,7 +452,7 @@ ViewManager::setTableMode()
 void
 ViewManager::setTreeMode()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     m_currentMode = PlaylistInterface::Tree;
 
@@ -464,7 +466,7 @@ ViewManager::setTreeMode()
 void
 ViewManager::setAlbumMode()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     m_currentMode = PlaylistInterface::Album;
 
@@ -481,7 +483,7 @@ ViewManager::historyBack()
     ViewPage* oldPage = m_pageHistory.takeFirst();
 
     ViewPage* newPage = m_pageHistory.first();
-    qDebug() << "Showing page after moving backwards in history:" << newPage->widget()->metaObject()->className();
+    Davros::debug() << "Showing page after moving backwards in history:" << newPage->widget()->metaObject()->className();
     setPage( newPage, false );
 
     delete oldPage;
@@ -519,7 +521,7 @@ ViewManager::setFilter( const QString& filter )
 void
 ViewManager::applyFilter()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if ( currentPlaylistInterface() && currentPlaylistInterface()->filter() != m_filter )
         currentPlaylistInterface()->setFilter( m_filter );
@@ -558,7 +560,7 @@ ViewManager::setPage( ViewPage* page, bool trackHistory )
         m_pageHistory.insert( 0, page );
     }
 
-    qDebug() << "View page shown:" << page->title();
+    Davros::debug() << "View page shown:" << page->title();
     emit viewPageActivated( page );
 
     if ( page->isTemporaryPage() )
@@ -743,7 +745,7 @@ ViewManager::loadCurrentPlaylistSettings()
 void
 ViewManager::onWidgetDestroyed( QWidget* widget )
 {
-    qDebug() << "Destroyed child:" << widget << widget->metaObject()->className();
+    Davros::debug() << "Destroyed child:" << widget << widget->metaObject()->className();
 
     bool resetWidget = ( m_stack->currentWidget() == widget );
 

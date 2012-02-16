@@ -26,6 +26,8 @@
 #include "dynamic/DynamicPlaylist.h"
 #include "dynamic/DynamicControl.h"
 #include "network/servent.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -89,7 +91,7 @@ DatabaseCommand_SetDynamicPlaylistRevision::postCommitHook()
 {
     if ( source().isNull() || source()->collection().isNull() )
     {
-        tDebug() << "Source has gone offline, not emitting to GUI.";
+        Davros::debug() << "Source has gone offline, not emitting to GUI.";
         return;
     }
 
@@ -99,7 +101,7 @@ DatabaseCommand_SetDynamicPlaylistRevision::postCommitHook()
 
     Q_ASSERT( !source().isNull() );
     Q_ASSERT( !source()->collection().isNull() );
-    tLog() << "Postcommitting this playlist:" << playlistguid() << source().isNull();
+    Davros::debug() << "Postcommitting this playlist:" << playlistguid() << source().isNull();
 
     // private, but we are a friend. will recall itself in its own thread:
     dynplaylist_ptr playlist = source()->collection()->autoPlaylist( playlistguid() );
@@ -115,7 +117,7 @@ DatabaseCommand_SetDynamicPlaylistRevision::postCommitHook()
     // now that we separate them, if we get them as one and then get a changed mode, the playlist ends up in the wrong bucket in Collection.
     // so here we fix it if we have to.
     // HACK
-        tDebug() << "Does this need the 0.3->0.1 playlist category hack fix?" << ( rawPl->mode() == Static && source()->collection()->autoPlaylist( playlistguid() ).isNull() )
+        Davros::debug() << "Does this need the 0.3->0.1 playlist category hack fix?" << ( rawPl->mode() == Static && source()->collection()->autoPlaylist( playlistguid() ).isNull() )
         <<  ( rawPl->mode() == OnDemand && source()->collection()->station( playlistguid() ).isNull() )
                     << rawPl->mode() << source()->collection()->autoPlaylist( playlistguid() ).isNull() << source()->collection()->station( playlistguid() ).isNull();
     if( rawPl->mode() == Static && source()->collection()->autoPlaylist( playlistguid() ).isNull() ) // should be here
@@ -211,12 +213,12 @@ DatabaseCommand_SetDynamicPlaylistRevision::exec( DatabaseImpl* lib )
     query.exec();
 
     // delete all the old controls, replace with new onws
-    qDebug() << "Deleting controls with playlist id" << m_playlistguid;
+    Davros::debug() << "Deleting controls with playlist id" << m_playlistguid;
     TomahawkSqlQuery delQuery = lib->newquery();
     delQuery.prepare( "DELETE FROM dynamic_playlist_controls WHERE playlist = ?" );
     delQuery.addBindValue( m_playlistguid );
     if ( !delQuery.exec() )
-        tLog() << "Failed to delete controls from dynamic playlist controls table";
+        Davros::debug() << "Failed to delete controls from dynamic playlist controls table";
 
     TomahawkSqlQuery controlsQuery = lib->newquery();
     controlsQuery.prepare( "INSERT INTO dynamic_playlist_controls( id, playlist, selectedType, match, input ) "
@@ -225,7 +227,7 @@ DatabaseCommand_SetDynamicPlaylistRevision::exec( DatabaseImpl* lib )
     {
         foreach ( const dyncontrol_ptr& control, m_controls )
         {
-            qDebug() << "inserting dynamic control:" << control->id() << m_playlistguid << control->selectedType() << control->match() << control->input();
+            Davros::debug() << "inserting dynamic control:" << control->id() << m_playlistguid << control->selectedType() << control->match() << control->input();
             controlsQuery.addBindValue( control->id() );
             controlsQuery.addBindValue( m_playlistguid );
             controlsQuery.addBindValue( control->selectedType() );
@@ -240,7 +242,7 @@ DatabaseCommand_SetDynamicPlaylistRevision::exec( DatabaseImpl* lib )
         foreach ( const QVariant& v, m_controlsV )
         {
             QVariantMap control = v.toMap();
-            qDebug() << "inserting dynamic control from JSON:" << control.value( "id" ) << m_playlistguid << control.value( "selectedType" ) << control.value( "match" ) << control.value( "input" );
+            Davros::debug() << "inserting dynamic control from JSON:" << control.value( "id" ) << m_playlistguid << control.value( "selectedType" ) << control.value( "match" ) << control.value( "input" );
             controlsQuery.addBindValue( control.value( "id" ) );
             controlsQuery.addBindValue( m_playlistguid );
             controlsQuery.addBindValue( control.value( "selectedType" ) );
@@ -253,7 +255,7 @@ DatabaseCommand_SetDynamicPlaylistRevision::exec( DatabaseImpl* lib )
 
     if ( m_applied )
     {
-        tLog() << "updating dynamic playlist, optimistic locking okay";
+        Davros::debug() << "updating dynamic playlist, optimistic locking okay";
 
         TomahawkSqlQuery query2 = lib->newquery();
         query2.prepare( "UPDATE dynamic_playlist SET pltype = ?, plmode = ? WHERE guid = ?" );

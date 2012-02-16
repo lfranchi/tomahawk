@@ -19,6 +19,8 @@
  */
 
 #include "itunesparser.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "utils/tomahawkutils.h"
 #include "query.h"
@@ -90,7 +92,7 @@ ItunesParser::lookupItunesUri( const QString& link )
             return;
 
     }
-    tLog() << "Parsing itunes track:" << link;
+    Davros::debug() << "Parsing itunes track:" << link;
 
     QUrl url;
     DropJob::DropType type;
@@ -103,7 +105,7 @@ ItunesParser::lookupItunesUri( const QString& link )
         type = ( trackId.isEmpty() ? DropJob::Album : DropJob::Track );
         url = QUrl( QString( "http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStoreServices.woa/wa/wsLookup?id=%1&entity=song" ).arg( ( trackId.isEmpty() ? id : trackId ) ) );
     }
-    qDebug() << "Looking up..." << url.toString();
+    Davros::debug() << "Looking up..." << url.toString();
 
     QNetworkReply* reply = TomahawkUtils::nam()->get( QNetworkRequest( url ) );
     connect( reply, SIGNAL( finished() ), this, SLOT( itunesResponseLookupFinished() ) );
@@ -130,12 +132,12 @@ ItunesParser::itunesResponseLookupFinished()
 
         if ( !ok )
         {
-            tLog() << "Failed to parse json from Spotify track lookup:" << p.errorString() << "On line" << p.errorLine();
+            Davros::debug() << "Failed to parse json from Spotify track lookup:" << p.errorString() << "On line" << p.errorLine();
             checkTrackFinished();
             return;
         } else if ( !res.contains( "results" ) )
         {
-            tLog() << "No 'results' item in the itunes track lookup result... not doing anything";
+            Davros::debug() << "No 'results' item in the itunes track lookup result... not doing anything";
             checkTrackFinished();
             return;
         }
@@ -154,7 +156,7 @@ ItunesParser::itunesResponseLookupFinished()
                 album = ituneMap.value( "collectionName" ).toString();
                 if ( title.isEmpty() && artist.isEmpty() ) // don't have enough...
                 {
-                    tLog() << "Didn't get an artist and track name from itunes, not enough to build a query on. Aborting" << title << artist << album;
+                    Davros::debug() << "Didn't get an artist and track name from itunes, not enough to build a query on. Aborting" << title << artist << album;
 
                 }else{
 
@@ -166,7 +168,7 @@ ItunesParser::itunesResponseLookupFinished()
 
     } else
     {
-        tLog() << "Error in network request to Itunes for track decoding:" << r->errorString();
+        Davros::debug() << "Error in network request to Itunes for track decoding:" << r->errorString();
     }
 
     checkTrackFinished();

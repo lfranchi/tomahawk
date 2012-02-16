@@ -25,6 +25,8 @@
 #include "database/database.h"
 #include "database/databaseimpl.h"
 #include "database/databasecommand_allalbums.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -138,7 +140,7 @@ TreeProxyModelPlaylistInterface::siblingItem( int itemsAway, bool readOnly )
         TreeModelItem* item = proxyModel->itemFromIndex( proxyModel->mapToSource( idx ) );
         if ( item && !item->result().isNull() && item->result()->isOnline() )
         {
-            qDebug() << "Next PlaylistItem found:" << item->result()->url();
+            Davros::debug() << "Next PlaylistItem found:" << item->result()->url();
             if ( !readOnly )
                 proxyModel->setCurrentIndex( idx );
             return item->result();

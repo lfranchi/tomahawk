@@ -23,6 +23,8 @@
 #include "infosystemcache.h"
 #include "infosystemworker.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 namespace Tomahawk
@@ -57,7 +59,7 @@ InfoSystem::InfoSystem( QObject *parent )
 {
     s_instance = this;
 
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     m_infoSystemCacheThreadController = new InfoSystemCacheThread( this );
     m_infoSystemCacheThreadController->start( QThread::IdlePriority );
@@ -71,7 +73,7 @@ InfoSystem::InfoSystem( QObject *parent )
 
 InfoSystem::~InfoSystem()
 {
-    tDebug() << Q_FUNC_INFO << " beginning";
+    Davros::debug() << Q_FUNC_INFO << " beginning";
 
     if ( m_infoSystemWorkerThreadController->worker() )
     {
@@ -81,7 +83,7 @@ InfoSystem::~InfoSystem()
         delete m_infoSystemWorkerThreadController;
         m_infoSystemWorkerThreadController = 0;
     }
-    tDebug() << Q_FUNC_INFO << " done deleting worker";
+    Davros::debug() << Q_FUNC_INFO << " done deleting worker";
 
     if( m_infoSystemCacheThreadController->cache() )
     {
@@ -92,14 +94,14 @@ InfoSystem::~InfoSystem()
         m_infoSystemCacheThreadController = 0;
     }
 
-    tDebug() << Q_FUNC_INFO << " done deleting cache";
+    Davros::debug() << Q_FUNC_INFO << " done deleting cache";
 }
 
 
 void
 InfoSystem::init()
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( !m_infoSystemCacheThreadController->cache() || !m_infoSystemWorkerThreadController->worker() )
     {
         QTimer::singleShot( 0, this, SLOT( init() ) );
@@ -129,7 +131,7 @@ InfoSystem::init()
 bool
 InfoSystem::getInfo( const InfoRequestData &requestData )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( !m_inited || !m_infoSystemWorkerThreadController->worker() )
     {
         init();
@@ -166,7 +168,7 @@ InfoSystem::getInfo( const QString &caller, const QVariantMap &customData, const
 bool
 InfoSystem::pushInfo( const QString &caller, const InfoType type, const QVariant& input )
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( !m_inited || !m_infoSystemWorkerThreadController->worker() )
     {
         init();
@@ -198,13 +200,13 @@ InfoSystem::pushInfo( const QString &caller, const InfoTypeMap &input )
 InfoSystemCacheThread::InfoSystemCacheThread( QObject *parent )
     : QThread( parent )
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 
 InfoSystemCacheThread::~InfoSystemCacheThread()
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 
@@ -230,12 +232,12 @@ InfoSystemCacheThread::cache() const
 InfoSystemWorkerThread::InfoSystemWorkerThread( QObject *parent )
     : QThread( parent )
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 InfoSystemWorkerThread::~InfoSystemWorkerThread()
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 void

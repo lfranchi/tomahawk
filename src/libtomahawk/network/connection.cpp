@@ -22,6 +22,8 @@
 #include <QtCore/QThread>
 
 #include "network/servent.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define PROTOVER "4" // must match remote peer, or we can't talk.
@@ -48,7 +50,7 @@ Connection::Connection( Servent* parent )
     , m_tx_bytes_last( 0 )
 {
     moveToThread( m_servent->thread() );
-    qDebug() << "CTOR Connection (super)" << thread();
+    Davros::debug() << "CTOR Connection (super)" << thread();
 
     connect( &m_msgprocessor_out, SIGNAL( ready( msg_ptr ) ),
              SLOT( sendMsg_now( msg_ptr ) ), Qt::QueuedConnection );
@@ -63,10 +65,10 @@ Connection::Connection( Servent* parent )
 
 Connection::~Connection()
 {
-    tDebug() << "DTOR connection (super)" << id() << thread() << m_sock.isNull();
+    Davros::debug() << "DTOR connection (super)" << id() << thread() << m_sock.isNull();
     if( !m_sock.isNull() )
     {
-//        qDebug() << "deleteLatering sock" << m_sock;
+//        Davros::debug() << "deleteLatering sock" << m_sock;
         m_sock->deleteLater();
     }
 
@@ -77,14 +79,14 @@ Connection::~Connection()
 void
 Connection::handleIncomingQueueEmpty()
 {
-    //qDebug() << Q_FUNC_INFO << "bavail" << m_sock->bytesAvailable()
+    //Davros::debug() << Q_FUNC_INFO << "bavail" << m_sock->bytesAvailable()
     //         << "isopen" << m_sock->isOpen()
     //         << "m_peer_disconnected" << m_peer_disconnected
     //         << "bytes rx" << bytesReceived();
 
     if( !m_sock.isNull() && m_sock->bytesAvailable() == 0 && m_peer_disconnected )
     {
-        qDebug() << "No more data to read, peer disconnected. shutting down connection."
+        Davros::debug() << "No more data to read, peer disconnected. shutting down connection."
                  << "bytesavail" << m_sock->bytesAvailable()
                  << "bytesrx" << m_rx_bytes;
         shutdown();
@@ -98,7 +100,7 @@ Connection::setFirstMessage( const QVariant& m )
 {
     QJson::Serializer ser;
     const QByteArray ba = ser.serialize( m );
-    //qDebug() << "first msg json len:" << ba.length();
+    //Davros::debug() << "first msg json len:" << ba.length();
     setFirstMessage( Msg::factory( ba, Msg::JSON ) );
 }
 
@@ -107,7 +109,7 @@ void
 Connection::setFirstMessage( msg_ptr m )
 {
     m_firstmsg = m;
-    //qDebug() << id() << " first msg set to " << QString::fromAscii(m_firstmsg->payload())
+    //Davros::debug() << id() << " first msg set to " << QString::fromAscii(m_firstmsg->payload())
     //        << "msg len:" << m_firstmsg->length() ;
 }
 
@@ -115,22 +117,22 @@ Connection::setFirstMessage( msg_ptr m )
 void
 Connection::shutdown( bool waitUntilSentAll )
 {
-    qDebug() << Q_FUNC_INFO << waitUntilSentAll << id();
+    Davros::debug() << Q_FUNC_INFO << waitUntilSentAll << id();
     if ( m_do_shutdown )
     {
-        //qDebug() << id() << " already shutting down";
+        //Davros::debug() << id() << " already shutting down";
         return;
     }
 
     m_do_shutdown = true;
     if ( !waitUntilSentAll )
     {
-//        qDebug() << "Shutting down immediately " << id();
+//        Davros::debug() << "Shutting down immediately " << id();
         actualShutdown();
     }
     else
     {
-        qDebug() << "Shutting down after transfer complete " << id()
+        Davros::debug() << "Shutting down after transfer complete " << id()
                  << "Actual/Desired" << m_tx_bytes << m_tx_bytes_requested;
 
         bytesWritten( 0 ); // trigger shutdown if we've already sent everything
@@ -143,7 +145,7 @@ Connection::shutdown( bool waitUntilSentAll )
 void
 Connection::actualShutdown()
 {
-    qDebug() << Q_FUNC_INFO << m_actually_shutting_down << id();
+    Davros::debug() << Q_FUNC_INFO << m_actually_shutting_down << id();
     if ( m_actually_shutting_down )
     {
         return;
@@ -155,7 +157,7 @@ Connection::actualShutdown()
         m_sock->disconnectFromHost();
     }
 
-//    qDebug() << "EMITTING finished()";
+//    Davros::debug() << "EMITTING finished()";
     emit finished();
 }
 
@@ -163,7 +165,7 @@ Connection::actualShutdown()
 void
 Connection::markAsFailed()
 {
-    qDebug() << "Connection" << id() << "FAILED ***************" << thread();
+    Davros::debug() << "Connection" << id() << "FAILED ***************" << thread();
     emit failed();
     shutdown();
 }
@@ -193,7 +195,7 @@ Connection::authCheckTimeout()
     if( m_ready )
         return;
 
-    qDebug() << "Closing connection, not authed in time.";
+    Davros::debug() << "Closing connection, not authed in time.";
     shutdown();
 }
 
@@ -201,7 +203,7 @@ Connection::authCheckTimeout()
 void
 Connection::doSetup()
 {
-    qDebug() << Q_FUNC_INFO << thread();
+    Davros::debug() << Q_FUNC_INFO << thread();
     /*
         New connections can be created from other thread contexts, such as
         when AudioEngine calls getIODevice.. - we need to ensure that connections
@@ -212,9 +214,9 @@ Connection::doSetup()
     if( QThread::currentThread() != m_servent->thread() )
     {
         // Connections should always be in the same thread as the servent.
-        qDebug() << "Fixing thead affinity...";
+        Davros::debug() << "Fixing thead affinity...";
         moveToThread( m_servent->thread() );
-        qDebug() << Q_FUNC_INFO  << thread();
+        Davros::debug() << Q_FUNC_INFO  << thread();
     }
 
     //stats timer calculates BW used by this connection
@@ -261,7 +263,7 @@ Connection::doSetup()
 void
 Connection::socketDisconnected()
 {
-    tDebug() << "SOCKET DISCONNECTED" << this->name() << id()
+    Davros::debug() << "SOCKET DISCONNECTED" << this->name() << id()
              << "shutdown will happen after incoming queue empties."
              << "bytesavail:" << m_sock->bytesAvailable()
              << "bytesRecvd" << bytesReceived();
@@ -280,7 +282,7 @@ Connection::socketDisconnected()
 void
 Connection::socketDisconnectedError( QAbstractSocket::SocketError e )
 {
-    qDebug() << "SOCKET ERROR CODE" << e << this->name() << "CALLING Connection::shutdown(false)";
+    Davros::debug() << "SOCKET ERROR CODE" << e << this->name() << "CALLING Connection::shutdown(false)";
 
     if ( e == QAbstractSocket::RemoteHostClosedError )
         return;
@@ -311,7 +313,7 @@ Connection::setId( const QString& id )
 void
 Connection::readyRead()
 {
-//    qDebug() << "readyRead, bytesavail:" << m_sock->bytesAvailable();
+//    Davros::debug() << "readyRead, bytesavail:" << m_sock->bytesAvailable();
 
     if( m_msg.isNull() )
     {
@@ -321,7 +323,7 @@ Connection::readyRead()
         char msgheader[ Msg::headerSize() ];
         if( m_sock->read( (char*) &msgheader, Msg::headerSize() ) != Msg::headerSize() )
         {
-            qDebug() << "Failed reading msg header";
+            Davros::debug() << "Failed reading msg header";
             this->markAsFailed();
             return;
         }
@@ -336,7 +338,7 @@ Connection::readyRead()
     QByteArray ba = m_sock->read( m_msg->length() );
     if( ba.length() != (qint32)m_msg->length() )
     {
-        qDebug() << "Failed to read full msg payload";
+        Davros::debug() << "Failed to read full msg payload";
         this->markAsFailed();
         return;
     }
@@ -361,7 +363,7 @@ Connection::handleReadMsg()
         m_msg->payload() == "ok" )
     {
         m_ready = true;
-        qDebug() << "Connection" << id() << "READY";
+        Davros::debug() << "Connection" << id() << "READY";
         setup();
         emit ready();
     }
@@ -373,7 +375,7 @@ Connection::handleReadMsg()
         {
             sendMsg( Msg::factory( "ok", Msg::SETUP ) );
             m_ready = true;
-            qDebug() << "Connection" << id() << "READY";
+            Davros::debug() << "Connection" << id() << "READY";
             setup();
             emit ready();
         }
@@ -409,7 +411,7 @@ Connection::sendMsg( msg_ptr msg )
 {
     if( m_do_shutdown )
     {
-        qDebug() << Q_FUNC_INFO << "SHUTTING DOWN, NOT SENDING msg flags:"
+        Davros::debug() << Q_FUNC_INFO << "SHUTTING DOWN, NOT SENDING msg flags:"
                 << (int)msg->flags() << "length:" << msg->length() << id();
         return;
     }
@@ -422,20 +424,20 @@ Connection::sendMsg( msg_ptr msg )
 void
 Connection::sendMsg_now( msg_ptr msg )
 {
-    //qDebug() << Q_FUNC_INFO << thread() << QThread::currentThread();
+    //Davros::debug() << Q_FUNC_INFO << thread() << QThread::currentThread();
     Q_ASSERT( QThread::currentThread() == thread() );
 //    Q_ASSERT( this->isRunning() );
 
     if ( m_sock.isNull() || !m_sock->isOpen() || !m_sock->isWritable() )
     {
-        qDebug() << "***** Socket problem, whilst in sendMsg(). Cleaning up. *****";
+        Davros::debug() << "***** Socket problem, whilst in sendMsg(). Cleaning up. *****";
         shutdown( false );
         return;
     }
 
     if ( !msg->write( m_sock.data() ) )
     {
-        //qDebug() << "Error writing to socket in sendMsg() *************";
+        //Davros::debug() << "Error writing to socket in sendMsg() *************";
         shutdown( false );
         return;
     }

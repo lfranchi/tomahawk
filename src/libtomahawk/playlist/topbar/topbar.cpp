@@ -26,6 +26,8 @@
 #include <QFile>
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define MAXDUDES 3
@@ -152,7 +154,7 @@ TopBar::resizeEvent( QResizeEvent* e )
 void
 TopBar::fadeInDude( unsigned int i )
 {
-//    qDebug() << Q_FUNC_INFO << i;
+//    Davros::debug() << Q_FUNC_INFO << i;
 
     QLabel* dude = m_dudes.at( i );
     QPropertyAnimation* ani = new QPropertyAnimation( dude, "pos" );
@@ -161,7 +163,7 @@ TopBar::fadeInDude( unsigned int i )
     ani->setStartValue( QPoint( -10,0 ) );
     ani->setEndValue( QPoint( DUDEX( i+1 ), 0 ) );
 
-    qDebug() << "Animating from" << ani->startValue() << "to" << ani->endValue();
+    Davros::debug() << "Animating from" << ani->startValue() << "to" << ani->endValue();
     connect( ani, SIGNAL( finished() ), ani, SLOT( deleteLater() ) );
     ani->start();
 }
@@ -170,7 +172,7 @@ TopBar::fadeInDude( unsigned int i )
 void
 TopBar::fadeOutDude( unsigned int i )
 {
-//    qDebug() << Q_FUNC_INFO << i;
+//    Davros::debug() << Q_FUNC_INFO << i;
 
     QLabel* dude = m_dudes.at( i );
     QPropertyAnimation* ani = new QPropertyAnimation( dude, "pos" );
@@ -179,7 +181,7 @@ TopBar::fadeOutDude( unsigned int i )
     ani->setStartValue( dude->pos() );
     ani->setEndValue( QPoint( -10, 0 ) );
 
-    qDebug() << "Animating from" << ani->startValue() << "to" << ani->endValue();
+    Davros::debug() << "Animating from" << ani->startValue() << "to" << ani->endValue();
     connect( ani, SIGNAL( finished() ), ani, SLOT( deleteLater() ) );
     ani->start();
 }
@@ -188,7 +190,7 @@ TopBar::fadeOutDude( unsigned int i )
 void
 TopBar::setNumSources( unsigned int i )
 {
-//    qDebug() << Q_FUNC_INFO << i;
+//    Davros::debug() << Q_FUNC_INFO << i;
 
     // Dude0 Dude1 Dude2
     ui->statsLabelNumSources->setText( QString( "%L1 %2" ).arg( i ).arg( tr( "Sources" ) ) );
@@ -250,7 +252,7 @@ TopBar::setNumShown( unsigned int i )
 void
 TopBar::addSource()
 {
-//    qDebug() << Q_FUNC_INFO;
+//    Davros::debug() << Q_FUNC_INFO;
     setNumSources( m_sources + 1 );
 }
 
@@ -258,7 +260,7 @@ TopBar::addSource()
 void
 TopBar::removeSource()
 {
-//    qDebug() << Q_FUNC_INFO;
+//    Davros::debug() << Q_FUNC_INFO;
     Q_ASSERT( m_sources > 0 );
     setNumSources( m_sources - 1 );
 }
@@ -301,7 +303,7 @@ TopBar::setFilter( const QString& filter )
 void
 TopBar::onModeChanged( Tomahawk::PlaylistInterface::ViewMode mode )
 {
-    qDebug() << Q_FUNC_INFO << mode;
+    Davros::debug() << Q_FUNC_INFO << mode;
     switch ( mode )
     {
         case Tomahawk::PlaylistInterface::Flat:

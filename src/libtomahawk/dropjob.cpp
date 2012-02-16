@@ -28,6 +28,8 @@
 #include "utils/rdioparser.h"
 #include "utils/m3uloader.h"
 #include "utils/shortenedlinkparser.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "utils/tomahawkutils.h"
 #include "globalactionmanager.h"
@@ -60,7 +62,7 @@ DropJob::DropJob( QObject *parent )
 
 DropJob::~DropJob()
 {
-    qDebug() << "destryong DropJob";
+    Davros::debug() << "destryong DropJob";
 }
 
 
@@ -290,7 +292,7 @@ DropJob::tracksFromQueryList( const QMimeData* data )
         query_ptr* query = reinterpret_cast<query_ptr*>(qptr);
         if ( query && !query->isNull() )
         {
-            tDebug() << "Dropped query item:" << query->data()->artist() << "-" << query->data()->track();
+            Davros::debug() << "Dropped query item:" << query->data()->artist() << "-" << query->data()->track();
 
             if ( m_top10 )
             {
@@ -330,7 +332,7 @@ DropJob::tracksFromResultList( const QMimeData* data )
         result_ptr* result = reinterpret_cast<result_ptr*>(qptr);
         if ( result && !result->isNull() )
         {
-            tDebug() << "Dropped result item:" << result->data()->artist()->name() << "-" << result->data()->track();
+            Davros::debug() << "Dropped result item:" << result->data()->artist()->name() << "-" << result->data()->track();
             query_ptr q = result->data()->toQuery();
 
             if ( m_top10 )
@@ -420,7 +422,7 @@ DropJob::tracksFromMixedData( const QMimeData *data )
     while ( !stream.atEnd() )
     {
         stream >> mimeType;
-        qDebug() << "mimetype is" << mimeType;
+        Davros::debug() << "mimetype is" << mimeType;
 
         QByteArray singleData;
         QDataStream singleStream( &singleData, QIODevice::WriteOnly );
@@ -440,14 +442,14 @@ DropJob::tracksFromMixedData( const QMimeData *data )
             QString album;
             stream >> album;
             singleStream << album;
-            qDebug() << "got artist" << artist << "and album" << album;
+            Davros::debug() << "got artist" << artist << "and album" << album;
         }
         else if ( mimeType == "application/tomahawk.metadata.artist" )
         {
             QString artist;
             stream >> artist;
             singleStream << artist;
-            qDebug() << "got artist" << artist;
+            Davros::debug() << "got artist" << artist;
         }
 
         singleMimeData.setData( mimeType, singleData );
@@ -461,18 +463,18 @@ DropJob::tracksFromMixedData( const QMimeData *data )
 void
 DropJob::handleM3u( const QString& fileUrls )
 {
-    tDebug() << Q_FUNC_INFO << "Got M3U playlist!" << fileUrls;
+    Davros::debug() << Q_FUNC_INFO << "Got M3U playlist!" << fileUrls;
     QStringList urls = fileUrls.split( QRegExp( "\n" ), QString::SkipEmptyParts );
 
     if ( dropAction() == Default )
         setDropAction( Create );
 
-    tDebug() << "Got a M3U playlist url to parse!" << urls;
+    Davros::debug() << "Got a M3U playlist url to parse!" << urls;
     M3uLoader* m = new M3uLoader( urls, dropAction() == Create, this );
 
     if ( dropAction() == Append )
     {
-        tDebug() << Q_FUNC_INFO << "Trying to append contents from" << urls;
+        Davros::debug() << Q_FUNC_INFO << "Trying to append contents from" << urls;
         connect( m, SIGNAL( tracks( QList<Tomahawk::query_ptr> ) ), this, SLOT( onTracksAdded( QList< Tomahawk::query_ptr > ) ) );
         m_queryCount++;
     }
@@ -483,7 +485,7 @@ DropJob::handleM3u( const QString& fileUrls )
 void
 DropJob::handleXspfs( const QString& fileUrls )
 {
-    tDebug() << Q_FUNC_INFO << "Got XSPF playlist!" << fileUrls;
+    Davros::debug() << Q_FUNC_INFO << "Got XSPF playlist!" << fileUrls;
     bool error = false;
     QStringList urls = fileUrls.split( QRegExp( "\n" ), QString::SkipEmptyParts );
 
@@ -510,12 +512,12 @@ DropJob::handleXspfs( const QString& fileUrls )
         else
         {
             error = true;
-            tLog() << "Failed to load or parse dropped XSPF";
+            Davros::debug() << "Failed to load or parse dropped XSPF";
         }
 
         if ( dropAction() == Append && !error && l )
         {
-            qDebug() << Q_FUNC_INFO << "Trying to append XSPF";
+            Davros::debug() << Q_FUNC_INFO << "Trying to append XSPF";
             connect( l, SIGNAL( tracks( QList<Tomahawk::query_ptr> ) ), this, SLOT( onTracksAdded( QList< Tomahawk::query_ptr > ) ) );
             m_queryCount++;
         }
@@ -527,21 +529,21 @@ void
 DropJob::handleSpotifyUrls( const QString& urlsRaw )
 {
     QStringList urls = urlsRaw.split( QRegExp( "\\s+" ), QString::SkipEmptyParts );
-    qDebug() << "Got spotify browse uris!" << urls;
+    Davros::debug() << "Got spotify browse uris!" << urls;
 
     /// Lets allow parsing all spotify uris here, if parse server is not available
     /// fallback to spotify metadata for tracks /hugo
     if ( dropAction() == Default )
         setDropAction( Create );
 
-    tDebug() << "Got a spotify browse uri in dropjob!" << urls;
+    Davros::debug() << "Got a spotify browse uri in dropjob!" << urls;
     SpotifyParser* spot = new SpotifyParser( urls, dropAction() == Create, this );
     spot->setSingleMode( false );
 
     /// This currently supports draging and dropping a spotify playlist and artist
     if ( dropAction() == Append )
     {
-        tDebug() << Q_FUNC_INFO << "Asking for spotify browse contents from" << urls;
+        Davros::debug() << Q_FUNC_INFO << "Asking for spotify browse contents from" << urls;
         connect( spot, SIGNAL( tracks( QList<Tomahawk::query_ptr> ) ), this, SLOT( onTracksAdded( QList< Tomahawk::query_ptr > ) ) );
         m_queryCount++;
     }
@@ -552,7 +554,7 @@ void
 DropJob::handleRdioUrls( const QString& urlsRaw )
 {
     QStringList urls = urlsRaw.split( QRegExp( "\\s+" ), QString::SkipEmptyParts );
-    qDebug() << "Got Rdio urls!" << urls;
+    Davros::debug() << "Got Rdio urls!" << urls;
 
     if ( dropAction() == Default )
         setDropAction( Create );
@@ -570,7 +572,7 @@ DropJob::handleGroovesharkUrls ( const QString& urlsRaw )
 {
 #ifdef QCA2_FOUND
     QStringList urls = urlsRaw.split( QRegExp( "\\s+" ), QString::SkipEmptyParts );
-    tDebug() << "Got Grooveshark urls!" << urls;
+    Davros::debug() << "Got Grooveshark urls!" << urls;
     
     if ( dropAction() == Default )
         setDropAction( Create );
@@ -580,12 +582,12 @@ DropJob::handleGroovesharkUrls ( const QString& urlsRaw )
 
     if ( dropAction() == Append )
     {
-        tDebug() << Q_FUNC_INFO << "Asking for grooveshark contents from" << urls;
+        Davros::debug() << Q_FUNC_INFO << "Asking for grooveshark contents from" << urls;
         connect( groove, SIGNAL( tracks( QList<Tomahawk::query_ptr> ) ), this, SLOT( onTracksAdded( QList< Tomahawk::query_ptr > ) ) );
         m_queryCount++;
     }
 #else
-    tLog() << "Tomahawk compiled without QCA support, cannot use groovesharkparser";
+    Davros::debug() << "Tomahawk compiled without QCA support, cannot use groovesharkparser";
 #endif
 }
 
@@ -620,7 +622,7 @@ DropJob::handleTrackUrls( const QString& urls )
     {
         QStringList tracks = urls.split( QRegExp( "\\s+" ), QString::SkipEmptyParts );
 
-        tDebug() << "Got a list of itunes urls!" << tracks;
+        Davros::debug() << "Got a list of itunes urls!" << tracks;
         ItunesParser* itunes = new ItunesParser( tracks, this );
         connect( itunes, SIGNAL( tracks( QList<Tomahawk::query_ptr> ) ), this, SLOT( onTracksAdded( QList< Tomahawk::query_ptr > ) ) );
         m_queryCount++;
@@ -629,7 +631,7 @@ DropJob::handleTrackUrls( const QString& urls )
     {
         QStringList tracks = urls.split( QRegExp( "\\s+" ), QString::SkipEmptyParts );
 
-        tDebug() << "Got a list of spotify urls!" << tracks;
+        Davros::debug() << "Got a list of spotify urls!" << tracks;
         SpotifyParser* spot = new SpotifyParser( tracks, this );
         connect( spot, SIGNAL( tracks( QList<Tomahawk::query_ptr> ) ), this, SLOT( onTracksAdded( QList< Tomahawk::query_ptr > ) ) );
         m_queryCount++;
@@ -638,7 +640,7 @@ DropJob::handleTrackUrls( const QString& urls )
     {
         QStringList tracks = urls.split( QRegExp( "\\s+" ), QString::SkipEmptyParts );
 
-        tDebug() << "Got a list of rdio urls!" << tracks;
+        Davros::debug() << "Got a list of rdio urls!" << tracks;
         RdioParser* rdio = new RdioParser( this );
         connect( rdio, SIGNAL( tracks( QList<Tomahawk::query_ptr> ) ), this, SLOT( onTracksAdded( QList< Tomahawk::query_ptr > ) ) );
         m_queryCount++;
@@ -649,7 +651,7 @@ DropJob::handleTrackUrls( const QString& urls )
     {
         QStringList tracks = urls.split( QRegExp( "\\s+" ), QString::SkipEmptyParts );
 
-        tDebug() << "Got a list of shortened urls!" << tracks;
+        Davros::debug() << "Got a list of shortened urls!" << tracks;
         ShortenedLinkParser* parser = new ShortenedLinkParser( tracks, this );
         connect( parser, SIGNAL( urls( QStringList ) ), this, SLOT( expandedUrls( QStringList ) ) );
         m_queryCount++;
@@ -668,7 +670,7 @@ DropJob::expandedUrls( QStringList urls )
 void
 DropJob::onTracksAdded( const QList<Tomahawk::query_ptr>& tracksList )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( m_dropJob )
     {
         m_dropJob->setFinished();
@@ -741,14 +743,14 @@ DropJob::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData requestData, QVar
 
         QString artist = artistInfo["artist"];
 
-        qDebug() << "Got requestData response for artist" << artist << output;
+        Davros::debug() << "Got requestData response for artist" << artist << output;
 
         QList< query_ptr > results;
 
         int i = 0;
         foreach ( const QVariant& title, output.toMap().value( "tracks" ).toList() )
         {
-            qDebug() << "got title" << title;
+            Davros::debug() << "got title" << title;
             results << Query::get( artist, title.toString(), QString(), uuid() );
 
             if ( ++i == 10 ) // Only getting top ten for now. Would make sense to make it configurable

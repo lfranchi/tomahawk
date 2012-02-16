@@ -22,6 +22,8 @@
 #include <QMenu>
 
 #include "tomahawksettings.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -134,7 +136,7 @@ ViewHeader::onToggleResizeColumns()
 void
 ViewHeader::toggleVisibility( int index )
 {
-    qDebug() << Q_FUNC_INFO << index;
+    Davros::debug() << Q_FUNC_INFO << index;
 
     if ( isSectionHidden( index ) )
         showSection( index );

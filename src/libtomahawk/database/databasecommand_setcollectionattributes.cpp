@@ -66,7 +66,7 @@ DatabaseCommand_SetCollectionAttributes::exec( DatabaseImpl *lib )
         return;
 
     QString queryStr = QString( "INSERT INTO collection_attributes ( id, k, v ) VALUES( %1, \"%2\", \"%3\" )" ).arg( sourceStr ).arg( typeStr ).arg( QString::fromUtf8( m_id ) );
-    qDebug() << "Doing query:" << queryStr;
+    Davros::debug() << "Doing query:" << queryStr;
     query.exec( queryStr );
 }
 

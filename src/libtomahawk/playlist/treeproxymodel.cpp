@@ -26,6 +26,8 @@
 #include "database/database.h"
 #include "database/databaseimpl.h"
 #include "database/databasecommand_allalbums.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -56,7 +58,7 @@ void
 TreeProxyModel::setSourceModel( QAbstractItemModel* sourceModel )
 {
     Q_UNUSED( sourceModel );
-    qDebug() << "Explicitly use setSourceTreeModel instead";
+    Davros::debug() << "Explicitly use setSourceTreeModel instead";
     Q_ASSERT( false );
 }
 
@@ -333,7 +335,7 @@ TreeProxyModel::lessThan( const QModelIndex& left, const QModelIndex& right ) co
 void
 TreeProxyModel::removeIndex( const QModelIndex& index )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if ( !sourceModel() )
         return;

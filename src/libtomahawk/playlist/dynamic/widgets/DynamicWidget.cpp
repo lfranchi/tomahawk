@@ -42,6 +42,8 @@
 #include "DynamicSetupWidget.h"
 #include "audiocontrols.h"
 #include "LoadingSpinner.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -184,7 +186,7 @@ void
 DynamicWidget::onRevisionLoaded( const Tomahawk::DynamicPlaylistRevision& rev )
 {
     Q_UNUSED( rev );
-    qDebug() << "DynamicWidget::onRevisionLoaded";
+    Davros::debug() << "DynamicWidget::onRevisionLoaded";
     if ( m_model->ignoreRevision( rev.revisionguid ) )
     {
         m_model->removeRevisionFromIgnore( rev.revisionguid );
@@ -426,7 +428,7 @@ DynamicWidget::steeringChanged()
         return;
 
     const int upcoming = m_view->proxyModel()->rowCount( QModelIndex() ) - 1 - playing.row();
-    tDebug() << "Removing tracks after current in station, found" << upcoming;
+    Davros::debug() << "Removing tracks after current in station, found" << upcoming;
 
     QModelIndexList toRemove;
     for ( int i = playing.row() + 1; i < m_view->proxyModel()->rowCount( QModelIndex() ); i++ )

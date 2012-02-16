@@ -25,6 +25,8 @@
 #include <QLabel>
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define ANIM_LENGTH 300

@@ -31,6 +31,8 @@
 #include <QApplication>
 #include <QClipboard>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 

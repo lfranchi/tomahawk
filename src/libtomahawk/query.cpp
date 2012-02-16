@@ -34,6 +34,8 @@
 #include "sourcelist.h"
 #include "audio/audioengine.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -153,7 +155,7 @@ Query::addResults( const QList< Tomahawk::result_ptr >& newresults )
         {
             if ( !smt.contains( result->mimetype() ) )
             {
-                tDebug() << "Won't accept result, unsupported mimetype" << result->toString() << result->mimetype();
+                Davros::debug() << "Won't accept result, unsupported mimetype" << result->toString() << result->mimetype();
             }
             else
                 m_results.append( result );

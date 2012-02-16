@@ -51,7 +51,7 @@ LatchManager::isLatched( const source_ptr& src )
 void
 LatchManager::latchRequest( const source_ptr& source )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( isLatched( source ) )
         return;
 

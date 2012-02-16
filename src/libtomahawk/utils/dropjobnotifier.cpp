@@ -18,6 +18,8 @@
 
 #include "dropjobnotifier.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "utils/tomahawkutils.h"
 #include "query.h"

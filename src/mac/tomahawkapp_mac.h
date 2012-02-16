@@ -19,6 +19,9 @@
 #ifndef TOMAHAWKAPP_MAC_H
 #define TOMAHAWKAPP_MAC_H
 
+#include <QDebug>
+#include <QStringList>
+
 // this file and tomahawk_app.mm copied and inspired by mac_startup.* in clementine player,
 // copyright David Sansome 2010
 

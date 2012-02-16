@@ -24,6 +24,8 @@
 #include "tomahawksettings.h"
 #include "database/databasecommand_collectionattributes.h"
 #include "database/database.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "sourcelist.h"
 #include <QFile>
@@ -143,7 +145,7 @@ EchonestGenerator::setupCatalogs()
 {
     if ( s_catalogs == 0 )
         s_catalogs = new CatalogManager( 0 );
-//    qDebug() << "ECHONEST:" << m_logo.size();
+//    Davros::debug() << "ECHONEST:" << m_logo.size();
 }
 
 dyncontrol_ptr
@@ -174,10 +176,10 @@ void
 EchonestGenerator::generate( int number )
 {
     // convert to an echonest query, and fire it off
-    qDebug() << Q_FUNC_INFO;
-    qDebug() << "Generating playlist with" << m_controls.size();
+    Davros::debug() << Q_FUNC_INFO;
+    Davros::debug() << "Generating playlist with" << m_controls.size();
     foreach( const dyncontrol_ptr& ctrl, m_controls )
-        qDebug() << ctrl->selectedType() << ctrl->match() << ctrl->input();
+        Davros::debug() << ctrl->selectedType() << ctrl->match() << ctrl->input();
 
     setProperty( "number", number ); //HACK
 
@@ -216,7 +218,7 @@ EchonestGenerator::doGenerate( const Echonest::DynamicPlaylist::PlaylistParams& 
     Echonest::DynamicPlaylist::PlaylistParams params = paramsIn;
     params.append( Echonest::DynamicPlaylist::PlaylistParamData( Echonest::DynamicPlaylist::Results, number ) );
     QNetworkReply* reply = Echonest::DynamicPlaylist::staticPlaylist( params );
-    qDebug() << "Generating a static playlist from echonest!" << reply->url().toString();
+    Davros::debug() << "Generating a static playlist from echonest!" << reply->url().toString();
     connect( reply, SIGNAL( finished() ), this, SLOT( staticFinished() ) );
 }
 
@@ -227,7 +229,7 @@ EchonestGenerator::doStartOnDemand( const Echonest::DynamicPlaylist::PlaylistPar
     disconnect( this, SIGNAL( paramsGenerated( Echonest::DynamicPlaylist::PlaylistParams ) ), this, SLOT( doStartOnDemand( Echonest::DynamicPlaylist::PlaylistParams ) ) );
 
     QNetworkReply* reply = m_dynPlaylist->start( params );
-    qDebug() << "starting a dynamic playlist from echonest!" << reply->url().toString();
+    Davros::debug() << "starting a dynamic playlist from echonest!" << reply->url().toString();
     connect( reply, SIGNAL( finished() ), this, SLOT( dynamicStarted() ) );
 }
 
@@ -243,13 +245,13 @@ EchonestGenerator::fetchNext( int rating )
 
     QNetworkReply* reply;
     if( m_steeredSinceLastTrack ) {
-        qDebug() << "Steering dynamic playlist!" << m_steerData.first << m_steerData.second;
+        Davros::debug() << "Steering dynamic playlist!" << m_steerData.first << m_steerData.second;
         reply = m_dynPlaylist->fetchNextSong( Echonest::DynamicPlaylist::DynamicControls() << m_steerData );
         m_steeredSinceLastTrack = false;
     } else {
         reply = m_dynPlaylist->fetchNextSong( rating );
     }
-    qDebug() << "getting next song from echonest" << reply->url().toString();
+    Davros::debug() << "getting next song from echonest" << reply->url().toString();
     connect( reply, SIGNAL( finished() ), this, SLOT( dynamicFetched() ) );
 }
 
@@ -274,7 +276,7 @@ EchonestGenerator::staticFinished()
 
     QList< query_ptr > queries;
     foreach( const Echonest::Song& song, songs ) {
-        qDebug() << "EchonestGenerator got song:" << song;
+        Davros::debug() << "EchonestGenerator got song:" << song;
         queries << queryFromSong( song );
     }
 
@@ -342,9 +344,9 @@ EchonestGenerator::songLookupFinished()
         Echonest::SongList songs = Echonest::Song::parseSearch( r );
         if( songs.size() > 0 ) {
             id = songs.first().id();
-            qDebug() << "Got ID for song:" << songs.first() << "from search:" << search;;
+            Davros::debug() << "Got ID for song:" << songs.first() << "from search:" << search;;
         } else {
-            qDebug() << "Got no songs from our song id lookup.. :(. We looked for:" << search;
+            Davros::debug() << "Got no songs from our song id lookup.. :(. We looked for:" << search;
         }
     } catch( Echonest::ParseError& e ) {
         qWarning() << "Failed to parse song/search result:" << e.errorType() << e.what();
@@ -640,7 +642,7 @@ EchonestGenerator::loadStylesAndMoods()
     {
         if( !dataFile.open( QIODevice::ReadOnly ) )
         {
-            tLog() << "Failed to open for reading styles/moods db file:" << dataFile.fileName();
+            Davros::debug() << "Failed to open for reading styles/moods db file:" << dataFile.fileName();
             return;
         }
 
@@ -648,7 +650,7 @@ EchonestGenerator::loadStylesAndMoods()
         QStringList parts = allData.split( "\n" );
         if( parts.size() != 2 )
         {
-            tLog() << "Didn't get both moods and styles in file...:" << allData;
+            Davros::debug() << "Didn't get both moods and styles in file...:" << allData;
             return;
         }
         s_moods = parts[ 0 ].split( "|" );
@@ -662,7 +664,7 @@ EchonestGenerator::saveStylesAndMoods()
     QFile dataFile( TomahawkUtils::appDataDir().absoluteFilePath( "echonest_stylesandmoods.dat" ) );
     if( !dataFile.open( QIODevice::WriteOnly ) )
     {
-        tLog() << "Failed to open styles and moods data file for saving:" << dataFile.errorString() << dataFile.fileName();
+        Davros::debug() << "Failed to open styles and moods data file for saving:" << dataFile.errorString() << dataFile.fileName();
         return;
     }
 

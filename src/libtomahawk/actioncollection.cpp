@@ -93,7 +93,7 @@ ActionCollection::getAction( const QString& name )
 void
 ActionCollection::togglePrivateListeningMode()
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( TomahawkSettings::instance()->privateListeningMode() == TomahawkSettings::PublicListening )
         TomahawkSettings::instance()->setPrivateListeningMode( TomahawkSettings::FullyPrivate );
     else

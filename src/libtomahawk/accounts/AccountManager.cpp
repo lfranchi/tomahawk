@@ -96,7 +96,7 @@ AccountManager::findPluginFactories()
     pluginDirs << appDir << libDir << lib64Dir << QDir( qApp->applicationDirPath() );
     foreach ( const QDir& pluginDir, pluginDirs )
     {
-        tDebug() << Q_FUNC_INFO << "Checking directory for plugins:" << pluginDir;
+        Davros::debug() << Q_FUNC_INFO << "Checking directory for plugins:" << pluginDir;
         foreach ( QString fileName, pluginDir.entryList( QStringList() << "*tomahawk_account_*.so" << "*tomahawk_account_*.dylib" << "*tomahawk_account_*.dll", QDir::Files ) )
         {
             if ( fileName.startsWith( "libtomahawk_account" ) )
@@ -120,7 +120,7 @@ AccountManager::loadPluginFactories( const QStringList& paths )
         if ( !QLibrary::isLibrary( fileName ) )
             continue;
 
-        tDebug() << Q_FUNC_INFO << "Trying to load plugin:" << fileName;
+        Davros::debug() << Q_FUNC_INFO << "Trying to load plugin:" << fileName;
         loadPluginFactory( fileName );
     }
 }
@@ -159,17 +159,17 @@ AccountManager::loadPluginFactory( const QString& path )
     QObject* plugin = loader.instance();
     if ( !plugin )
     {
-        tDebug() << Q_FUNC_INFO << "Error loading plugin:" << loader.errorString();
+        Davros::debug() << Q_FUNC_INFO << "Error loading plugin:" << loader.errorString();
     }
 
     AccountFactory* accountfactory = qobject_cast<AccountFactory*>( plugin );
     if ( accountfactory )
     {
-        tDebug() << Q_FUNC_INFO << "Loaded plugin factory:" << loader.fileName() << accountfactory->factoryId() << accountfactory->prettyName();
+        Davros::debug() << Q_FUNC_INFO << "Loaded plugin factory:" << loader.fileName() << accountfactory->factoryId() << accountfactory->prettyName();
         m_accountFactories[ accountfactory->factoryId() ] = accountfactory;
     } else
     {
-        tDebug() << Q_FUNC_INFO << "Loaded invalid plugin.." << loader.fileName();
+        Davros::debug() << Q_FUNC_INFO << "Loaded invalid plugin.." << loader.fileName();
     }
 }
 
@@ -260,7 +260,7 @@ AccountManager::loadFromConfig()
 void
 AccountManager::initSIP()
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     foreach( Account* account, accounts() )
     {
         hookupAndEnable( account, true );
@@ -285,7 +285,7 @@ AccountManager::loadPlugin( const QString& accountId )
 void
 AccountManager::addAccount( Account* account )
 {
-    tDebug() << Q_FUNC_INFO << "adding account plugin";
+    Davros::debug() << Q_FUNC_INFO << "adding account plugin";
     m_accounts.append( account );
 
     if ( account->types() & Accounts::SipType )

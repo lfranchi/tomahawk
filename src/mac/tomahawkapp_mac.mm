@@ -18,6 +18,9 @@
 
 #include "tomahawkapp_mac.h"
 
+#include <QDebug>
+#include <QStringList>
+
 #include "macdelegate.h"
 #include "macshortcuthandler.h"
 #include "config.h"
@@ -216,7 +219,7 @@
 #ifdef HAVE_SPARKLE
 - (void)updater:(SUUpdater *)updater willInstallUpdate:(SUAppcastItem *)update
 {
-    tLog() << "NSApp in willInstallUpdate, deleting Phonon objects";
+    Davros::debug() << "NSApp in willInstallUpdate, deleting Phonon objects";
     AudioEngine::instance()->stop();
     delete AudioEngine::instance();
 }
@@ -263,7 +266,7 @@ void Tomahawk::enableFullscreen()
     if ( QSysInfo::MacintoshVersion != QSysInfo::MV_SNOWLEOPARD &&
          QSysInfo::MacintoshVersion != QSysInfo::MV_LEOPARD   )
     {
-        qDebug() << "Enabling Lion Full-screeen";
+        Davros::debug() << "Enabling Lion Full-screeen";
         // Can't include tomahawkapp.h in a .mm file, pulls in infosystem.h which uses
         // the objc keyword 'id'
         foreach( QWidget* w, QApplication::topLevelWidgets() )

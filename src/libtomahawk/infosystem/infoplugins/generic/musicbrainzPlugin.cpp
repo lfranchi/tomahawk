@@ -22,6 +22,8 @@
 #include <QDomDocument>
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk::InfoSystem;
@@ -30,14 +32,14 @@ using namespace Tomahawk::InfoSystem;
 MusicBrainzPlugin::MusicBrainzPlugin()
     : InfoPlugin()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     m_supportedGetTypes << Tomahawk::InfoSystem::InfoArtistReleases << Tomahawk::InfoSystem::InfoAlbumSongs;
 }
 
 
 MusicBrainzPlugin::~MusicBrainzPlugin()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 
@@ -132,20 +134,20 @@ MusicBrainzPlugin::isValidTrackData( Tomahawk::InfoSystem::InfoRequestData reque
     if ( requestData.input.isNull() || !requestData.input.isValid() || !requestData.input.canConvert< QVariantMap >() )
     {
         emit info( requestData, QVariant() );
-        qDebug() << Q_FUNC_INFO << "Data null, invalid, or can't convert";
+        Davros::debug() << Q_FUNC_INFO << "Data null, invalid, or can't convert";
         return false;
     }
     QVariantMap hash = requestData.input.value< QVariantMap >();
     if ( hash[ "trackName" ].toString().isEmpty() )
     {
         emit info( requestData, QVariant() );
-        qDebug() << Q_FUNC_INFO << "Track name is empty";
+        Davros::debug() << Q_FUNC_INFO << "Track name is empty";
         return false;
     }
     if ( hash[ "artistName" ].toString().isEmpty() )
     {
         emit info( requestData, QVariant() );
-        qDebug() << Q_FUNC_INFO << "No artist name found";
+        Davros::debug() << Q_FUNC_INFO << "No artist name found";
         return false;
     }
     return true;
@@ -165,7 +167,7 @@ MusicBrainzPlugin::artistSearchSlot()
     if ( domNodeList.isEmpty() )
     {
         emit info( oldReply->property( "requestData" ).value< Tomahawk::InfoSystem::InfoRequestData >(), QVariant() );
-        tDebug() << Q_FUNC_INFO << doc.toString();
+        Davros::debug() << Q_FUNC_INFO << doc.toString();
         return;
     }
 

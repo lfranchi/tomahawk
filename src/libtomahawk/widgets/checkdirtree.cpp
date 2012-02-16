@@ -19,6 +19,8 @@
 
 #include "checkdirtree.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "tomahawksettings.h"
 

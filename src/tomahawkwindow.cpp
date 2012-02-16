@@ -66,6 +66,8 @@
 #include <qtsparkle/Updater>
 #endif
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "jobview/JobStatusModel.h"
 #include "LoadXSPFDialog.h"
@@ -462,7 +464,7 @@ TomahawkWindow::addPeerManually()
     if ( !ok )
         return;
 
-    qDebug() << "Attempting to connect to" << addr;
+    Davros::debug() << "Attempting to connect to" << addr;
     Servent::instance()->connectToPeer( addr, port, key );
 }
 
@@ -767,7 +769,7 @@ TomahawkWindow::showQueue()
 {
     if ( QThread::currentThread() != thread() )
     {
-        qDebug() << "Reinvoking in correct thread:" << Q_FUNC_INFO;
+        Davros::debug() << "Reinvoking in correct thread:" << Q_FUNC_INFO;
         QMetaObject::invokeMethod( this, "showQueue", Qt::QueuedConnection );
         return;
     }
@@ -781,7 +783,7 @@ TomahawkWindow::hideQueue()
 {
     if ( QThread::currentThread() != thread() )
     {
-        qDebug() << "Reinvoking in correct thread:" << Q_FUNC_INFO;
+        Davros::debug() << "Reinvoking in correct thread:" << Q_FUNC_INFO;
         QMetaObject::invokeMethod( this, "hideQueue", Qt::QueuedConnection );
         return;
     }

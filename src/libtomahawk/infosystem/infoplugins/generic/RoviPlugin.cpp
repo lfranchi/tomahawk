@@ -18,6 +18,8 @@
 
 #include "RoviPlugin.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #include <QDateTime>
@@ -127,7 +129,7 @@ RoviPlugin::albumLookupFinished()
 
     if ( !ok || response.isEmpty() || !response.contains( "searchResponse" ) )
     {
-        tLog() << "Error parsing JSON from Rovi!" << p.errorString() << response;
+        Davros::debug() << "Error parsing JSON from Rovi!" << p.errorString() << response;
         emit info( requestData, QVariant() );
         return;
     }
@@ -144,7 +146,7 @@ RoviPlugin::albumLookupFinished()
 
     if ( tracks.isEmpty() )
     {
-        tLog() << "Error parsing JSON from Rovi!" << p.errorString() << response;
+        Davros::debug() << "Error parsing JSON from Rovi!" << p.errorString() << response;
         emit info( requestData, QVariant() );
     }
 
@@ -176,7 +178,7 @@ RoviPlugin::makeRequest( QUrl url )
     url.addQueryItem( "apikey", m_apiKey );
     url.addEncodedQueryItem( "sig", generateSig() );
 
-    qDebug() << "Rovi request url:" << url.toString();
+    Davros::debug() << "Rovi request url:" << url.toString();
     return TomahawkUtils::nam()->get( QNetworkRequest( url ) );
 }
 

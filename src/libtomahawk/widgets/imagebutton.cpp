@@ -25,6 +25,8 @@
 #include <QtGui/QIcon>
 #include <QtCore/QString>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 

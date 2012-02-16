@@ -21,6 +21,8 @@
 #include "databasecommand.h"
 #include "databaseimpl.h"
 #include "databaseworker.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define DEFAULT_WORKER_THREADS 4
@@ -45,7 +47,7 @@ Database::Database( const QString& dbname, QObject* parent )
     s_instance = this;
 
     m_maxConcurrentThreads = qBound( DEFAULT_WORKER_THREADS, QThread::idealThreadCount(), MAX_WORKER_THREADS );
-    qDebug() << Q_FUNC_INFO << "Using" << m_maxConcurrentThreads << "threads";
+    Davros::debug() << Q_FUNC_INFO << "Using" << m_maxConcurrentThreads << "threads";
 
     connect( m_impl, SIGNAL( indexReady() ), SIGNAL( indexReady() ) );
     connect( m_impl, SIGNAL( indexReady() ), SIGNAL( ready() ) );
@@ -57,7 +59,7 @@ Database::Database( const QString& dbname, QObject* parent )
 
 Database::~Database()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     qDeleteAll( m_workers );
     delete m_workerRW;
@@ -75,7 +77,7 @@ Database::loadIndex()
 void
 Database::enqueue( const QList< QSharedPointer<DatabaseCommand> >& lc )
 {
-    qDebug() << "Enqueueing" << lc.count() << "commands to rw thread";
+    Davros::debug() << "Enqueueing" << lc.count() << "commands to rw thread";
     m_workerRW->enqueue( lc );
 }
 
@@ -85,7 +87,7 @@ Database::enqueue( const QSharedPointer<DatabaseCommand>& lc )
 {
     if ( lc->doesMutates() )
     {
-        qDebug() << "Enqueueing command to rw thread:" << lc->commandname();
+        Davros::debug() << "Enqueueing command to rw thread:" << lc->commandname();
         m_workerRW->enqueue( lc );
     }
     else
@@ -118,7 +120,7 @@ Database::enqueue( const QSharedPointer<DatabaseCommand>& lc )
                 happyThread = worker;
         }
 
-//        qDebug() << "Enqueueing command to thread:" << happyThread << busyThreads << lc->commandname();
+//        Davros::debug() << "Enqueueing command to thread:" << happyThread << busyThreads << lc->commandname();
         happyThread->enqueue( lc );
     }
 }

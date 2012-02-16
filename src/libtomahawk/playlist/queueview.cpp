@@ -24,6 +24,8 @@
 #include "widgets/HeaderLabel.h"
 #include "playlist/queueproxymodel.h"
 #include "widgets/overlaywidget.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "playlistview.h"
 #include "utils/tomahawkutilsgui.h"
@@ -56,7 +58,7 @@ QueueView::QueueView( AnimatedSplitter* parent )
 
 QueueView::~QueueView()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 

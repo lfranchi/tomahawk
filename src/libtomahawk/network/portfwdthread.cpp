@@ -26,6 +26,8 @@
 #include <QTimer>
 
 #include "portfwd/portfwd.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -41,7 +43,7 @@ PortFwdThread::PortFwdThread( unsigned int port )
 
 PortFwdThread::~PortFwdThread()
 {
-    qDebug() << Q_FUNC_INFO << "waiting for event loop to finish...";
+    Davros::debug() << Q_FUNC_INFO << "waiting for event loop to finish...";
     quit();
     wait( 1000 );
 
@@ -79,25 +81,25 @@ PortFwdThread::work()
 
         for ( int r = 0; r < 3; ++r )
         {
-            qDebug() << "Trying to setup portfwd on" << tryport;
+            Davros::debug() << "Trying to setup portfwd on" << tryport;
             if ( m_portfwd->add( tryport, m_port ) )
             {
                 QString pubip = QString( m_portfwd->external_ip().c_str() ).trimmed();
                 m_externalAddress = QHostAddress( pubip );
                 m_externalPort = tryport;
-                tDebug() << "External servent address detected as" << pubip << ":" << m_externalPort;
-                qDebug() << "Max upstream  " << m_portfwd->max_upstream_bps() << "bps";
-                qDebug() << "Max downstream" << m_portfwd->max_downstream_bps() << "bps";
+                Davros::debug() << "External servent address detected as" << pubip << ":" << m_externalPort;
+                Davros::debug() << "Max upstream  " << m_portfwd->max_upstream_bps() << "bps";
+                Davros::debug() << "Max downstream" << m_portfwd->max_downstream_bps() << "bps";
                 break;
             }
             tryport = qAbs( 10000 + 50000 * (float)qrand() / RAND_MAX );
         }
     }
     else
-        tDebug() << "No UPNP Gateway device found?";
+        Davros::debug() << "No UPNP Gateway device found?";
 
     if ( !m_externalPort )
-        tDebug() << "Could not setup fwd for port:" << m_port;
+        Davros::debug() << "Could not setup fwd for port:" << m_port;
 
     emit externalAddressDetected( m_externalAddress, m_externalPort );
 }
@@ -111,7 +113,7 @@ PortFwdThread::run()
 
     if ( m_externalPort )
     {
-        qDebug() << "Unregistering port fwd";
+        Davros::debug() << "Unregistering port fwd";
         m_portfwd->remove( m_externalPort );
     }
 }

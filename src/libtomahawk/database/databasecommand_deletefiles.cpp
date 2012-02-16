@@ -27,6 +27,8 @@
 #include "database/database.h"
 #include "database/databaseimpl.h"
 #include "network/servent.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "utils/tomahawkutils.h"
 
@@ -47,7 +49,7 @@ DatabaseCommand_DeleteFiles::postCommitHook()
     connect( this, SIGNAL( notify( QList<unsigned int> ) ),
              coll,   SLOT( delTracks( QList<unsigned int> ) ), Qt::QueuedConnection );
 
-    tDebug() << "Notifying of deleted tracks:" << m_idList.size() << "from source" << source()->id();
+    Davros::debug() << "Notifying of deleted tracks:" << m_idList.size() << "from source" << source()->id();
     emit notify( m_idList );
 
     if ( source()->isLocal() )
@@ -77,7 +79,7 @@ DatabaseCommand_DeleteFiles::exec( DatabaseImpl* dbi )
     {
         if ( m_dir.path() != QString( "." ) )
         {
-            tDebug() << "Deleting" << m_dir.path() << "from db for localsource" << srcid;
+            Davros::debug() << "Deleting" << m_dir.path() << "from db for localsource" << srcid;
             TomahawkSqlQuery dirquery = dbi->newquery();
             QString path( "file://" + m_dir.canonicalPath() + "/%" );
             dirquery.prepare( QString( "SELECT id FROM file WHERE source IS NULL AND url LIKE '%1'" ).arg( TomahawkUtils::sqlEscape( path ) ) );
@@ -91,7 +93,7 @@ DatabaseCommand_DeleteFiles::exec( DatabaseImpl* dbi )
         }
         else if ( !m_ids.isEmpty() )
         {
-            tDebug() << Q_FUNC_INFO << "deleting given ids";
+            Davros::debug() << Q_FUNC_INFO << "deleting given ids";
             foreach ( const QVariant& id, m_ids )
                 m_idList << id.toUInt();
         }

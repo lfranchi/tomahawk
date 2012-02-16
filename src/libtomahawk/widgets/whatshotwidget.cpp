@@ -37,6 +37,8 @@
 #include "playlist/treeproxymodel.h"
 #include "widgets/overlaywidget.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "pipeline.h"
 
@@ -372,7 +374,7 @@ WhatsHotWidget::leftCrumbIndexChanged( QModelIndex index )
     requestData.timeoutMillis = 20000;
     requestData.allSources = true;
 
-    qDebug() << "Making infosystem request for chart of type:" <<chartId;
+    Davros::debug() << "Making infosystem request for chart of type:" <<chartId;
     Tomahawk::InfoSystem::InfoSystem::instance()->getInfo( requestData );
 
     m_queuedFetches.insert( chartId );

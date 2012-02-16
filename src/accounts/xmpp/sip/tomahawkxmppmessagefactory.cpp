@@ -22,6 +22,8 @@
 #include <QXmlStreamWriter>
 #include <QVariant>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Jreen;
@@ -62,7 +64,7 @@ void TomahawkXmppMessageFactory::handleStartElement(const QStringRef &name, cons
     } else if (m_depth == 2) {
         if (name == QLatin1String("transport"))
         {
-//            qDebug() << "Found Transport";
+//            Davros::debug() << "Found Transport";
             m_state = AtTransport;
 
             m_uniqname = attributes.value(QLatin1String("uniqname")).toString();
@@ -72,7 +74,7 @@ void TomahawkXmppMessageFactory::handleStartElement(const QStringRef &name, cons
         if (name == QLatin1String("candidate"))
         {
             m_state = AtCandidate;
-//            qDebug() << "Found candidate";
+//            Davros::debug() << "Found candidate";
             m_ip = attributes.value(QLatin1String("ip")).toString();
             m_port = attributes.value(QLatin1String("port")).toString().toInt();
 

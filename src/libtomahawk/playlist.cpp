@@ -34,6 +34,8 @@
 #include "sourcelist.h"
 #include "playlistplaylistinterface.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "PlaylistUpdaterInterface.h"
 
@@ -269,7 +271,7 @@ Playlist::reportDeleted( const Tomahawk::playlist_ptr& self )
 void
 Playlist::loadRevision( const QString& rev )
 {
-//    qDebug() << Q_FUNC_INFO << currentrevision() << rev << m_title;
+//    Davros::debug() << Q_FUNC_INFO << currentrevision() << rev << m_title;
 
     setBusy( true );
     DatabaseCommand_LoadPlaylistEntries* cmd =
@@ -296,7 +298,7 @@ Playlist::loadRevision( const QString& rev )
 void
 Playlist::createNewRevision( const QString& newrev, const QString& oldrev, const QList< plentry_ptr >& entries )
 {
-    tDebug() << Q_FUNC_INFO << newrev << oldrev << entries.count();
+    Davros::debug() << Q_FUNC_INFO << newrev << oldrev << entries.count();
     Q_ASSERT( m_source->isLocal() || newrev == oldrev );
 
     if ( busy() )
@@ -411,13 +413,13 @@ Playlist::setNewRevision( const QString& rev,
         }
         else
         {
-            tDebug() << "id:" << id;
-            tDebug() << "newordered:" << neworderedguids.count() << neworderedguids;
-            tDebug() << "entriesmap:" << entriesmap.count() << entriesmap;
-            tDebug() << "addedmap:" << addedmap.count() << addedmap;
-            tDebug() << "m_entries" << m_entries;
+            Davros::debug() << "id:" << id;
+            Davros::debug() << "newordered:" << neworderedguids.count() << neworderedguids;
+            Davros::debug() << "entriesmap:" << entriesmap.count() << entriesmap;
+            Davros::debug() << "addedmap:" << addedmap.count() << addedmap;
+            Davros::debug() << "m_entries" << m_entries;
 
-            tLog() << "Playlist error for playlist with guid" << guid() << "from source" << author()->friendlyName();
+            Davros::debug() << "Playlist error for playlist with guid" << guid() << "from source" << author()->friendlyName();
             Q_ASSERT( false ); // XXX
         }
     }
@@ -428,7 +430,7 @@ Playlist::setNewRevision( const QString& rev,
 
     // entries that have been removed:
     QSet<QString> removedguids = oldorderedguids.toSet().subtract( neworderedguids.toSet() );
-    //qDebug() << "Removedguids:" << removedguids << "oldorederedguids" << oldorderedguids << "newog" << neworderedguids;
+    //Davros::debug() << "Removedguids:" << removedguids << "oldorederedguids" << oldorderedguids << "newog" << neworderedguids;
     foreach ( QString remid, removedguids )
     {
         // NB: entriesmap will contain old/removed entries only if the removal was done
@@ -438,12 +440,12 @@ Playlist::setNewRevision( const QString& rev,
             pr.removed << entriesmap.value( remid );
             if ( is_newest_rev )
             {
-                //qDebug() << "Removing from m_entries" << remid;
+                //Davros::debug() << "Removing from m_entries" << remid;
                 for ( int k = 0 ; k < m_entries.length(); ++k )
                 {
                     if ( m_entries.at( k )->guid() == remid )
                     {
-                        //qDebug() << "removed at" << k;
+                        //Davros::debug() << "removed at" << k;
                         m_entries.removeAt( k );
                         break;
                     }

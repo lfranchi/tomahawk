@@ -24,6 +24,8 @@
 #include "databaseimpl.h"
 #include "source.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 DatabaseCommand_AllArtists::DatabaseCommand_AllArtists( const Tomahawk::collection_ptr &collection, QObject *parent )

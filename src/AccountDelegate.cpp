@@ -26,6 +26,8 @@
 #include "accounts/Account.h"
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define CHILD_ACCOUNT_HEIGHT 24

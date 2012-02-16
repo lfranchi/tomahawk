@@ -682,7 +682,7 @@ SourceDelegate::hovered( const QModelIndex& index, const QMimeData* mimeData )
         connect( m_expandedMap.value( m_newDropHoverIndex ), SIGNAL( finished( QModelIndex ) ), SLOT( animationFinished( QModelIndex ) ) );
     }
     else
-        qDebug() << "expandedMap already contains index" << index;
+        Davros::debug() << "expandedMap already contains index" << index;
 }
 
 

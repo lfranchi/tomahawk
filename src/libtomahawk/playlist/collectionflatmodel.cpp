@@ -20,6 +20,8 @@
 
 #include "database/database.h"
 #include "sourcelist.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -53,7 +55,7 @@ CollectionFlatModel::addCollections( const QList< collection_ptr >& collections 
 void
 CollectionFlatModel::addCollection( const collection_ptr& collection, bool sendNotifications )
 {
-    qDebug() << Q_FUNC_INFO << collection->name()
+    Davros::debug() << Q_FUNC_INFO << collection->name()
                             << collection->source()->id()
                             << collection->source()->userName();
 
@@ -78,7 +80,7 @@ CollectionFlatModel::addCollection( const collection_ptr& collection, bool sendN
 void
 CollectionFlatModel::addFilteredCollection( const collection_ptr& collection, unsigned int amount, DatabaseCommand_AllTracks::SortOrder order )
 {
-    qDebug() << Q_FUNC_INFO << collection->name()
+    Davros::debug() << Q_FUNC_INFO << collection->name()
                             << collection->source()->id()
                             << collection->source()->userName()
                             << amount << order;
@@ -98,7 +100,7 @@ CollectionFlatModel::addFilteredCollection( const collection_ptr& collection, un
 void
 CollectionFlatModel::onTracksAdded( const QList<Tomahawk::query_ptr>& tracks )
 {
-    qDebug() << Q_FUNC_INFO << tracks.count() << rowCount( QModelIndex() );
+    Davros::debug() << Q_FUNC_INFO << tracks.count() << rowCount( QModelIndex() );
 
     if ( !m_loadingCollections.isEmpty() && sender() && qobject_cast< Collection* >( sender() ) )
     {

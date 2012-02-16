@@ -23,6 +23,8 @@
 #include "databaseimpl.h"
 #include "sourcelist.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 

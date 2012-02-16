@@ -21,6 +21,8 @@
 #include <QSqlQuery>
 
 #include "databaseimpl.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -34,7 +36,7 @@ DatabaseCommand_FileMtimes::exec( DatabaseImpl* dbi )
 void
 DatabaseCommand_FileMtimes::execSelect( DatabaseImpl* dbi )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     //FIXME: If ever needed for a non-local source this will have to be fixed/updated
     QMap< QString, QMap< unsigned int, unsigned int > > mtimes;
     TomahawkSqlQuery query = dbi->newquery();

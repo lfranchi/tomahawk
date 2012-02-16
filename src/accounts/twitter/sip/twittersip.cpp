@@ -37,6 +37,8 @@
 #include <database/database.h>
 #include <network/servent.h>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "accounts/twitter/tomahawkoauthtwitter.h"
 #include <accounts/twitter/twitteraccount.h>
@@ -55,12 +57,12 @@ TwitterSipPlugin::TwitterSipPlugin( Tomahawk::Accounts::Account* account )
     , m_keyCache()
     , m_state( Tomahawk::Accounts::Account::Disconnected )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     connect( account, SIGNAL( nowAuthenticated( const QWeakPointer< TomahawkOAuthTwitter > &, const QTweetUser & ) ), SLOT( accountAuthenticated( const QWeakPointer< TomahawkOAuthTwitter > &, const QTweetUser & ) ) );
 
     m_configuration = account->configuration();
-    qDebug() << "SIP configuration:" << m_configuration << m_configuration[ "cachedpeers" ];
+    Davros::debug() << "SIP configuration:" << m_configuration << m_configuration[ "cachedpeers" ];
     if ( Database::instance()->dbid() != m_account->configuration()[ "saveddbid" ].toString() )
     {
         m_configuration[ "cachedpeers" ] = QVariantHash();
@@ -106,10 +108,10 @@ TwitterSipPlugin::checkSettings()
 void
 TwitterSipPlugin::connectPlugin()
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( !m_account->enabled() )
     {
-        tDebug() << Q_FUNC_INFO << "account isn't enabled";
+        Davros::debug() << Q_FUNC_INFO << "account isn't enabled";
         return;
     }
 
@@ -119,7 +121,7 @@ TwitterSipPlugin::connectPlugin()
 
     if ( !m_account->isAuthenticated() )
     {
-        tDebug() << Q_FUNC_INFO << "account isn't authenticated, attempting";
+        Davros::debug() << Q_FUNC_INFO << "account isn't authenticated, attempting";
         m_account->authenticate();
     }
 
@@ -131,7 +133,7 @@ TwitterSipPlugin::connectPlugin()
 void
 TwitterSipPlugin::disconnectPlugin()
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     m_checkTimer.stop();
     m_connectTimer.stop();
     m_dmPollTimer.stop();
@@ -199,7 +201,7 @@ TwitterSipPlugin::checkTimerFired()
     if ( m_cachedFriendsSinceId == 0 )
         m_cachedFriendsSinceId = m_configuration[ "cachedfriendssinceid" ].toLongLong();
 
-    qDebug() << "TwitterSipPlugin looking at friends timeline since id " << m_cachedFriendsSinceId;
+    Davros::debug() << "TwitterSipPlugin looking at friends timeline since id " << m_cachedFriendsSinceId;
 
     if ( !m_friendsTimeline.isNull() )
         m_friendsTimeline.data()->fetch( m_cachedFriendsSinceId, 0, 800 );
@@ -207,7 +209,7 @@ TwitterSipPlugin::checkTimerFired()
     if ( m_cachedMentionsSinceId == 0 )
         m_cachedMentionsSinceId = m_configuration[ "cachedmentionssinceid" ].toLongLong();
 
-    qDebug() << "TwitterSipPlugin looking at mentions timeline since id " << m_cachedMentionsSinceId;
+    Davros::debug() << "TwitterSipPlugin looking at mentions timeline since id " << m_cachedMentionsSinceId;
 
     if ( !m_mentions.isNull() )
         m_mentions.data()->fetch( m_cachedMentionsSinceId, 0, 800 );
@@ -237,12 +239,12 @@ TwitterSipPlugin::registerOffers( const QStringList &peerList )
             m_cachedPeers[screenName] = peerData;
             m_configuration[ "cachedpeers" ] = m_cachedPeers;
             syncConfig();
-            qDebug() << Q_FUNC_INFO << " already connected";
+            Davros::debug() << Q_FUNC_INFO << " already connected";
             continue;
         }
         else if ( QDateTime::currentMSecsSinceEpoch() - peerData["lastseen"].toLongLong() > 1209600000 ) // 2 weeks
         {
-            qDebug() << Q_FUNC_INFO << " aging peer " << screenName << " out of cache";
+            Davros::debug() << Q_FUNC_INFO << " aging peer " << screenName << " out of cache";
             m_cachedPeers.remove( screenName );
             m_configuration[ "cachedpeers" ] = m_cachedPeers;
             syncConfig();
@@ -252,7 +254,7 @@ TwitterSipPlugin::registerOffers( const QStringList &peerList )
 
         if ( !peerData.contains( "host" ) || !peerData.contains( "port" ) || !peerData.contains( "pkey" ) )
         {
-            qDebug() << "TwitterSipPlugin does not have host, port and/or pkey values for " << screenName << " (this is usually *not* a bug or problem but a normal part of the process)";
+            Davros::debug() << "TwitterSipPlugin does not have host, port and/or pkey values for " << screenName << " (this is usually *not* a bug or problem but a normal part of the process)";
             continue;
         }
 
@@ -264,17 +266,17 @@ TwitterSipPlugin::registerOffers( const QStringList &peerList )
 void
 TwitterSipPlugin::connectTimerFired()
 {
-    tDebug() << Q_FUNC_INFO << " beginning";
+    Davros::debug() << Q_FUNC_INFO << " beginning";
     if ( !isValid() || m_cachedPeers.isEmpty() )
     {
         if ( !isValid() )
-            tDebug() << Q_FUNC_INFO << " is not valid";
+            Davros::debug() << Q_FUNC_INFO << " is not valid";
         if ( m_cachedPeers.isEmpty() )
-            tDebug() << Q_FUNC_INFO << " has empty cached peers";
+            Davros::debug() << Q_FUNC_INFO << " has empty cached peers";
         return;
     }
 
-    tDebug() << Q_FUNC_INFO << " continuing";
+    Davros::debug() << Q_FUNC_INFO << " continuing";
     QString myScreenName = m_configuration[ "screenname" ].toString();
     QStringList peerList = m_cachedPeers.keys();
     qStableSort( peerList.begin(), peerList.end() );
@@ -285,11 +287,11 @@ void
 TwitterSipPlugin::parseGotTomahawk( const QRegExp &regex, const QString &screenName, const QString &text )
 {
     QString myScreenName = m_configuration[ "screenname" ].toString();
-    qDebug() << "TwitterSipPlugin found an exact matching Got Tomahawk? mention or direct message from user " << screenName << ", now parsing";
+    Davros::debug() << "TwitterSipPlugin found an exact matching Got Tomahawk? mention or direct message from user " << screenName << ", now parsing";
     regex.exactMatch( text );
     if ( text.startsWith( '@' ) && regex.captureCount() >= 2 && regex.cap( 1 ) != QString( '@' + myScreenName ) )
     {
-        qDebug() << "TwitterSipPlugin skipping mention because it's directed @someone that isn't us";
+        Davros::debug() << "TwitterSipPlugin skipping mention because it's directed @someone that isn't us";
         return;
     }
 
@@ -305,15 +307,15 @@ TwitterSipPlugin::parseGotTomahawk( const QRegExp &regex, const QString &screenN
     }
     if ( node.isEmpty() )
     {
-        qDebug() << "TwitterSipPlugin could not parse node out of the tweet";
+        Davros::debug() << "TwitterSipPlugin could not parse node out of the tweet";
         return;
     }
     else
-        qDebug() << "TwitterSipPlugin parsed node " << node << " out of the tweet";
+        Davros::debug() << "TwitterSipPlugin parsed node " << node << " out of the tweet";
 
     if ( node == Database::instance()->dbid() )
     {
-        qDebug() << "My dbid found; ignoring";
+        Davros::debug() << "My dbid found; ignoring";
         return;
     }
 
@@ -333,7 +335,7 @@ TwitterSipPlugin::parseGotTomahawk( const QRegExp &regex, const QString &screenN
 void
 TwitterSipPlugin::friendsTimelineStatuses( const QList< QTweetStatus > &statuses )
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     QRegExp regex( s_gotTomahawkRegex, Qt::CaseSensitive, QRegExp::RegExp2 );
 
     QHash< QString, QTweetStatus > latestHash;
@@ -356,7 +358,7 @@ TwitterSipPlugin::friendsTimelineStatuses( const QList< QTweetStatus > &statuses
         if ( status.id() > m_cachedFriendsSinceId )
             m_cachedFriendsSinceId = status.id();
 
-        tDebug() << "TwitterSipPlugin checking mention from " << status.user().screenName() << " with content " << status.text();
+        Davros::debug() << "TwitterSipPlugin checking mention from " << status.user().screenName() << " with content " << status.text();
         parseGotTomahawk( regex, status.user().screenName(), status.text() );
     }
 
@@ -367,7 +369,7 @@ TwitterSipPlugin::friendsTimelineStatuses( const QList< QTweetStatus > &statuses
 void
 TwitterSipPlugin::mentionsStatuses( const QList< QTweetStatus > &statuses )
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     QRegExp regex( s_gotTomahawkRegex, Qt::CaseSensitive, QRegExp::RegExp2 );
 
     QHash< QString, QTweetStatus > latestHash;
@@ -390,7 +392,7 @@ TwitterSipPlugin::mentionsStatuses( const QList< QTweetStatus > &statuses )
         if ( status.id() > m_cachedMentionsSinceId )
             m_cachedMentionsSinceId = status.id();
 
-        tDebug() << "TwitterSipPlugin checking mention from " << status.user().screenName() << " with content " << status.text();
+        Davros::debug() << "TwitterSipPlugin checking mention from " << status.user().screenName() << " with content " << status.text();
         parseGotTomahawk( regex, status.user().screenName(), status.text() );
     }
 
@@ -407,7 +409,7 @@ TwitterSipPlugin::pollDirectMessages()
     if ( m_cachedDirectMessagesSinceId == 0 )
         m_cachedDirectMessagesSinceId = m_configuration[ "cacheddirectmessagessinceid" ].toLongLong();
 
-    tDebug() << "TwitterSipPlugin looking for direct messages since id " << m_cachedDirectMessagesSinceId;
+    Davros::debug() << "TwitterSipPlugin looking for direct messages since id " << m_cachedDirectMessagesSinceId;
 
     if ( !m_directMessages.isNull() )
         m_directMessages.data()->fetch( m_cachedDirectMessagesSinceId, 0, 800 );
@@ -416,7 +418,7 @@ TwitterSipPlugin::pollDirectMessages()
 void
 TwitterSipPlugin::directMessages( const QList< QTweetDMStatus > &messages )
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     QRegExp regex( s_gotTomahawkRegex, Qt::CaseSensitive, QRegExp::RegExp2 );
     QString myScreenName = m_configuration[ "screenname" ].toString();
@@ -449,7 +451,7 @@ TwitterSipPlugin::directMessages( const QList< QTweetDMStatus > &messages )
 
     foreach( QTweetDMStatus status, latestHash.values() )
     {
-        qDebug() << "TwitterSipPlugin checking direct message from " << status.senderScreenName() << " with content " << status.text();
+        Davros::debug() << "TwitterSipPlugin checking direct message from " << status.senderScreenName() << " with content " << status.text();
         if ( status.id() > m_cachedDirectMessagesSinceId )
             m_cachedDirectMessagesSinceId = status.id();
 
@@ -458,9 +460,9 @@ TwitterSipPlugin::directMessages( const QList< QTweetDMStatus > &messages )
         else
         {
             QStringList splitList = status.text().split(':');
-            qDebug() << "TwitterSipPlugin found " << splitList.length() << " parts to the message; the parts are:";
+            Davros::debug() << "TwitterSipPlugin found " << splitList.length() << " parts to the message; the parts are:";
             foreach( QString part, splitList )
-                qDebug() << part;
+                Davros::debug() << part;
             //validity is checked above
             int port = splitList[2].mid( 5 ).toInt();
             QString host = splitList[1].mid( 5 );
@@ -469,10 +471,10 @@ TwitterSipPlugin::directMessages( const QList< QTweetDMStatus > &messages )
             QStringList splitNode = node.split('*');
             if ( splitNode.length() != 2 )
             {
-                qDebug() << "Old-style node info found, ignoring";
+                Davros::debug() << "Old-style node info found, ignoring";
                 continue;
             }
-            qDebug() << "TwitterSipPlugin found a peerstart message from " << status.senderScreenName() << " with host " << host << " and port " << port << " and pkey " << pkey << " and node " << splitNode[0] << " destined for node " << splitNode[1];
+            Davros::debug() << "TwitterSipPlugin found a peerstart message from " << status.senderScreenName() << " with host " << host << " and port " << port << " and pkey " << pkey << " and node " << splitNode[0] << " destined for node " << splitNode[1];
 
 
             QVariantHash peerData = ( m_cachedPeers.contains( status.senderScreenName() ) ) ?
@@ -489,7 +491,7 @@ TwitterSipPlugin::directMessages( const QList< QTweetDMStatus > &messages )
 
             if ( Database::instance()->dbid().startsWith( splitNode[1] ) )
             {
-                qDebug() << "TwitterSipPlugin found message destined for this node; destroying it";
+                Davros::debug() << "TwitterSipPlugin found message destined for this node; destroying it";
                 if ( !m_directMessageDestroy.isNull() )
                     m_directMessageDestroy.data()->destroyMessage( status.id() );
             }
@@ -503,7 +505,7 @@ TwitterSipPlugin::directMessages( const QList< QTweetDMStatus > &messages )
 void
 TwitterSipPlugin::registerOffer( const QString &screenName, const QVariantHash &peerData )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     bool peersChanged = false;
     bool needToSend = false;
@@ -556,20 +558,20 @@ TwitterSipPlugin::registerOffer( const QString &screenName, const QVariantHash &
 
     if( needToAddToCache && _peerData.contains( "node" ) )
     {
-        qDebug() << "TwitterSipPlugin registering offer to " << friendlyName << " with node " << _peerData["node"].toString() << " and offeredkey " << _peerData["okey"].toString();
+        Davros::debug() << "TwitterSipPlugin registering offer to " << friendlyName << " with node " << _peerData["node"].toString() << " and offeredkey " << _peerData["okey"].toString();
         m_keyCache << Servent::instance()->createConnectionKey( friendlyName, _peerData["node"].toString(), _peerData["okey"].toString(), false );
     }
 
     if( needToSend && _peerData.contains( "node") )
     {
-        qDebug() << "TwitterSipPlugin needs to send and has node";
+        Davros::debug() << "TwitterSipPlugin needs to send and has node";
         _peerData["ohst"] = QVariant::fromValue< QString >( Servent::instance()->externalAddress() );
         _peerData["oprt"] = QVariant::fromValue< int >( Servent::instance()->externalPort() );
         peersChanged = true;
         if( !Servent::instance()->externalAddress().isEmpty() && !Servent::instance()->externalPort() == 0 )
             QMetaObject::invokeMethod( this, "sendOffer", Q_ARG( QString, screenName ), Q_ARG( QVariantHash, _peerData ) );
         else
-            qDebug() << "TwitterSipPlugin did not send offer because external address is " << Servent::instance()->externalAddress() << " and external port is " << Servent::instance()->externalPort();
+            Davros::debug() << "TwitterSipPlugin did not send offer because external address is " << Servent::instance()->externalAddress() << " and external port is " << Servent::instance()->externalPort();
     }
 
     if ( peersChanged )
@@ -588,13 +590,13 @@ TwitterSipPlugin::registerOffer( const QString &screenName, const QVariantHash &
 void
 TwitterSipPlugin::sendOffer( const QString &screenName, const QVariantHash &peerData )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     QString offerString = QString( "TOMAHAWKPEER:Host=%1:Port=%2:Node=%3*%4:PKey=%5" ).arg( peerData["ohst"].toString() )
                                                                                       .arg( peerData["oprt"].toString() )
                                                                                       .arg( Database::instance()->dbid() )
                                                                                       .arg( peerData["node"].toString().left( 8 ) )
                                                                                       .arg( peerData["okey"].toString() );
-    qDebug() << "TwitterSipPlugin sending message to " << screenName << ": " << offerString;
+    Davros::debug() << "TwitterSipPlugin sending message to " << screenName << ": " << offerString;
     if( !m_directMessageNew.isNull() )
         m_directMessageNew.data()->post( screenName, offerString );
 }
@@ -602,18 +604,18 @@ TwitterSipPlugin::sendOffer( const QString &screenName, const QVariantHash &peer
 void
 TwitterSipPlugin::makeConnection( const QString &screenName, const QVariantHash &peerData )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( !peerData.contains( "host" ) || !peerData.contains( "port" ) || !peerData.contains( "pkey" ) || !peerData.contains( "node" ) ||
          peerData["host"].toString().isEmpty() || peerData["port"].toString().isEmpty() || peerData["pkey"].toString().isEmpty() || peerData["node"].toString().isEmpty() )
     {
-        qDebug() << "TwitterSipPlugin could not find host and/or port and/or pkey and/or node for peer " << screenName;
+        Davros::debug() << "TwitterSipPlugin could not find host and/or port and/or pkey and/or node for peer " << screenName;
         return;
     }
 
     if ( peerData["host"].toString() == Servent::instance()->externalAddress() &&
          peerData["port"].toInt() == Servent::instance()->externalPort() )
     {
-        qDebug() << "TwitterSipPlugin asked to make connection to our own host and port, ignoring " << screenName;
+        Davros::debug() << "TwitterSipPlugin asked to make connection to our own host and port, ignoring " << screenName;
         return;
     }
 
@@ -629,8 +631,8 @@ TwitterSipPlugin::makeConnection( const QString &screenName, const QVariantHash 
 void
 TwitterSipPlugin::directMessagePosted( const QTweetDMStatus& message )
 {
-    qDebug() << Q_FUNC_INFO;
-    qDebug() << "TwitterSipPlugin sent message to " << message.recipientScreenName() << " containing: " << message.text();
+    Davros::debug() << Q_FUNC_INFO;
+    Davros::debug() << "TwitterSipPlugin sent message to " << message.recipientScreenName() << " containing: " << message.text();
 
 }
 
@@ -639,21 +641,21 @@ TwitterSipPlugin::directMessagePostError( QTweetNetBase::ErrorCode errorCode, co
 {
     Q_UNUSED( errorCode );
     Q_UNUSED( message );
-    qDebug() << Q_FUNC_INFO;
-    qDebug() << "TwitterSipPlugin received an error posting direct message: " << m_directMessageNew.data()->lastErrorMessage();
+    Davros::debug() << Q_FUNC_INFO;
+    Davros::debug() << "TwitterSipPlugin received an error posting direct message: " << m_directMessageNew.data()->lastErrorMessage();
 }
 
 void
 TwitterSipPlugin::directMessageDestroyed( const QTweetDMStatus& message )
 {
-    qDebug() << Q_FUNC_INFO;
-    qDebug() << "TwitterSipPlugin destroyed message " << message.text();
+    Davros::debug() << Q_FUNC_INFO;
+    Davros::debug() << "TwitterSipPlugin destroyed message " << message.text();
 }
 
 void
 TwitterSipPlugin::fetchAvatar( const QString& screenName )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( !isValid() )
         return;
 
@@ -665,7 +667,7 @@ TwitterSipPlugin::fetchAvatar( const QString& screenName )
 void
 TwitterSipPlugin::avatarUserDataSlot( const QTweetUser &user )
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( !isValid() || user.profileImageUrl().isEmpty())
         return;
 
@@ -679,11 +681,11 @@ TwitterSipPlugin::avatarUserDataSlot( const QTweetUser &user )
 void
 TwitterSipPlugin::profilePicReply()
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     QNetworkReply *reply = qobject_cast< QNetworkReply* >( sender() );
     if ( !reply || reply->error() != QNetworkReply::NoError || !reply->property( "screenname" ).isValid() )
     {
-        tDebug() << Q_FUNC_INFO << " reply not valid or came back with error";
+        Davros::debug() << Q_FUNC_INFO << " reply not valid or came back with error";
         return;
     }
     QString screenName = reply->property( "screenname" ).toString();
@@ -699,7 +701,7 @@ TwitterSipPlugin::profilePicReply()
 void
 TwitterSipPlugin::configurationChanged()
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( m_state != Tomahawk::Accounts::Account::Disconnected )
         m_account->deauthenticate();
     connectPlugin();

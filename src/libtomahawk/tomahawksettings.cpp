@@ -24,6 +24,8 @@
 #include "sip/SipHandler.h"
 #include "playlistinterface.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "utils/tomahawkutils.h"
 
@@ -53,7 +55,7 @@ TomahawkSettings::TomahawkSettings( QObject* parent )
     }
     else if( value( "configversion" ).toUInt() != TOMAHAWK_SETTINGS_VERSION )
     {
-        qDebug() << "Config version outdated, old:" << value( "configversion" ).toUInt()
+        Davros::debug() << "Config version outdated, old:" << value( "configversion" ).toUInt()
                  << "new:" << TOMAHAWK_SETTINGS_VERSION
                  << "Doing upgrade, if any...";
 
@@ -92,14 +94,14 @@ TomahawkSettings::doUpgrade( int oldVersion, int newVersion )
 
     if( oldVersion == 1 )
     {
-        qDebug() << "Migrating config from verson 1 to 2: script resolver config name";
+        Davros::debug() << "Migrating config from verson 1 to 2: script resolver config name";
         if( contains( "script/resolvers" ) ) {
             setValue( "script/loadedresolvers", value( "script/resolvers" ) );
             remove( "script/resolvers" );
         }
     } else if( oldVersion == 2 )
     {
-        qDebug() << "Migrating config from version 2 to 3: Converting jabber and twitter accounts to new SIP Factory approach";
+        Davros::debug() << "Migrating config from version 2 to 3: Converting jabber and twitter accounts to new SIP Factory approach";
         // migrate old accounts to new system. only jabber and twitter, and max one each. create a new plugin for each if needed
         // not pretty as we hardcode a plugin id and assume that we know how the config layout is, but hey, this is migration after all
         if( contains( "jabber/username" ) && contains( "jabber/password" ) )
@@ -164,7 +166,7 @@ TomahawkSettings::doUpgrade( int oldVersion, int newVersion )
                 {
                     if ( r.contains( resolver ) )
                     {
-                        tDebug() << "Deleting listed resolver:" << r;
+                        Davros::debug() << "Deleting listed resolver:" << r;
                         listedResolvers.removeAll( r );
                     }
                 }
@@ -172,14 +174,14 @@ TomahawkSettings::doUpgrade( int oldVersion, int newVersion )
                 {
                     if ( r.contains( resolver ) )
                     {
-                        tDebug() << "Deleting enabled resolver:" << r;
+                        Davros::debug() << "Deleting enabled resolver:" << r;
                         enabledResolvers.removeAll( r );
                     }
                 }
             }
             setAllScriptResolvers( listedResolvers );
             setEnabledScriptResolvers( enabledResolvers );
-            tDebug() << "UPGRADING AND DELETING:" << resolverDir.absolutePath();
+            Davros::debug() << "UPGRADING AND DELETING:" << resolverDir.absolutePath();
             TomahawkUtils::removeDirectory( resolverDir.absolutePath() );
         }
     } else if ( oldVersion == 4 )
@@ -239,7 +241,7 @@ TomahawkSettings::doUpgrade( int oldVersion, int newVersion )
                 configuration[ "cachedfriendssinceid" ] = value( sipPlugin + "/cachedfriendssinceid" );
                 configuration[ "cacheddirectmessagessinceid" ] = value( sipPlugin + "/cacheddirectmessagessinceid" );
                 configuration[ "cachedpeers" ] = value( sipPlugin + "/cachedpeers" );
-                qDebug() << "FOUND CACHED PEERS:" << value( sipPlugin + "/cachedpeers" ).toHash();
+                Davros::debug() << "FOUND CACHED PEERS:" << value( sipPlugin + "/cachedpeers" ).toHash();
                 configuration[ "cachedmentionssinceid" ] = value( sipPlugin + "/cachedmentionssinceid" );
                 configuration[ "saveddbid" ] = value( sipPlugin + "/saveddbid" );
 

@@ -23,6 +23,8 @@
 
 #include "source.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include <PlaylistUpdaterInterface.h>
 
@@ -36,7 +38,7 @@ Collection::Collection( const source_ptr& source, const QString& name, QObject* 
     , m_changed( false )
     , m_source( source )
 {
-    qDebug() << Q_FUNC_INFO << name << source->friendlyName();
+    Davros::debug() << Q_FUNC_INFO << name << source->friendlyName();
 
     connect( source.data(), SIGNAL( synced() ), SLOT( onSynced() ) );
 }
@@ -44,7 +46,7 @@ Collection::Collection( const source_ptr& source, const QString& name, QObject* 
 
 Collection::~Collection()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 
@@ -72,7 +74,7 @@ Collection::addPlaylist( const Tomahawk::playlist_ptr& p )
     toadd << p;
     m_playlists.insert( p->guid(), p );
 
-/*    qDebug() << Q_FUNC_INFO << "Collection name" << name()
+/*    Davros::debug() << Q_FUNC_INFO << "Collection name" << name()
                             << "from source id" << source()->id()
                             << "numplaylists:" << m_playlists.count();*/
     emit playlistsAdded( toadd );
@@ -86,7 +88,7 @@ Collection::addAutoPlaylist( const Tomahawk::dynplaylist_ptr& p )
     toadd << p;
     m_autoplaylists.insert( p->guid(), p );
 
-/*    qDebug() << Q_FUNC_INFO << "Collection name" << name()
+/*    Davros::debug() << Q_FUNC_INFO << "Collection name" << name()
                             << "from source id" << source()->id()
                             << "numplaylists:" << m_playlists.count();*/
     emit autoPlaylistsAdded( toadd );
@@ -100,7 +102,7 @@ Collection::addStation( const dynplaylist_ptr& s )
     toadd << s;
     m_stations.insert( s->guid(), s );
 
-/*    qDebug() << Q_FUNC_INFO << "Collection name" << name()
+/*    Davros::debug() << Q_FUNC_INFO << "Collection name" << name()
                             << "from source id" << source()->id()
                             << "numplaylists:" << m_playlists.count();*/
     emit stationsAdded( toadd );
@@ -114,7 +116,7 @@ Collection::deletePlaylist( const Tomahawk::playlist_ptr& p )
     todelete << p;
     m_playlists.remove( p->guid() );
 
-/*    qDebug() << Q_FUNC_INFO << "Collection name" << name()
+/*    Davros::debug() << Q_FUNC_INFO << "Collection name" << name()
                             << "from source id" << source()->id()
                             << "numplaylists:" << m_playlists.count();*/
     emit playlistsDeleted( todelete );
@@ -128,7 +130,7 @@ Collection::deleteAutoPlaylist( const Tomahawk::dynplaylist_ptr& p )
     todelete << p;
     m_autoplaylists.remove( p->guid() );
 
-/*    qDebug() << Q_FUNC_INFO << "Collection name" << name()
+/*    Davros::debug() << Q_FUNC_INFO << "Collection name" << name()
                             << "from source id" << source()->id()
                             << "numplaylists:" << m_playlists.count();*/
     emit autoPlaylistsDeleted( todelete );
@@ -142,7 +144,7 @@ Collection::deleteStation( const dynplaylist_ptr& s )
     todelete << s;
     m_stations.remove( s->guid() );
 
-/*    qDebug() << Q_FUNC_INFO << "Collection name" << name()
+/*    Davros::debug() << Q_FUNC_INFO << "Collection name" << name()
                             << "from source id" << source()->id()
                             << "numplaylists:" << m_playlists.count();*/
     emit stationsDeleted( todelete );
@@ -175,7 +177,7 @@ Collection::setPlaylists( const QList<Tomahawk::playlist_ptr>& plists )
 {
     foreach ( const playlist_ptr& p, plists )
     {
-//        qDebug() << "Batch inserting playlist:" << p->guid();
+//        Davros::debug() << "Batch inserting playlist:" << p->guid();
         m_playlists.insert( p->guid(), p );
         if ( !m_source.isNull() && m_source->isLocal() )
             PlaylistUpdaterInterface::loadForPlaylist( p );
@@ -189,7 +191,7 @@ Collection::setAutoPlaylists( const QList< Tomahawk::dynplaylist_ptr >& plists )
 {
     foreach ( const dynplaylist_ptr& p, plists )
     {
-//        qDebug() << "Batch inserting dynamic playlist:" << p->guid();
+//        Davros::debug() << "Batch inserting dynamic playlist:" << p->guid();
         m_autoplaylists.insert( p->guid(), p );
     }
     emit autoPlaylistsAdded( plists );
@@ -201,7 +203,7 @@ Collection::setStations( const QList< dynplaylist_ptr >& stations )
 {
     foreach ( const dynplaylist_ptr& s, stations )
     {
-//        qDebug() << "Batch inserting station:" << s->guid();
+//        Davros::debug() << "Batch inserting station:" << s->guid();
         m_stations.insert( s->guid(), s );
     }
     emit autoPlaylistsAdded( stations );
@@ -211,7 +213,7 @@ Collection::setStations( const QList< dynplaylist_ptr >& stations )
 void
 Collection::setTracks( const QList<unsigned int>& ids )
 {
-    tDebug() << Q_FUNC_INFO << ids.count() << name();
+    Davros::debug() << Q_FUNC_INFO << ids.count() << name();
 
     m_changed = true;
     emit tracksAdded( ids );
@@ -221,7 +223,7 @@ Collection::setTracks( const QList<unsigned int>& ids )
 void
 Collection::delTracks( const QList<unsigned int>& ids )
 {
-    tDebug() << Q_FUNC_INFO << ids.count() << name();
+    Davros::debug() << Q_FUNC_INFO << ids.count() << name();
 
     m_changed = true;
     emit tracksRemoved( ids );
@@ -231,7 +233,7 @@ Collection::delTracks( const QList<unsigned int>& ids )
 void
 Collection::onSynced()
 {
-    tDebug() << Q_FUNC_INFO << m_changed;
+    Davros::debug() << Q_FUNC_INFO << m_changed;
     if ( m_changed )
     {
         m_changed = false;

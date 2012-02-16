@@ -18,6 +18,8 @@
 
 #include "databasecommand_modifyplaylist.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "playlist.h"
 

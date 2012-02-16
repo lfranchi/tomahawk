@@ -28,6 +28,8 @@
 #include <echonest/Playlist.h>
 #include "EchonestGenerator.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include <sourcelist.h>
 
@@ -79,7 +81,7 @@ Tomahawk::EchonestControl::setSelectedType ( const QString& type )
         Tomahawk::DynamicControl::setSelectedType ( type );
         updateWidgets();
         updateData();
-//        qDebug() << "Setting new type, set data to:" << m_data.first << m_data.second;
+//        Davros::debug() << "Setting new type, set data to:" << m_data.first << m_data.second;
     }
 }
 
@@ -513,7 +515,7 @@ Tomahawk::EchonestControl::updateData()
             int enumVal = input->itemData( input->currentIndex() ).toInt() + m_matchData.toInt();
             m_data.first = Echonest::DynamicPlaylist::Sort;
             m_data.second = enumVal;
-//             qDebug() << "SAVING" << input->currentIndex() << "AS" << enumVal << "(" << input->itemData( input->currentIndex() ).toInt() << "+" << m_matchData.toInt() << ")";
+//             Davros::debug() << "SAVING" << input->currentIndex() << "AS" << enumVal << "(" << input->itemData( input->currentIndex() ).toInt() << "+" << m_matchData.toInt() << ")";
         }
     }
 
@@ -602,7 +604,7 @@ Tomahawk::EchonestControl::updateWidgetsFromData()
             // HACK alert. if it's odd, subtract 1
             int val = ( m_data.second.toInt() - ( m_data.second.toInt() % 2 ) ) / 2;
             input->setCurrentIndex( val );
-//             qDebug() << "LOADING" << m_data.second.toInt() << "AS" << val;
+//             Davros::debug() << "LOADING" << m_data.second.toInt() << "AS" << val;
         }
     }
     calculateSummary();
@@ -634,7 +636,7 @@ Tomahawk::EchonestControl::updateToLabelAndCombo()
 void
 Tomahawk::EchonestControl::editingFinished()
 {
-//    qDebug() << Q_FUNC_INFO;
+//    Davros::debug() << Q_FUNC_INFO;
     m_editingTimer.start();
 }
 
@@ -671,7 +673,7 @@ Tomahawk::EchonestControl::artistTextEdited( const QString& text )
             addArtistSuggestions( s_suggestCache[ text ] );
         } else { // gotta look it up
             QNetworkReply* r = Echonest::Artist::suggest( text );
-            qDebug() << "Asking echonest for suggestions to help our completion..." << r->url().toString();
+            Davros::debug() << "Asking echonest for suggestions to help our completion..." << r->url().toString();
             r->setProperty( "curtext", text );
 
             m_suggestWorkers.insert( r );
@@ -684,7 +686,7 @@ Tomahawk::EchonestControl::artistTextEdited( const QString& text )
 void
 Tomahawk::EchonestControl::suggestFinished()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     QNetworkReply* r = qobject_cast< QNetworkReply* >( sender() );
     Q_ASSERT( r );
     QLineEdit* l = qobject_cast<QLineEdit*>( m_input.data() );
@@ -697,7 +699,7 @@ Tomahawk::EchonestControl::suggestFinished()
 
     QString origText = r->property( "curtext" ).toString();
     if( origText != l->text() ) { // user might have kept on typing, then ignore
-        qDebug() << "Text changed meanwhile, stopping suggestion parsing";
+        Davros::debug() << "Text changed meanwhile, stopping suggestion parsing";
         return;
     }
 

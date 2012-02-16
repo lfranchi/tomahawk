@@ -30,6 +30,8 @@
 #include "databasecommand_setdynamicplaylistrevision.h"
 #include "databasecommand_socialaction.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "databasecommand_setcollectionattributes.h"
 #include "databasecommand_settrackattributes.h"
@@ -39,7 +41,7 @@ DatabaseCommand::DatabaseCommand( QObject* parent )
     : QObject( parent )
     , m_state( PENDING )
 {
-    //qDebug() << Q_FUNC_INFO;
+    //Davros::debug() << Q_FUNC_INFO;
 }
 
 
@@ -48,7 +50,7 @@ DatabaseCommand::DatabaseCommand( const source_ptr& src, QObject* parent )
     , m_state( PENDING )
     , m_source( src )
 {
-    //qDebug() << Q_FUNC_INFO;
+    //Davros::debug() << Q_FUNC_INFO;
 }
 
 DatabaseCommand::DatabaseCommand( const DatabaseCommand& other )
@@ -58,19 +60,19 @@ DatabaseCommand::DatabaseCommand( const DatabaseCommand& other )
 
 DatabaseCommand::~DatabaseCommand()
 {
-//    qDebug() << Q_FUNC_INFO;
+//    Davros::debug() << Q_FUNC_INFO;
 }
 
 
 void
 DatabaseCommand::_exec( DatabaseImpl* lib )
 {
-    //qDebug() << "RUNNING" << thread();
+    //Davros::debug() << "RUNNING" << thread();
     m_state = RUNNING;
     emit running();
     exec( lib );
     m_state = FINISHED;
-    //qDebug() << "FINISHED" << thread();
+    //Davros::debug() << "FINISHED" << thread();
 }
 
 
@@ -158,7 +160,7 @@ DatabaseCommand::factory( const QVariant& op, const source_ptr& source )
     }
     else if( name == "setdynamicplaylistrevision" )
     {
-        qDebug() << "SETDYN CONTENT:" << op;
+        Davros::debug() << "SETDYN CONTENT:" << op;
         DatabaseCommand_SetDynamicPlaylistRevision * cmd = new DatabaseCommand_SetDynamicPlaylistRevision;
         cmd->setSource( source );
         QJson::QObjectHelper::qvariant2qobject( op.toMap(), cmd );
@@ -186,7 +188,7 @@ DatabaseCommand::factory( const QVariant& op, const source_ptr& source )
         return cmd;
     }
 
-    qDebug() << "Unknown database command" << name;
+    Davros::debug() << "Unknown database command" << name;
 //    Q_ASSERT( false );
     return NULL;
 }

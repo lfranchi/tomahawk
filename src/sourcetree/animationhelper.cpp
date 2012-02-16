@@ -19,7 +19,7 @@
 
 #include "animationhelper.h"
 
-#include "QDebug"
+#include "libdavros/davros.h"
 
 AnimationHelper::AnimationHelper( const QModelIndex& index, QObject *parent )
     :QObject( parent )
@@ -52,7 +52,7 @@ void AnimationHelper::initialize( const QSize& startValue, const QSize& endValue
     m_expandAnimation->setEndValue( endValue );
     m_expandAnimation->setDuration( duration );
     m_expandAnimation->setEasingCurve( QEasingCurve::OutExpo );
-    qDebug() << "starting animation" << startValue << endValue << duration;
+    Davros::debug() << "starting animation" << startValue << endValue << duration;
     connect( m_expandAnimation, SIGNAL( finished() ), SLOT(expandAnimationFinished()));
 
     m_collapseAnimation= new QPropertyAnimation( this, "size", this );
@@ -68,7 +68,7 @@ void AnimationHelper::setSize( const QSize& size )
 {
     m_size = size;
     emit sizeChanged();
-    //qDebug() << "animaton setting size to" << size;
+    //Davros::debug() << "animaton setting size to" << size;
 }
 
 void AnimationHelper::expand()

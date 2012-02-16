@@ -20,23 +20,25 @@
 
 #include "databaseimpl.h"
 #include "tomahawksqlquery.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
 DatabaseCommand_UpdateSearchIndex::DatabaseCommand_UpdateSearchIndex()
     : DatabaseCommand()
 {
-    tLog() << Q_FUNC_INFO << "Updating index.";
+    Davros::debug() << Q_FUNC_INFO << "Updating index.";
 }
 
 
 void
 DatabaseCommand_UpdateSearchIndex::indexTable( DatabaseImpl* db, const QString& table )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     TomahawkSqlQuery query = db->newquery();
-    qDebug() << "Building index for" << table;
+    Davros::debug() << "Building index for" << table;
     query.exec( QString( "SELECT id, name FROM %1" ).arg( table ) );
 
     QMap< unsigned int, QString > fields;
@@ -46,7 +48,7 @@ DatabaseCommand_UpdateSearchIndex::indexTable( DatabaseImpl* db, const QString& 
     }
 
     db->m_fuzzyIndex->appendFields( table, fields );
-    qDebug() << "Building index for" << table << "finished.";
+    Davros::debug() << "Building index for" << table << "finished.";
 }
 
 

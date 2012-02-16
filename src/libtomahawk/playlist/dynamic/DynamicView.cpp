@@ -29,6 +29,8 @@
 #include "trackheader.h"
 #include "DynamicModel.h"
 #include "widgets/overlaywidget.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -171,13 +173,13 @@ DynamicView::checkForOverflow()
     /// Our threshold is 4 rows to the end. That's when we collapse.
     QModelIndex last = proxyModel()->index( proxyModel()->rowCount( QModelIndex() ) - 1, 0, QModelIndex() );
     QRect lastRect = visualRect( last );
-    qDebug() << "Checking viewport height of" << viewport()->height() << "and last track bottom:" << lastRect.bottomLeft().y() << "under threshold" << 4 * lastRect.height();
+    Davros::debug() << "Checking viewport height of" << viewport()->height() << "and last track bottom:" << lastRect.bottomLeft().y() << "under threshold" << 4 * lastRect.height();
     if( viewport()->height() - lastRect.bottomLeft().y() <= ( 4 * lastRect.height() ) ) {
-        qDebug() << "Deciding to remove some tracks from this station";
+        Davros::debug() << "Deciding to remove some tracks from this station";
 
         // figure out how many to remove. lets get rid of 1/3rd of the backlog, visually.
         int toRemove = ( viewport()->height() / 3 ) / lastRect.height();
-        qDebug() << "Decided to remove" << toRemove << "rows!";
+        Davros::debug() << "Decided to remove" << toRemove << "rows!";
         collapseEntries( 0, toRemove, proxyModel()->rowCount( QModelIndex() ) - toRemove );
     }
 }
@@ -186,9 +188,9 @@ DynamicView::checkForOverflow()
 void
 DynamicView::collapseEntries( int startRow, int num, int numToKeep )
 {
-    qDebug() << "BEGINNING TO COLLAPSE FROM" << startRow << num << numToKeep;
+    Davros::debug() << "BEGINNING TO COLLAPSE FROM" << startRow << num << numToKeep;
     if( m_fadeOutAnim.state() == QTimeLine::Running ) {
-        qDebug() << "COLLAPSING TWICE, aborting!";
+        Davros::debug() << "COLLAPSING TWICE, aborting!";
         return;
     }
 
@@ -209,7 +211,7 @@ DynamicView::collapseEntries( int startRow, int num, int numToKeep )
     QModelIndex topLeft = proxyModel()->index( startRow, 0, QModelIndex() );
     QModelIndex bottomRight = proxyModel()->index( startRow + realNum - 1, proxyModel()->columnCount( QModelIndex() ) - 1, QModelIndex() );
     QItemSelection sel( topLeft, bottomRight );
-    qDebug() << "Created selection from:" << startRow << "to" << startRow + realNum - 1;
+    Davros::debug() << "Created selection from:" << startRow << "to" << startRow + realNum - 1;
     QRect fadingRect = visualRegionForSelection( sel ).boundingRect();
     QRect fadingRectViewport = fadingRect; // all values that we use in paintEvent() have to be in viewport coords
     fadingRect.moveTo( viewport()->mapTo( this, fadingRect.topLeft() ) );
@@ -223,12 +225,12 @@ DynamicView::collapseEntries( int startRow, int num, int numToKeep )
 
     m_fadeOutAnim.start();
 
-    qDebug() << "Grabbed fading indexes from rect:" << fadingRect << m_fadingIndexes.size() << "ANCHORED:" << m_fadingPointAnchor;
+    Davros::debug() << "Grabbed fading indexes from rect:" << fadingRect << m_fadingIndexes.size() << "ANCHORED:" << m_fadingPointAnchor;
 
     if( !m_fadeOnly ) {
     /// sanity checks. make sure we have all the rows we need
         int firstSlider = startRow + realNum;
-        qDebug() << "Sliding from" << firstSlider << "number:" << numToKeep - 1 << "rowcount is:" << proxyModel()->rowCount();
+        Davros::debug() << "Sliding from" << firstSlider << "number:" << numToKeep - 1 << "rowcount is:" << proxyModel()->rowCount();
         // we may have removed some rows since we first started counting, so adjust
         //Q_ASSERT( firstSlider + numToKeep - 1 <= proxyModel()->rowCount() );
         if( firstSlider + numToKeep - 1 >= proxyModel()->rowCount() ) {
@@ -247,7 +249,7 @@ DynamicView::collapseEntries( int startRow, int num, int numToKeep )
         m_slidingIndex = QPixmap::grabWidget( this, slidingRect );
         m_bottomAnchor = QPoint( 0, slidingRectViewport.topLeft().y() );
         m_bottomOfAnim = QPoint( 0, slidingRectViewport.bottomLeft().y() );
-        qDebug() << "Grabbed sliding index from rect:" << slidingRect << m_slidingIndex.size();
+        Davros::debug() << "Grabbed sliding index from rect:" << slidingRect << m_slidingIndex.size();
 
         // slide from the current position to the new one
         int frameRange = fadingRect.topLeft().y() - slidingRect.topLeft().y();
@@ -277,13 +279,13 @@ DynamicView::backgroundBetween( QRect rect, int rowStart )
     QStyleOptionViewItemV4 opt = viewOptions();
     // code taken from QTreeViewPrivate::paintAlternatingRowColors
     m_fadebg = !style()->styleHint( QStyle::SH_ItemView_PaintAlternatingRowColorsForEmptyArea, &opt );
-    //  qDebug() << "PAINTING ALTERNATING ROW BG!: " << fadingRectViewport;
+    //  Davros::debug() << "PAINTING ALTERNATING ROW BG!: " << fadingRectViewport;
     int rowHeight = itemDelegate()->sizeHint( opt, QModelIndex() ).height() + 1;
     int y = 0;
     int current = rowStart;
     while( y <= rect.bottomLeft().y() ) {
         opt.rect.setRect(0, y, viewport()->width(), rowHeight);
-        //  qDebug() << "PAINTING BG ROW IN RECT" << y << "to" << y + rowHeight << ":" << opt.rect;
+        //  Davros::debug() << "PAINTING BG ROW IN RECT" << y << "to" << y + rowHeight << ":" << opt.rect;
         if( current & 1 ) {
             opt.features |= QStyleOptionViewItemV2::Alternate;
         } else {
@@ -326,7 +328,7 @@ DynamicView::paintEvent( QPaintEvent* event )
         if( m_fadebg ) {
             p.restore();
         }
-        //         qDebug() << "FAST SETOPACITY:" << p.paintEngine()->hasFeature(QPaintEngine::ConstantOpacity);
+        //         Davros::debug() << "FAST SETOPACITY:" << p.paintEngine()->hasFeature(QPaintEngine::ConstantOpacity);
         p.setOpacity( 1 - m_fadeOutAnim.currentValue() );
         p.drawPixmap( m_fadingPointAnchor, m_fadingIndexes );
         p.restore();

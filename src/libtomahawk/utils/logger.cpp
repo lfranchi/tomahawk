@@ -131,7 +131,7 @@ setupLogfile()
     }
 
     logfile.open( LOGFILE, ios::app );
-    qInstallMsgHandler( TomahawkLogHandler );
+   // qInstallMsgHandler( TomahawkLogHandler );
 }
 
 }

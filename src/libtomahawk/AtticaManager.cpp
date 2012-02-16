@@ -31,6 +31,8 @@
 #include <QDir>
 #include <QTimer>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "accounts/ResolverAccount.h"
 #include "accounts/AccountManager.h"
@@ -65,15 +67,15 @@ AtticaManager::loadPixmapsFromCache()
     if ( !cacheDir.cd( "atticacache" ) ) // doesn't exist, no cache
         return;
 
-    qDebug() << "Loading resolvers from cache dir:" << cacheDir.absolutePath();
-    qDebug() << "Currently we know about these resolvers:" << m_resolverStates.keys();
+    Davros::debug() << "Loading resolvers from cache dir:" << cacheDir.absolutePath();
+    Davros::debug() << "Currently we know about these resolvers:" << m_resolverStates.keys();
     foreach ( const QString& file, cacheDir.entryList( QStringList() << "*.png", QDir::Files | QDir::NoSymLinks ) )
     {
         // load all the pixmaps
         QFileInfo info( file );
         if ( !m_resolverStates.contains( info.baseName() ) )
         {
-            tLog() << "Found resolver icon cached for resolver we no longer see in synchrotron repo:" << info.baseName();
+            Davros::debug() << "Found resolver icon cached for resolver we no longer see in synchrotron repo:" << info.baseName();
             continue;
         }
 
@@ -101,7 +103,7 @@ AtticaManager::savePixmapsToCache()
         const QString filename = cacheDir.absoluteFilePath( QString( "%1.png" ).arg( id ) );
         if ( !m_resolverStates[ id ].pixmap->save( filename ) )
         {
-            tLog() << "Failed to open cache file for writing:" << filename;
+            Davros::debug() << "Failed to open cache file for writing:" << filename;
             continue;
         }
     }
@@ -261,7 +263,7 @@ AtticaManager::resolverIconFetched()
 
     if ( !reply->error() == QNetworkReply::NoError )
     {
-        tLog() << "Failed to fetch resolver icon image:" << reply->errorString();
+        Davros::debug() << "Failed to fetch resolver icon image:" << reply->errorString();
         return;
     }
 
@@ -362,7 +364,7 @@ AtticaManager::resolverDownloadFinished ( BaseJob* j )
     }
     else
     {
-        tLog() << "Failed to do resolver download job!" << job->metadata().error();
+        Davros::debug() << "Failed to do resolver download job!" << job->metadata().error();
     }
 }
 
@@ -379,7 +381,7 @@ AtticaManager::payloadFetched()
         QTemporaryFile f( QDir::tempPath() + QDir::separator() + "tomahawkattica_XXXXXX.zip" );
         if ( !f.open() )
         {
-            tLog() << "Failed to write zip file to temp file:" << f.fileName();
+            Davros::debug() << "Failed to write zip file to temp file:" << f.fileName();
             return;
         }
         f.write( reply->readAll() );
@@ -407,7 +409,7 @@ AtticaManager::payloadFetched()
     }
     else
     {
-        tLog() << "Failed to download attica payload...:" << reply->errorString();
+        Davros::debug() << "Failed to download attica payload...:" << reply->errorString();
     }
 }
 
@@ -419,24 +421,24 @@ AtticaManager::extractPayload( const QString& filename, const QString& resolverI
     QuaZip zipFile( filename );
     if ( !zipFile.open( QuaZip::mdUnzip ) )
     {
-        tLog() << "Failed to QuaZip open:" << zipFile.getZipError();
+        Davros::debug() << "Failed to QuaZip open:" << zipFile.getZipError();
         return QString();
     }
 
     if ( !zipFile.goToFirstFile() )
     {
-        tLog() << "Failed to go to first file in zip archive: " << zipFile.getZipError();
+        Davros::debug() << "Failed to go to first file in zip archive: " << zipFile.getZipError();
         return QString();
     }
 
     QDir resolverDir = TomahawkUtils::appDataDir();
     if ( !resolverDir.mkpath( QString( "atticaresolvers/%1" ).arg( resolverId ) ) )
     {
-        tLog() << "Failed to mkdir resolver save dir: " << TomahawkUtils::appDataDir().absoluteFilePath( QString( "atticaresolvers/%1" ).arg( resolverId ) );
+        Davros::debug() << "Failed to mkdir resolver save dir: " << TomahawkUtils::appDataDir().absoluteFilePath( QString( "atticaresolvers/%1" ).arg( resolverId ) );
         return QString();
     }
     resolverDir.cd( QString( "atticaresolvers/%1" ).arg( resolverId ) );
-    tDebug() << "Installing resolver to:" << resolverDir.absolutePath();
+    Davros::debug() << "Installing resolver to:" << resolverDir.absolutePath();
 
     QuaZipFile fileInZip( &zipFile );
     do
@@ -446,7 +448,7 @@ AtticaManager::extractPayload( const QString& filename, const QString& resolverI
 
         if ( !fileInZip.open( QIODevice::ReadOnly ) )
         {
-            tLog() << "Failed to open file inside zip archive:" << info.name << zipFile.getZipName() << "with error:" << zipFile.getZipError();
+            Davros::debug() << "Failed to open file inside zip archive:" << info.name << zipFile.getZipName() << "with error:" << zipFile.getZipError();
             continue;
         }
 
@@ -463,10 +465,10 @@ AtticaManager::extractPayload( const QString& filename, const QString& resolverI
         // make dir if there is one needed
         QDir d( fileInZip.getActualFileName() );
 
-        tDebug() << "Writing to output file..." << out.fileName();
+        Davros::debug() << "Writing to output file..." << out.fileName();
         if ( !out.open( QIODevice::WriteOnly ) )
         {
-            tLog() << "Failed to open resolver extract file:" << out.errorString() << info.name;
+            Davros::debug() << "Failed to open resolver extract file:" << out.errorString() << info.name;
             continue;
         }
 
@@ -491,7 +493,7 @@ AtticaManager::uninstallResolver( const QString& pathToResolver )
     QRegExp r( ".*([^/]*)/contents/code/main.js" );
     r.indexIn( pathToResolver );
     const QString& atticaId = r.cap( 1 );
-    tDebug() << "Got resolver ID to remove:" << atticaId;
+    Davros::debug() << "Got resolver ID to remove:" << atticaId;
     if ( !atticaId.isEmpty() ) // this is an attica-installed resolver, mark as uninstalled
     {
         foreach ( const Content& resolver, m_resolvers )

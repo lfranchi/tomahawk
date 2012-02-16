@@ -31,6 +31,8 @@
 #include "infoplugins/generic/musicbrainzPlugin.h"
 #include "infoplugins/generic/hypemPlugin.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #ifdef Q_WS_MAC
@@ -53,7 +55,7 @@ namespace InfoSystem
 InfoSystemWorker::InfoSystemWorker()
     : QObject()
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     m_checkTimeoutsTimer.setInterval( 1000 );
     m_checkTimeoutsTimer.setSingleShot( false );
@@ -64,20 +66,20 @@ InfoSystemWorker::InfoSystemWorker()
 
 InfoSystemWorker::~InfoSystemWorker()
 {
-    tDebug() << Q_FUNC_INFO << " beginning";
+    Davros::debug() << Q_FUNC_INFO << " beginning";
     Q_FOREACH( InfoPluginPtr plugin, m_plugins )
     {
         if( plugin )
             delete plugin.data();
     }
-    tDebug() << Q_FUNC_INFO << " finished";
+    Davros::debug() << Q_FUNC_INFO << " finished";
 }
 
 
 void
 InfoSystemWorker::init( Tomahawk::InfoSystem::InfoSystemCache* cache )
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 #ifndef ENABLE_HEADLESS
     InfoPluginPtr enptr( new EchoNestPlugin() );
     m_plugins.append( enptr );
@@ -171,7 +173,7 @@ InfoSystemWorker::determineOrderedMatches( const InfoType type ) const
 void
 InfoSystemWorker::getInfo( Tomahawk::InfoSystem::InfoRequestData requestData )
 {
-    //qDebug() << Q_FUNC_INFO << "type is " << requestData.type << " and allSources = " << (allSources ? "true" : "false" );
+    //Davros::debug() << Q_FUNC_INFO << "type is " << requestData.type << " and allSources = " << (allSources ? "true" : "false" );
 
     QList< InfoPluginPtr > providers = determineOrderedMatches( requestData.type );
     if ( providers.isEmpty() )
@@ -195,7 +197,7 @@ InfoSystemWorker::getInfo( Tomahawk::InfoSystem::InfoRequestData requestData )
         if ( requestData.allSources || m_savedRequestMap.contains( requestData.requestId ) )
         {
             if ( m_savedRequestMap.contains( requestData.requestId ) )
-                tDebug() << Q_FUNC_INFO << "Warning: reassigning requestId because it already exists";
+                Davros::debug() << Q_FUNC_INFO << "Warning: reassigning requestId because it already exists";
             requestData.internalId = TomahawkUtils::infosystemRequestId();
         }
         else
@@ -208,9 +210,9 @@ InfoSystemWorker::getInfo( Tomahawk::InfoSystem::InfoRequestData requestData )
             qint64 currMs = QDateTime::currentMSecsSinceEpoch();
             m_timeRequestMapper.insert( currMs + requestData.timeoutMillis, requestId );
         }
-    //    qDebug() << "Assigning request with requestId" << requestId << "and type" << requestData.type;
+    //    Davros::debug() << "Assigning request with requestId" << requestId << "and type" << requestData.type;
         m_dataTracker[ requestData.caller ][ requestData.type ] = m_dataTracker[ requestData.caller ][ requestData.type ] + 1;
-    //    qDebug() << "Current count in dataTracker for target" << requestData.caller << "and type" << requestData.type << "is" << m_dataTracker[ requestData.caller ][ requestData.type ];
+    //    Davros::debug() << "Current count in dataTracker for target" << requestData.caller << "and type" << requestData.type << "is" << m_dataTracker[ requestData.caller ][ requestData.type ];
 
         InfoRequestData* data = new InfoRequestData;
         data->caller = requestData.caller;
@@ -233,7 +235,7 @@ InfoSystemWorker::getInfo( Tomahawk::InfoSystem::InfoRequestData requestData )
 void
 InfoSystemWorker::pushInfo( QString caller, Tomahawk::InfoSystem::InfoType type, QVariant input )
 {
-//    qDebug() << Q_FUNC_INFO;
+//    Davros::debug() << Q_FUNC_INFO;
 
     Q_FOREACH( InfoPluginPtr ptr, m_infoPushMap[ type ] )
     {
@@ -246,18 +248,18 @@ InfoSystemWorker::pushInfo( QString caller, Tomahawk::InfoSystem::InfoType type,
 void
 InfoSystemWorker::infoSlot( Tomahawk::InfoSystem::InfoRequestData requestData, QVariant output )
 {
-//    qDebug() << Q_FUNC_INFO << "with requestId" << requestId;
+//    Davros::debug() << Q_FUNC_INFO << "with requestId" << requestId;
 
     quint64 requestId = requestData.internalId;
 
     if ( m_dataTracker[ requestData.caller ][ requestData.type ] == 0 )
     {
-//        qDebug() << Q_FUNC_INFO << "Caller was not waiting for that type of data!";
+//        Davros::debug() << Q_FUNC_INFO << "Caller was not waiting for that type of data!";
         return;
     }
     if ( !m_requestSatisfiedMap.contains( requestId ) || m_requestSatisfiedMap[ requestId ] )
     {
-//        qDebug() << Q_FUNC_INFO << "Request was already taken care of!";
+//        Davros::debug() << Q_FUNC_INFO << "Request was already taken care of!";
         return;
     }
 
@@ -265,7 +267,7 @@ InfoSystemWorker::infoSlot( Tomahawk::InfoSystem::InfoRequestData requestData, Q
     emit info( requestData, output );
 
     m_dataTracker[ requestData.caller ][ requestData.type ] = m_dataTracker[ requestData.caller ][ requestData.type ] - 1;
-//    qDebug() << "Current count in dataTracker for target" << requestData.caller << "and type" << requestData.type << "is" << m_dataTracker[ requestData.caller ][ requestData.type ];
+//    Davros::debug() << "Current count in dataTracker for target" << requestData.caller << "and type" << requestData.type << "is" << m_dataTracker[ requestData.caller ][ requestData.type ];
     delete m_savedRequestMap[ requestId ];
     m_savedRequestMap.remove( requestId );
     checkFinished( requestData );
@@ -283,7 +285,7 @@ InfoSystemWorker::checkFinished( const Tomahawk::InfoSystem::InfoRequestData &re
         if ( m_dataTracker[ requestData.caller ][ testtype ] != 0 )
             return;
     }
-//    qDebug() << "Emitting finished with target" << target;
+//    Davros::debug() << "Emitting finished with target" << target;
     emit finished( requestData.caller );
 }
 
@@ -300,7 +302,7 @@ InfoSystemWorker::checkTimeoutsTimerFired()
             {
                 if ( m_requestSatisfiedMap[ requestId ] )
                 {
-//                    qDebug() << Q_FUNC_INFO << "Removing mapping of" << requestId << "which expired at time" << time << "and was already satisfied";
+//                    Davros::debug() << Q_FUNC_INFO << "Removing mapping of" << requestId << "which expired at time" << time << "and was already satisfied";
                     m_timeRequestMapper.remove( time, requestId );
                     if ( !m_timeRequestMapper.count( time ) )
                         m_timeRequestMapper.remove( time );
@@ -308,7 +310,7 @@ InfoSystemWorker::checkTimeoutsTimerFired()
                 }
 
                 //doh, timed out
-//                qDebug() << Q_FUNC_INFO << "Doh, timed out for requestId" << requestId;
+//                Davros::debug() << Q_FUNC_INFO << "Doh, timed out for requestId" << requestId;
                 InfoRequestData *savedData = m_savedRequestMap[ requestId ];
 
                 InfoRequestData returnData;
@@ -322,7 +324,7 @@ InfoSystemWorker::checkTimeoutsTimerFired()
                 m_savedRequestMap.remove( requestId );
 
                 m_dataTracker[ returnData.caller ][ returnData.type ] = m_dataTracker[ returnData.caller ][ returnData.type ] - 1;
-//                qDebug() << "Current count in dataTracker for target" << returnData.caller << "is" << m_dataTracker[ returnData.caller ][ returnData.type ];
+//                Davros::debug() << "Current count in dataTracker for target" << returnData.caller << "is" << m_dataTracker[ returnData.caller ][ returnData.type ];
 
                 m_requestSatisfiedMap[ requestId ] = true;
                 m_timeRequestMapper.remove( time, requestId );

@@ -34,6 +34,8 @@
 #include "treeitemdelegate.h"
 #include "treemodel.h"
 #include "viewmanager.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define SCROLL_TIMEOUT 280
@@ -88,7 +90,7 @@ ArtistView::ArtistView( QWidget* parent )
 
 ArtistView::~ArtistView()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 
@@ -106,7 +108,7 @@ void
 ArtistView::setModel( QAbstractItemModel* model )
 {
     Q_UNUSED( model );
-    qDebug() << "Explicitly use setPlaylistModel instead";
+    Davros::debug() << "Explicitly use setPlaylistModel instead";
     Q_ASSERT( false );
 }
 
@@ -277,7 +279,7 @@ ArtistView::startDrag( Qt::DropActions supportedActions )
     if ( indexes.count() == 0 )
         return;
 
-    qDebug() << "Dragging" << indexes.count() << "indexes";
+    Davros::debug() << "Dragging" << indexes.count() << "indexes";
     QMimeData* data = m_proxyModel->mimeData( indexes );
     if ( !data )
         return;

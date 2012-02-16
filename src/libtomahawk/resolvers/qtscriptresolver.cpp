@@ -27,6 +27,8 @@
 #include "network/servent.h"
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -108,14 +110,14 @@ QtScriptResolverHelper::resolverData()
 void
 QtScriptResolverHelper::log( const QString& message )
 {
-    tLog() << m_scriptPath << ":" << message;
+    Davros::debug() << m_scriptPath << ":" << message;
 }
 
 
 void
 QtScriptResolverHelper::addTrackResults( const QVariantMap& results )
 {
-    qDebug() << "Resolver reporting results:" << results;
+    Davros::debug() << "Resolver reporting results:" << results;
     QList< Tomahawk::result_ptr > tracks = m_resolver->parseResultVariantList( results.value("results").toList() );
 
     QString qid = results.value("qid").toString();
@@ -136,7 +138,7 @@ QtScriptResolverHelper::hmac( const QByteArray& key, const QByteArray &input )
 #ifdef QCA2_FOUND
     if ( !QCA::isSupported( "hmac(md5)" ) )
     {
-        tLog() << "HMAC(md5) not supported with qca-ossl plugin, or qca-ossl plugin is not installed! Unable to generate signature!";
+        Davros::debug() << "HMAC(md5) not supported with qca-ossl plugin, or qca-ossl plugin is not installed! Unable to generate signature!";
         return QByteArray();
     }
 
@@ -150,7 +152,7 @@ QtScriptResolverHelper::hmac( const QByteArray& key, const QByteArray &input )
     QString result = QCA::arrayToHex( resultArray.toByteArray() );
     return result.toUtf8();
 #else
-    tLog() << "Tomahawk compiled without QCA support, cannot generate HMAC signature";
+    Davros::debug() << "Tomahawk compiled without QCA support, cannot generate HMAC signature";
     return QString();
 #endif
 }
@@ -184,7 +186,7 @@ QtScriptResolverHelper::customIODeviceFactory( const Tomahawk::result_ptr& resul
 
     QUrl url = QUrl::fromEncoded( urlStr.toUtf8() );
     QNetworkRequest req( url );
-    tDebug() << "Creating a QNetowrkReply with url:" << req.url().toString();
+    Davros::debug() << "Creating a QNetowrkReply with url:" << req.url().toString();
     QNetworkReply* reply = TomahawkUtils::nam()->get( req );
     return QSharedPointer<QIODevice>( reply, &QObject::deleteLater );
 }
@@ -193,7 +195,7 @@ QtScriptResolverHelper::customIODeviceFactory( const Tomahawk::result_ptr& resul
 void
 ScriptEngine::javaScriptConsoleMessage( const QString& message, int lineNumber, const QString& sourceID )
 {
-    tLog() << "JAVASCRIPT:" << m_scriptPath << message << lineNumber << sourceID;
+    Davros::debug() << "JAVASCRIPT:" << m_scriptPath << message << lineNumber << sourceID;
 #ifdef DEBUG_BUILD
     QMessageBox::critical( 0, "Script Resolver Error", QString( "%1 %2 %3 %4" ).arg( m_scriptPath ).arg( message ).arg( lineNumber ).arg( sourceID ) );
 #endif
@@ -207,14 +209,14 @@ QtScriptResolver::QtScriptResolver( const QString& scriptPath )
     , m_error( Tomahawk::ExternalResolver::NoError )
     , m_resolverHelper( new QtScriptResolverHelper( scriptPath, this ) )
 {
-    tLog() << Q_FUNC_INFO << "Loading JS resolver:" << scriptPath;
+    Davros::debug() << Q_FUNC_INFO << "Loading JS resolver:" << scriptPath;
 
     m_engine = new ScriptEngine( this );
     m_name = QFileInfo( filePath() ).baseName();
 
     if ( !QFile::exists( filePath() ) )
     {
-        tLog() << Q_FUNC_INFO << "Failed loading JavaScript resolver:" << scriptPath;
+        Davros::debug() << Q_FUNC_INFO << "Failed loading JavaScript resolver:" << scriptPath;
         m_error = Tomahawk::ExternalResolver::FileNotFound;
     }
     else
@@ -239,7 +241,7 @@ Tomahawk::ExternalResolver* QtScriptResolver::factory( const QString& scriptPath
     if ( fi.suffix() == "js" || fi.suffix() == "script" )
     {
         res = new QtScriptResolver( scriptPath );
-        tLog() << Q_FUNC_INFO << scriptPath << "Loaded.";
+        Davros::debug() << Q_FUNC_INFO << scriptPath << "Loaded.";
     }
 
     return res;
@@ -306,7 +308,7 @@ QtScriptResolver::init()
     QVariantMap config = resolverUserConfig();
     fillDataInWidgets( config );
 
-    qDebug() << "JS" << filePath() << "READY," << "name" << m_name << "weight" << m_weight << "timeout" << m_timeout;
+    Davros::debug() << "JS" << filePath() << "READY," << "name" << m_name << "weight" << m_weight << "timeout" << m_timeout;
 
     m_ready = true;
 }
@@ -367,7 +369,7 @@ QtScriptResolver::resolve( const Tomahawk::query_ptr& query )
         return;
     }
 
-    qDebug() << "JavaScript Result:" << m;
+    Davros::debug() << "JavaScript Result:" << m;
 
     const QString qid = query->id();
     const QVariantList reslist = m.value( "results" ).toList();
@@ -441,7 +443,7 @@ QtScriptResolver::loadUi()
     m_dataWidgets = m["fields"].toList();
 
     bool compressed = m.value( "compressed", "false" ).toBool();
-    qDebug() << "Resolver has a preferences widget! compressed?" << compressed;
+    Davros::debug() << "Resolver has a preferences widget! compressed?" << compressed;
 
     QByteArray uiData = m[ "widget" ].toByteArray();
 
@@ -481,7 +483,7 @@ void
 QtScriptResolver::saveConfig()
 {
     QVariant saveData = loadDataFromWidgets();
-//    qDebug() << Q_FUNC_INFO << saveData;
+//    Davros::debug() << Q_FUNC_INFO << saveData;
 
     m_resolverHelper->setResolverConfig( saveData.toMap() );
     m_engine->mainFrame()->evaluateJavaScript( RESOLVER_LEGACY_CODE "resolver.saveUserConfig();" );
@@ -568,7 +570,7 @@ QtScriptResolver::fillDataInWidgets( const QVariantMap& data )
         QWidget* widget= findWidget( m_configWidget.data(), widgetName );
         if( !widget )
         {
-            tLog() << Q_FUNC_INFO << "Widget specified in resolver was not found:" << widgetName;
+            Davros::debug() << Q_FUNC_INFO << "Widget specified in resolver was not found:" << widgetName;
             Q_ASSERT(false);
             return;
         }

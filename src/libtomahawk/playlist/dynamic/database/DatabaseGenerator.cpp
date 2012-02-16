@@ -19,6 +19,8 @@
 #include "DatabaseGenerator.h"
 
 #include "DatabaseControl.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include <database/databasecommand_genericselect.h>
 #include <database/database.h>
@@ -93,7 +95,7 @@ DatabaseGenerator::dynamicStarted()
 void
 DatabaseGenerator::generate( int number )
 {
-    tLog() << "Generating" << number << "tracks for this database dynamic playlist with" << m_controls.size() <<  "controls:";
+    Davros::debug() << "Generating" << number << "tracks for this database dynamic playlist with" << m_controls.size() <<  "controls:";
     if ( m_controls.isEmpty() )
     {
         qWarning() << "No controls, can't generate...!";
@@ -102,7 +104,7 @@ DatabaseGenerator::generate( int number )
     }
 
     foreach ( const dyncontrol_ptr& ctrl, m_controls )
-        qDebug() << ctrl->selectedType() << ctrl->match() << ctrl->input();
+        Davros::debug() << ctrl->selectedType() << ctrl->match() << ctrl->input();
 
     // TODO for now, we just support the special "SQL" control, not meant to be shown to the user. Just does a raw query.
     bool hasSql = false;
@@ -126,7 +128,7 @@ DatabaseGenerator::generate( int number )
     {
         dyncontrol_ptr control = m_controls.first();
 
-        tDebug() << "Generated sql query:" << control.dynamicCast< DatabaseControl >()->sql();
+        Davros::debug() << "Generated sql query:" << control.dynamicCast< DatabaseControl >()->sql();
         DatabaseCommand_GenericSelect* cmd = new DatabaseCommand_GenericSelect( control.dynamicCast< DatabaseControl >()->sql(),
                                                                                 static_cast< DatabaseCommand_GenericSelect::QueryType >( control->match().toInt() ),
                                                                                 number

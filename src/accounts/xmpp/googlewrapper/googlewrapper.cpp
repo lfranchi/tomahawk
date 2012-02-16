@@ -62,7 +62,7 @@ GoogleWrapperSip::showAddFriendDialog()
     if ( !ok )
         return;
 
-    qDebug() << "Attempting to add google contact to roster:" << id;
+    Davros::debug() << "Attempting to add google contact to roster:" << id;
     addContact( id );
 }
 

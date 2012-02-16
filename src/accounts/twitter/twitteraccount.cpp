@@ -50,7 +50,7 @@ TwitterAccount::TwitterAccount( const QString &accountId )
     setAccountServiceName( "Twitter" );
     setTypes( AccountTypes( InfoType | SipType ) );
 
-    qDebug() << "Got cached peers:" << configuration() << configuration()[ "cachedpeers" ];
+    Davros::debug() << "Got cached peers:" << configuration() << configuration()[ "cachedpeers" ];
 
     m_configWidget = QWeakPointer< TwitterConfigWidget >( new TwitterConfigWidget( this, 0 ) );
     connect( m_configWidget.data(), SIGNAL( twitterAuthed( bool ) ), SLOT( configDialogAuthedSignalSlot( bool ) ) );
@@ -68,7 +68,7 @@ TwitterAccount::~TwitterAccount()
 void
 TwitterAccount::configDialogAuthedSignalSlot( bool authed )
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     m_isAuthenticated = authed;
     if ( !credentials()[ "username" ].toString().isEmpty() )
         setAccountFriendlyName( QString( "@%1" ).arg( credentials()[ "username" ].toString() ) );
@@ -88,7 +88,7 @@ TwitterAccount::sipPlugin()
 {
     if ( m_twitterSipPlugin.isNull() )
     {
-        qDebug() << "CHECKING:" << configuration() << configuration()[ "cachedpeers" ];
+        Davros::debug() << "CHECKING:" << configuration() << configuration()[ "cachedpeers" ];
         m_twitterSipPlugin = QWeakPointer< TwitterSipPlugin >( new TwitterSipPlugin( this ) );
 
         connect( m_twitterSipPlugin.data(), SIGNAL( stateChanged( Tomahawk::Accounts::Account::ConnectionState ) ), this, SIGNAL( connectionStateChanged( Tomahawk::Accounts::Account::ConnectionState ) ) );
@@ -101,11 +101,11 @@ TwitterAccount::sipPlugin()
 void
 TwitterAccount::authenticate()
 {
-    tDebug() << Q_FUNC_INFO << "credentials: " << credentials().keys();
+    Davros::debug() << Q_FUNC_INFO << "credentials: " << credentials().keys();
 
     if ( credentials()[ "oauthtoken" ].toString().isEmpty() || credentials()[ "oauthtokensecret" ].toString().isEmpty() )
     {
-        qDebug() << "TwitterSipPlugin has empty Twitter credentials; not connecting";
+        Davros::debug() << "TwitterSipPlugin has empty Twitter credentials; not connecting";
         return;
     }
 
@@ -133,12 +133,12 @@ TwitterAccount::deauthenticate()
 bool
 TwitterAccount::refreshTwitterAuth()
 {
-    qDebug() << Q_FUNC_INFO << " begin";
+    Davros::debug() << Q_FUNC_INFO << " begin";
     if( !m_twitterAuth.isNull() )
         delete m_twitterAuth.data();
 
     Q_ASSERT( TomahawkUtils::nam() != 0 );
-    qDebug() << Q_FUNC_INFO << " with nam " << TomahawkUtils::nam();
+    Davros::debug() << Q_FUNC_INFO << " with nam " << TomahawkUtils::nam();
     m_twitterAuth = QWeakPointer< TomahawkOAuthTwitter >( new TomahawkOAuthTwitter( TomahawkUtils::nam(), this ) );
 
     if( m_twitterAuth.isNull() )
@@ -156,12 +156,12 @@ TwitterAccount::connectAuthVerifyReply( const QTweetUser &user )
 {
     if ( user.id() == 0 )
     {
-        qDebug() << "TwitterAccount could not authenticate to Twitter";
+        Davros::debug() << "TwitterAccount could not authenticate to Twitter";
         deauthenticate();
     }
     else
     {
-        tDebug() << "TwitterAccount successfully authenticated to Twitter as user " << user.screenName();
+        Davros::debug() << "TwitterAccount successfully authenticated to Twitter as user " << user.screenName();
         QVariantHash config = configuration();
         config[ "screenname" ] = user.screenName();
         setConfiguration( config );

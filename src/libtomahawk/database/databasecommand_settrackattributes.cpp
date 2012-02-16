@@ -20,6 +20,8 @@
 #include "tomahawksqlquery.h"
 #include "databaseimpl.h"
 
+#include "libdavros/davros.h"
+
 using namespace Tomahawk;
 
 DatabaseCommand_SetTrackAttributes::DatabaseCommand_SetTrackAttributes( DatabaseCommand_SetTrackAttributes::AttributeType type, QList< QPair< QID, QString > > ids, bool toDelete )
@@ -76,7 +78,7 @@ DatabaseCommand_SetTrackAttributes::exec( DatabaseImpl* dbi )
         checkquery.bindValue( 0, track.first );
         if ( !checkquery.exec() )
         {
-            tLog() << "No track in track table for set track attribute command...aborting:" << track.first;
+            Davros::debug() << "No track in track table for set track attribute command...aborting:" << track.first;
             continue;
         }
 
@@ -91,7 +93,7 @@ DatabaseCommand_SetTrackAttributes::exec( DatabaseImpl* dbi )
         insertquery.bindValue( 1, k );
         insertquery.bindValue( 2, track.second );
         if ( !insertquery.exec() )
-            tLog() << "Failed to insert track attribute:" << k << track.first << track.second;
+            Davros::debug() << "Failed to insert track attribute:" << k << track.first << track.second;
 
     }
 }

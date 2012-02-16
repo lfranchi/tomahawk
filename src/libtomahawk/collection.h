@@ -51,9 +51,9 @@ public:
 
     virtual QString name() const;
 
-    virtual void loadPlaylists() { qDebug() << Q_FUNC_INFO; }
-    virtual void loadAutoPlaylists() { qDebug() << Q_FUNC_INFO; }
-    virtual void loadStations() { qDebug() << Q_FUNC_INFO; }
+    virtual void loadPlaylists() { Davros::debug() << Q_FUNC_INFO; }
+    virtual void loadAutoPlaylists() { Davros::debug() << Q_FUNC_INFO; }
+    virtual void loadStations() { Davros::debug() << Q_FUNC_INFO; }
 
     virtual Tomahawk::playlist_ptr playlist( const QString& guid );
     virtual Tomahawk::dynplaylist_ptr autoPlaylist( const QString& guid );

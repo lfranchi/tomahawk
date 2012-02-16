@@ -34,7 +34,7 @@ public:
     explicit RemoteCollection( Tomahawk::source_ptr source, QObject* parent = 0 );
     ~RemoteCollection()
     {
-        qDebug() << Q_FUNC_INFO;
+        Davros::debug() << Q_FUNC_INFO;
     }
 
 public slots:

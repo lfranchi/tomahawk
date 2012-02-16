@@ -23,6 +23,8 @@
 #include "artist.h"
 #include "album.h"
 #include "pipeline.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;

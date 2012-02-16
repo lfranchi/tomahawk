@@ -22,6 +22,8 @@
 #include <QDomDocument>
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk::InfoSystem;
@@ -33,19 +35,19 @@ MusixMatchPlugin::MusixMatchPlugin()
     : InfoPlugin()
     , m_apiKey("61be4ea5aea7dd942d52b2f1311dd9fe")
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     m_supportedGetTypes << Tomahawk::InfoSystem::InfoTrackLyrics;
 }
 
 MusixMatchPlugin::~MusixMatchPlugin()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 void
 MusixMatchPlugin::getInfo( Tomahawk::InfoSystem::InfoRequestData requestData )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if( !isValidTrackData( requestData ) || !requestData.input.canConvert< QVariantMap >() || requestData.type != Tomahawk::InfoSystem::InfoTrackLyrics )
         return;
     QVariantMap hash = requestData.input.value< QVariantMap >();
@@ -56,7 +58,7 @@ MusixMatchPlugin::getInfo( Tomahawk::InfoSystem::InfoRequestData requestData )
         emit info( requestData, QVariant() );
         return;
     }
-    qDebug() << "artist is " << artist << ", track is " << track;
+    Davros::debug() << "artist is " << artist << ", track is " << track;
     QString requestString( "http://api.musixmatch.com/ws/1.1/track.search?format=xml&page_size=1&f_has_lyrics=1" );
     QUrl url( requestString );
     url.addQueryItem( "apikey", m_apiKey );
@@ -71,24 +73,24 @@ MusixMatchPlugin::getInfo( Tomahawk::InfoSystem::InfoRequestData requestData )
 bool
 MusixMatchPlugin::isValidTrackData( Tomahawk::InfoSystem::InfoRequestData requestData )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if ( requestData.input.isNull() || !requestData.input.isValid() || !requestData.input.canConvert< QVariantMap >() )
     {
         emit info( requestData, QVariant() );
-        qDebug() << "MusixMatchPlugin::isValidTrackData: Data null, invalid, or can't convert";
+        Davros::debug() << "MusixMatchPlugin::isValidTrackData: Data null, invalid, or can't convert";
         return false;
     }
     QVariantMap hash = requestData.input.value< QVariantMap >();
     if ( hash[ "trackName" ].toString().isEmpty() )
     {
         emit info( requestData, QVariant() );
-        qDebug() << "MusixMatchPlugin::isValidTrackData: Track name is empty";
+        Davros::debug() << "MusixMatchPlugin::isValidTrackData: Track name is empty";
         return false;
     }
     if ( hash[ "artistName" ].toString().isEmpty() )
     {
         emit info( requestData, QVariant() );
-        qDebug() << "MusixMatchPlugin::isValidTrackData: No artist name found";
+        Davros::debug() << "MusixMatchPlugin::isValidTrackData: No artist name found";
         return false;
     }
     return true;
@@ -97,14 +99,14 @@ MusixMatchPlugin::isValidTrackData( Tomahawk::InfoSystem::InfoRequestData reques
 void
 MusixMatchPlugin::trackSearchSlot()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     QNetworkReply* oldReply = qobject_cast<QNetworkReply*>( sender() );
     if ( !oldReply )
         return; //timeout will handle it
 
     QDomDocument doc;
     doc.setContent(oldReply->readAll());
-    qDebug() << doc.toString();
+    Davros::debug() << doc.toString();
     QDomNodeList domNodeList = doc.elementsByTagName("track_id");
     if ( domNodeList.isEmpty() )
     {
@@ -124,7 +126,7 @@ MusixMatchPlugin::trackSearchSlot()
 void
 MusixMatchPlugin::trackLyricsSlot()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     QNetworkReply* reply = qobject_cast< QNetworkReply* >( sender() );
     if ( !reply )
         return; //timeout will handle it
@@ -138,6 +140,6 @@ MusixMatchPlugin::trackLyricsSlot()
         return;
     }
     QString lyrics = domNodeList.at(0).toElement().text();
-    qDebug() << "Emitting lyrics: " << lyrics;
+    Davros::debug() << "Emitting lyrics: " << lyrics;
     emit info( reply->property( "requestData" ).value< Tomahawk::InfoSystem::InfoRequestData >(), QVariant( lyrics ) );
 }

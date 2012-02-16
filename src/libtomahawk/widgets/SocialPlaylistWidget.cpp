@@ -24,6 +24,8 @@
 #include "sourcelist.h"
 #include "dynamic/GeneratorInterface.h"
 #include "dynamic/database/DatabaseGenerator.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "database/databasecommand_genericselect.h"
 #include "widgets/overlaywidget.h"

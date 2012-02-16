@@ -19,6 +19,8 @@
 #include "treeheader.h"
 
 #include "playlist/artistview.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 

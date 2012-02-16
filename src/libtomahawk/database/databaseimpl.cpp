@@ -32,6 +32,8 @@
 #include "artist.h"
 #include "album.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 /* !!!! You need to manually generate schema.sql.h when the schema changes:
@@ -66,7 +68,7 @@ DatabaseImpl::DatabaseImpl( const QString& dbname, Database* parent )
         m_dbid = uuid();
         query.exec( QString( "INSERT INTO settings(k,v) VALUES('dbid','%1')" ).arg( m_dbid ) );
     }
-    tLog() << "Database ID:" << m_dbid;
+    Davros::debug() << "Database ID:" << m_dbid;
 
      // make sqlite behave how we want:
     query.exec( "PRAGMA auto_vacuum = FULL" );
@@ -101,7 +103,7 @@ DatabaseImpl::dumpDatabase()
     QFile dump( "dbdump.txt" );
     if ( !dump.open( QIODevice::WriteOnly | QIODevice::Text ) )
     {
-        tDebug() << "Couldn't open dbdump.txt for writing!";
+        Davros::debug() << "Couldn't open dbdump.txt for writing!";
         Q_ASSERT( false );
     }
     else
@@ -137,7 +139,7 @@ DatabaseImpl::updateSchema( int oldVersion )
     // we are called here with the old database. we must migrate it to the CURRENT_SCHEMA_VERSION from the oldVersion
     if ( oldVersion == 0 ) // empty database, so create our tables and stuff
     {
-        tLog() << "Create tables... old version is" << oldVersion;
+        Davros::debug() << "Create tables... old version is" << oldVersion;
         QString sql( get_tomahawk_sql() );
         QStringList statements = sql.split( ";", QString::SkipEmptyParts );
         m_db.transaction();
@@ -148,7 +150,7 @@ DatabaseImpl::updateSchema( int oldVersion )
             if ( s.length() == 0 )
                 continue;
 
-            tLog() << "Executing:" << s;
+            Davros::debug() << "Executing:" << s;
             TomahawkSqlQuery query = newquery();
             query.exec( s );
         }
@@ -168,7 +170,7 @@ DatabaseImpl::updateSchema( int oldVersion )
             QFile script( path );
             if ( !script.exists() || !script.open( QIODevice::ReadOnly ) )
             {
-                tLog() << "Failed to find or open upgrade script from" << (cur-1) << "to" << cur << " (" << path << ")! Aborting upgrade...";
+                Davros::debug() << "Failed to find or open upgrade script from" << (cur-1) << "to" << cur << " (" << path << ")! Aborting upgrade...";
                 return false;
             }
 
@@ -180,13 +182,13 @@ DatabaseImpl::updateSchema( int oldVersion )
                 if ( clean.isEmpty() )
                     continue;
 
-                tLog() << "Executing upgrade statement:" << clean;
+                Davros::debug() << "Executing upgrade statement:" << clean;
                 TomahawkSqlQuery q = newquery();
                 q.exec( clean );
             }
         }
         m_db.commit();
-        tLog() << "DB Upgrade successful!";
+        Davros::debug() << "DB Upgrade successful!";
         return true;
     }
 }
@@ -294,7 +296,7 @@ DatabaseImpl::artistId( const QString& name_orig, bool autoCreate )
         query.addBindValue( sortname );
         if ( !query.exec() )
         {
-            tDebug() << "Failed to insert artist:" << name_orig;
+            Davros::debug() << "Failed to insert artist:" << name_orig;
             return 0;
         }
 
@@ -339,7 +341,7 @@ DatabaseImpl::trackId( int artistid, const QString& name_orig, bool autoCreate )
         query.addBindValue( sortname );
         if ( !query.exec() )
         {
-            tDebug() << "Failed to insert track:" << name_orig;
+            Davros::debug() << "Failed to insert track:" << name_orig;
             return 0;
         }
 
@@ -355,7 +357,7 @@ DatabaseImpl::albumId( int artistid, const QString& name_orig, bool autoCreate )
 {
     if ( name_orig.isEmpty() )
     {
-        //qDebug() << Q_FUNC_INFO << "empty album name";
+        //Davros::debug() << Q_FUNC_INFO << "empty album name";
         return 0;
     }
 
@@ -391,7 +393,7 @@ DatabaseImpl::albumId( int artistid, const QString& name_orig, bool autoCreate )
         query.addBindValue( sortname );
         if( !query.exec() )
         {
-            tDebug() << "Failed to insert album:" << name_orig;
+            Davros::debug() << "Failed to insert album:" << name_orig;
             return 0;
         }
 
@@ -647,7 +649,7 @@ DatabaseImpl::openDatabase( const QString& dbname )
         db.setDatabaseName( dbname );
         if ( !db.open() )
         {
-            tLog() << "Failed to open database" << dbname;
+            Davros::debug() << "Failed to open database" << dbname;
             throw "failed to open db"; // TODO
         }
 
@@ -656,7 +658,7 @@ DatabaseImpl::openDatabase( const QString& dbname )
         if ( qry.next() )
         {
             version = qry.value( 0 ).toInt();
-            tLog() << "Database schema of" << dbname << "is" << version;
+            Davros::debug() << "Database schema of" << dbname << "is" << version;
         }
 
         if ( version < 0 || version == CURRENT_SCHEMA_VERSION )
@@ -668,11 +670,11 @@ DatabaseImpl::openDatabase( const QString& dbname )
         QSqlDatabase::removeDatabase( "tomahawk" );
 
         QString newname = QString( "%1.v%2" ).arg( dbname ).arg( version );
-        tLog() << endl << "****************************" << endl;
-        tLog() << "Schema version too old: " << version << ". Current version is:" << CURRENT_SCHEMA_VERSION;
-        tLog() << "Moving" << dbname << newname;
-        tLog() << "If the migration fails, you can recover your DB by copying" << newname << "back to" << dbname;
-        tLog() << endl << "****************************" << endl;
+        Davros::debug() << endl << "****************************" << endl;
+        Davros::debug() << "Schema version too old: " << version << ". Current version is:" << CURRENT_SCHEMA_VERSION;
+        Davros::debug() << "Moving" << dbname << newname;
+        Davros::debug() << "If the migration fails, you can recover your DB by copying" << newname << "back to" << dbname;
+        Davros::debug() << endl << "****************************" << endl;
 
         QFile::copy( dbname, newname );
         {

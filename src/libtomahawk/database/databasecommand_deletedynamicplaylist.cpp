@@ -22,6 +22,8 @@
 
 #include "dynamic/DynamicPlaylist.h"
 #include "network/servent.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -36,8 +38,8 @@ DatabaseCommand_DeleteDynamicPlaylist::DatabaseCommand_DeleteDynamicPlaylist( co
 void
 DatabaseCommand_DeleteDynamicPlaylist::exec( DatabaseImpl* lib )
 {
-    qDebug() << Q_FUNC_INFO;
-    qDebug() << "deleting dynamic playlist:" << m_playlistguid;
+    Davros::debug() << Q_FUNC_INFO;
+    Davros::debug() << "deleting dynamic playlist:" << m_playlistguid;
     DatabaseCommand_DeletePlaylist::exec( lib );
     TomahawkSqlQuery cre = lib->newquery();
 
@@ -51,10 +53,10 @@ DatabaseCommand_DeleteDynamicPlaylist::exec( DatabaseImpl* lib )
 void
 DatabaseCommand_DeleteDynamicPlaylist::postCommitHook()
 {
-    qDebug() << Q_FUNC_INFO << "..reporting..:" << m_playlistguid;
+    Davros::debug() << Q_FUNC_INFO << "..reporting..:" << m_playlistguid;
     if ( source().isNull() || source()->collection().isNull() )
     {
-        qDebug() << "Source has gone offline, not emitting to GUI.";
+        Davros::debug() << "Source has gone offline, not emitting to GUI.";
         return;
     }
     // we arent sure which it is, but it can't be more th an one. so try both
@@ -62,7 +64,7 @@ DatabaseCommand_DeleteDynamicPlaylist::postCommitHook()
     if( playlist.isNull() )
         playlist = source()->collection()->station( m_playlistguid );
 
-    qDebug() << "Just tried to load playlist for deletion:" << m_playlistguid << "Did we get a null one?" << playlist.isNull() << "is it a station?" << (playlist->mode() == OnDemand);
+    Davros::debug() << "Just tried to load playlist for deletion:" << m_playlistguid << "Did we get a null one?" << playlist.isNull() << "is it a station?" << (playlist->mode() == OnDemand);
     Q_ASSERT( !playlist.isNull() );
 
     playlist->reportDeleted( playlist );

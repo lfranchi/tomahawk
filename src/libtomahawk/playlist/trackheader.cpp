@@ -19,6 +19,8 @@
 #include "trackheader.h"
 
 #include "playlist/trackview.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 

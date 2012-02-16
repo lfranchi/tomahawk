@@ -38,6 +38,7 @@
 
 #include "typedefs.h"
 #include "msg.h"
+#include "libdavros/davros.h"
 
 #include <boost/function.hpp>
 
@@ -74,7 +75,7 @@ private slots:
       if( _disowned )
           return;
 
-      qDebug() << "Connection timed out before providing a valid offer-key";
+      Davros::debug() << "Connection timed out before providing a valid offer-key";
       this->disconnectFromHost();
     }
 };

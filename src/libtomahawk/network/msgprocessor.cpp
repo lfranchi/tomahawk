@@ -19,6 +19,8 @@
 #include "msgprocessor.h"
 
 #include "network/servent.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -34,7 +36,7 @@ MsgProcessor::append( msg_ptr msg )
 {
     if( QThread::currentThread() != thread() )
     {
-        qDebug() << "reinvoking msgprocessor::append in correct thread, ie not" << QThread::currentThread();
+        Davros::debug() << "reinvoking msgprocessor::append in correct thread, ie not" << QThread::currentThread();
         QMetaObject::invokeMethod( this, "append", Qt::QueuedConnection, Q_ARG(msg_ptr, msg) );
         return;
     }
@@ -46,7 +48,7 @@ MsgProcessor::append( msg_ptr msg )
 
     if( m_mode & NOTHING )
     {
-        //qDebug() << "MsgProcessor::NOTHING";
+        //Davros::debug() << "MsgProcessor::NOTHING";
         handleProcessedMsg( msg );
         return;
     }
@@ -84,7 +86,7 @@ MsgProcessor::handleProcessedMsg( msg_ptr msg )
         {
             msg_ptr m = m_msgs.takeFirst();
             m_msg_ready.remove( m.data() );
-            //qDebug() << Q_FUNC_INFO << "totmsgsize:" << m_totmsgsize;
+            //Davros::debug() << Q_FUNC_INFO << "totmsgsize:" << m_totmsgsize;
             emit ready( m );
         }
         else
@@ -93,7 +95,7 @@ MsgProcessor::handleProcessedMsg( msg_ptr msg )
         }
     }
 
-    //qDebug() << Q_FUNC_INFO << "EMPTY, no msgs left.";
+    //Davros::debug() << Q_FUNC_INFO << "EMPTY, no msgs left.";
     emit empty();
 }
 
@@ -105,7 +107,7 @@ MsgProcessor::process( msg_ptr msg, quint32 mode, quint32 threshold )
     // uncompress if needed
     if( (mode & UNCOMPRESS_ALL) && msg->is( Msg::COMPRESSED ) )
     {
-//        qDebug() << "MsgProcessor::UNCOMPRESSING";
+//        Davros::debug() << "MsgProcessor::UNCOMPRESSING";
         msg->m_payload = qUncompress( msg->payload() );
         msg->m_length  = msg->m_payload.length();
         msg->m_flags ^= Msg::COMPRESSED;
@@ -116,7 +118,7 @@ MsgProcessor::process( msg_ptr msg, quint32 mode, quint32 threshold )
         msg->is( Msg::JSON ) &&
         msg->m_json_parsed == false )
     {
-//        qDebug() << "MsgProcessor::PARSING JSON";
+//        Davros::debug() << "MsgProcessor::PARSING JSON";
         bool ok;
         QJson::Parser parser;
         msg->m_json = parser.parse( msg->payload(), &ok );
@@ -128,7 +130,7 @@ MsgProcessor::process( msg_ptr msg, quint32 mode, quint32 threshold )
         !msg->is( Msg::COMPRESSED )
         && msg->length() > threshold )
     {
-//        qDebug() << "MsgProcessor::COMPRESSING";
+//        Davros::debug() << "MsgProcessor::COMPRESSING";
         msg->m_payload = qCompress( msg->payload(), 9 );
         msg->m_length  = msg->m_payload.length();
         msg->m_flags |= Msg::COMPRESSED;

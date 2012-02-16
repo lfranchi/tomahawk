@@ -21,6 +21,8 @@
 #include "queueproxymodelplaylistinterface.h"
 #include "playlist/trackview.h"
 #include "viewmanager.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -29,7 +31,7 @@ using namespace Tomahawk;
 QueueProxyModel::QueueProxyModel( TrackView* parent )
     : PlaylistProxyModel( parent )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     connect( parent, SIGNAL( itemActivated( QModelIndex ) ), this, SLOT( onIndexActivated( QModelIndex ) ) );
     connect( playlistInterface().data(), SIGNAL( sourceTrackCountChanged( unsigned int ) ), this, SLOT( onTrackCountChanged( unsigned int ) ) );

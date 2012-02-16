@@ -24,6 +24,8 @@
 #include "source.h"
 #include "audio/audioengine.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -149,18 +151,18 @@ DynamicModel::trackResolveFinished( bool success )
 
     Query* q = qobject_cast<Query*>( sender() );
 
-    tDebug() << "Got resolveFinished in DynamicModel" << q->track() << q->artist();
+    Davros::debug() << "Got resolveFinished in DynamicModel" << q->track() << q->artist();
     if ( !m_waitingFor.contains( q ) )
         return;
 
     if ( !q->playable() )
     {
-        tDebug() << "Got not playable or resolved track:" << q->track() << q->artist() << m_lastResolvedRow << m_currentAttempts;
+        Davros::debug() << "Got not playable or resolved track:" << q->track() << q->artist() << m_lastResolvedRow << m_currentAttempts;
         m_currentAttempts++;
 
         int curAttempts = m_startingAfterFailed ? m_currentAttempts - 20 : m_currentAttempts; // if we just failed, m_currentAttempts includes those failures
         if( curAttempts < 20 ) {
-            qDebug() << "FETCHING MORE!";
+            Davros::debug() << "FETCHING MORE!";
             m_playlist->generator()->fetchNext();
         } else {
             m_startingAfterFailed = true;
@@ -169,10 +171,10 @@ DynamicModel::trackResolveFinished( bool success )
     }
     else
     {
-        qDebug() << "Got successful resolved track:" << q->track() << q->artist() << m_lastResolvedRow << m_currentAttempts;
+        Davros::debug() << "Got successful resolved track:" << q->track() << q->artist() << m_lastResolvedRow << m_currentAttempts;
 
         if( m_currentAttempts > 0 ) {
-            qDebug() << "EMITTING AN ASK FOR COLLAPSE:" << m_lastResolvedRow << m_currentAttempts;
+            Davros::debug() << "EMITTING AN ASK FOR COLLAPSE:" << m_lastResolvedRow << m_currentAttempts;
             emit collapseFromTo( m_lastResolvedRow, m_currentAttempts );
         }
         m_currentAttempts = 0;
@@ -187,7 +189,7 @@ DynamicModel::trackResolveFinished( bool success )
 void
 DynamicModel::newTrackLoading()
 {
-    qDebug() << "Got NEW TRACK LOADING signal";
+    Davros::debug() << "Got NEW TRACK LOADING signal";
     if( m_changeOnNext ) { // reset instead of getting the next one
         m_lastResolvedRow = rowCount( QModelIndex() );
         m_searchingForNext = true;
@@ -195,7 +197,7 @@ DynamicModel::newTrackLoading()
     } else if( m_onDemandRunning && m_currentAttempts == 0 && !m_searchingForNext ) { // if we're in dynamic mode and we're also currently idle
         m_lastResolvedRow = rowCount( QModelIndex() );
         m_searchingForNext = true;
-        qDebug() << "IDLE fetching new track!";
+        Davros::debug() << "IDLE fetching new track!";
         m_playlist->generator()->fetchNext();
     }
 }
@@ -239,7 +241,7 @@ DynamicModel::filteringTrackResolved( bool successful )
     Q_ASSERT( q );
 
     // if meantime the user began the station, abort
-    qDebug() << "Got filtering resolved finished for track, was it successful?:" << q->track() << q->artist() << successful << q->playable();
+    Davros::debug() << "Got filtering resolved finished for track, was it successful?:" << q->track() << q->artist() << successful << q->playable();
     if( m_onDemandRunning ) {
         m_toResolveList.clear();
         m_resolvedList.clear();
@@ -274,7 +276,7 @@ DynamicModel::filteringTrackResolved( bool successful )
 
         }
     } else {
-        qDebug() << "Got unsuccessful resolve request for this track" << realptr->track() << realptr->artist();
+        Davros::debug() << "Got unsuccessful resolve request for this track" << realptr->track() << realptr->artist();
     }
 
     if( m_toResolveList.isEmpty() && rowCount( QModelIndex() ) == 0 ) // we failed
@@ -309,7 +311,7 @@ DynamicModel::remove(const QModelIndex& idx, bool moreToCome)
     if ( m_playlist->mode() == Static && isReadOnly() )
         return;
 
-    qDebug() << Q_FUNC_INFO << "DYNAMIC MODEL REMOVIN!" << moreToCome << ( idx == index( rowCount( QModelIndex() ) - 1, 0, QModelIndex() ) );
+    Davros::debug() << Q_FUNC_INFO << "DYNAMIC MODEL REMOVIN!" << moreToCome << ( idx == index( rowCount( QModelIndex() ) - 1, 0, QModelIndex() ) );
     if( m_playlist->mode() == OnDemand ) {
         if( !moreToCome && idx == index( rowCount( QModelIndex() ) - 1, 0, QModelIndex() ) ) { // if the user is manually removing the last one, re-add as we're a station
             newTrackLoading();

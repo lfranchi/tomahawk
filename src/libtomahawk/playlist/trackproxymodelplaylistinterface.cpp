@@ -22,6 +22,8 @@
 #include "artist.h"
 #include "album.h"
 #include "query.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -112,7 +114,7 @@ TrackProxyModelPlaylistInterface::hasNextItem()
 Tomahawk::result_ptr
 TrackProxyModelPlaylistInterface::siblingItem( int itemsAway, bool readOnly )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if ( m_proxyModel.isNull() )
         return Tomahawk::result_ptr();
@@ -162,7 +164,7 @@ TrackProxyModelPlaylistInterface::siblingItem( int itemsAway, bool readOnly )
         TrackModelItem* item = proxyModel->itemFromIndex( proxyModel->mapToSource( idx ) );
         if ( item && item->query()->playable() )
         {
-            qDebug() << "Next PlaylistItem found:" << item->query()->toString() << item->query()->results().at( 0 )->url();
+            Davros::debug() << "Next PlaylistItem found:" << item->query()->toString() << item->query()->results().at( 0 )->url();
             if ( !readOnly )
                 proxyModel->setCurrentIndex( idx );
             return item->query()->results().at( 0 );

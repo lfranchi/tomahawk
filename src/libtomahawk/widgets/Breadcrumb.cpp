@@ -20,6 +20,8 @@
 
 #include "BreadcrumbButton.h"
 #include "utils/stylehelper.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #include <QStylePainter>
@@ -92,12 +94,12 @@ Breadcrumb::paintEvent( QPaintEvent* )
 void
 Breadcrumb::updateButtons( const QModelIndex& updateFrom )
 {
-//     qDebug() << "Updating buttons:" << updateFrom.data();
+//     Davros::debug() << "Updating buttons:" << updateFrom.data();
     int cur = 0;
     QModelIndex idx = updateFrom;
     for ( int i = 0; i < m_buttons.count(); i++ )
     {
-//         qDebug() << "Checking if this breadcrumb item changed:" << m_buttons[ i ]->currentIndex().data() << updateFrom.data() << ( m_buttons[ i ]->currentIndex() != updateFrom);
+//         Davros::debug() << "Checking if this breadcrumb item changed:" << m_buttons[ i ]->currentIndex().data() << updateFrom.data() << ( m_buttons[ i ]->currentIndex() != updateFrom);
         if ( m_buttons[ i ]->currentIndex() == updateFrom )
         {
             cur = i;
@@ -110,10 +112,10 @@ Breadcrumb::updateButtons( const QModelIndex& updateFrom )
 
     // Ok, changed all indices that are at cur or past it. lets update them
     // When we get to the "end" of the tree, the leaf node is the chart itself
-//     qDebug() << "DONE and beginning iteration:" << idx.data();
+//     Davros::debug() << "DONE and beginning iteration:" << idx.data();
     while ( m_model->rowCount( idx ) > 0 )
     {
-//         qDebug() << "CHANGED AND iterating:" << idx.data();
+//         Davros::debug() << "CHANGED AND iterating:" << idx.data();
         BreadcrumbButton* btn = 0;
         if ( m_buttons.size() <= cur )
         {
@@ -169,6 +171,6 @@ void
 Breadcrumb::breadcrumbComboChanged( const QModelIndex& childSelected )
 {
     // Some breadcrumb buttons' combobox changed. lets update the child breadcrumbs
-    tDebug() << "Combo changed:" << childSelected.data();
+    Davros::debug() << "Combo changed:" << childSelected.data();
     updateButtons( childSelected );
 }

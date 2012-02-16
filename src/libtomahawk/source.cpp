@@ -31,6 +31,8 @@
 
 #include <QCoreApplication>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "utils/tomahawkutilsgui.h"
 #include "database/databasecommand_socialaction.h"
@@ -66,7 +68,7 @@ Source::Source( int id, const QString& username )
 
 Source::~Source()
 {
-    qDebug() << Q_FUNC_INFO << friendlyName();
+    Davros::debug() << Q_FUNC_INFO << friendlyName();
     delete m_avatar;
     delete m_fancyAvatar;
 }
@@ -176,7 +178,7 @@ Source::removeCollection( const collection_ptr& c )
 void
 Source::setOffline()
 {
-    qDebug() << Q_FUNC_INFO << friendlyName();
+    Davros::debug() << Q_FUNC_INFO << friendlyName();
     if ( !m_online )
         return;
 
@@ -195,7 +197,7 @@ Source::setOffline()
 void
 Source::setOnline()
 {
-    qDebug() << Q_FUNC_INFO << friendlyName();
+    Davros::debug() << Q_FUNC_INFO << friendlyName();
     if ( m_online )
         return;
 
@@ -317,7 +319,7 @@ Source::playlistInterface()
 void
 Source::onPlaybackStarted( const Tomahawk::query_ptr& query, unsigned int duration )
 {
-    qDebug() << Q_FUNC_INFO << query->toString();
+    Davros::debug() << Q_FUNC_INFO << query->toString();
 
     m_currentTrack = query;
     m_currentTrackTimer.start( duration * 1000 + 900000 ); // duration comes in seconds
@@ -331,7 +333,7 @@ Source::onPlaybackStarted( const Tomahawk::query_ptr& query, unsigned int durati
 void
 Source::onPlaybackFinished( const Tomahawk::query_ptr& query )
 {
-    qDebug() << Q_FUNC_INFO << query->toString();
+    Davros::debug() << Q_FUNC_INFO << query->toString();
     emit playbackFinished( query );
 
     m_currentTrackTimer.start();
@@ -363,7 +365,7 @@ Source::executeCommands()
 {
     if ( QThread::currentThread() != thread() )
     {
-        tDebug() << "Reinvoking in correct thread:" << Q_FUNC_INFO;
+        Davros::debug() << "Reinvoking in correct thread:" << Q_FUNC_INFO;
         QMetaObject::invokeMethod( this, "executeCommands", Qt::QueuedConnection );
         return;
     }

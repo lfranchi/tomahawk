@@ -18,6 +18,8 @@
  */
 
 #include "m3uloader.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "utils/tomahawkutils.h"
 #include "query.h"
@@ -84,12 +86,12 @@ M3uLoader::getTags( const QFileInfo& info )
 
     if ( artist.isEmpty() || track.isEmpty() )
     {
-        qDebug() << "Error parsing" << info.fileName();
+        Davros::debug() << "Error parsing" << info.fileName();
         return;
     }
     else
     {
-        qDebug() << Q_FUNC_INFO << artist << track << album;
+        Davros::debug() << Q_FUNC_INFO << artist << track << album;
         Tomahawk::query_ptr q = Tomahawk::Query::get( artist, track, album, uuid(), !m_createNewPlaylist );
         m_tracks << q;
     }
@@ -104,7 +106,7 @@ M3uLoader::parseM3u( const QString& fileLink )
 
     if ( !file.open( QIODevice::ReadOnly | QIODevice::Text ) )
     {
-        tDebug() << "Error opening m3u:" << file.errorString();
+        Davros::debug() << "Error opening m3u:" << file.errorString();
         return;
     }
 
@@ -131,7 +133,7 @@ M3uLoader::parseM3u( const QString& fileLink )
 
     if ( m_tracks.isEmpty() )
     {
-        tDebug() << Q_FUNC_INFO << "Could not parse M3U!";
+        Davros::debug() << Q_FUNC_INFO << "Could not parse M3U!";
         return;
     }
 

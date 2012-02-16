@@ -18,6 +18,8 @@
 
 #include "ExternalResolver.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 Tomahawk::ExternalResolver::ErrorState

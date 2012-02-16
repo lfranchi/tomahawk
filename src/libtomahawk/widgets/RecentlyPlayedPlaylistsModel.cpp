@@ -22,6 +22,8 @@
 #include "tomahawksettings.h"
 #include "audio/audioengine.h"
 #include "sourcelist.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "dynamic/DynamicPlaylist.h"
 
@@ -46,7 +48,7 @@ RecentlyPlayedPlaylistsModel::RecentlyPlayedPlaylistsModel( QObject* parent )
 void
 RecentlyPlayedPlaylistsModel::loadFromSettings()
 {
-//    qDebug() << Q_FUNC_INFO;
+//    Davros::debug() << Q_FUNC_INFO;
     if( !m_waitingForSome )
         return;
 
@@ -58,7 +60,7 @@ RecentlyPlayedPlaylistsModel::loadFromSettings()
 
     for( int i = playlist_guids.size() - 1; i >= 0; i-- )
     {
-//        qDebug() << "loading playlist" << playlist_guids[i];
+//        Davros::debug() << "loading playlist" << playlist_guids[i];
 
         playlist_ptr pl = m_cached.value( playlist_guids[i], Tomahawk::playlist_ptr() );
         if( pl.isNull() )

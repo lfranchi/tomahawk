@@ -21,6 +21,8 @@
 #include <QCoreApplication>
 #include <QThread>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 // Msgs are framed, this is the size each msg we send containing audio data:
@@ -42,7 +44,7 @@ BufferIODevice::open( OpenMode mode )
     Q_UNUSED( mode );
     QMutexLocker lock( &m_mut );
 
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     QIODevice::open( QIODevice::ReadOnly | QIODevice::Unbuffered ); // FIXME?
     return true;
 }
@@ -53,7 +55,7 @@ BufferIODevice::close()
 {
     QMutexLocker lock( &m_mut );
 
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     QIODevice::close();
 }
 
@@ -61,7 +63,7 @@ BufferIODevice::close()
 bool
 BufferIODevice::seek( qint64 pos )
 {
-    qDebug() << Q_FUNC_INFO << pos << m_size;
+    Davros::debug() << Q_FUNC_INFO << pos << m_size;
 
     if ( pos >= m_size )
         return false;
@@ -71,7 +73,7 @@ BufferIODevice::seek( qint64 pos )
         emit blockRequest( block );
 
     m_pos = pos;
-    qDebug() << "Finished seeking";
+    Davros::debug() << "Finished seeking";
 
     return true;
 }
@@ -80,14 +82,14 @@ BufferIODevice::seek( qint64 pos )
 void
 BufferIODevice::seeked( int block )
 {
-    qDebug() << Q_FUNC_INFO << block << m_size;
+    Davros::debug() << Q_FUNC_INFO << block << m_size;
 }
 
 
 void
 BufferIODevice::inputComplete( const QString& errmsg )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     setErrorString( errmsg );
     m_size = m_received;
     emit readChannelFinished();
@@ -131,7 +133,7 @@ BufferIODevice::bytesAvailable() const
 qint64
 BufferIODevice::readData( char* data, qint64 maxSize )
 {
-//    qDebug() << Q_FUNC_INFO << m_pos << maxSize << 1;
+//    Davros::debug() << Q_FUNC_INFO << m_pos << maxSize << 1;
 
     if ( atEnd() )
         return 0;
@@ -140,7 +142,7 @@ BufferIODevice::readData( char* data, qint64 maxSize )
     ba.append( getData( m_pos, maxSize ) );
     m_pos += ba.count();
 
-//    qDebug() << Q_FUNC_INFO << maxSize << ba.count() << 2;
+//    Davros::debug() << Q_FUNC_INFO << maxSize << ba.count() << 2;
     memcpy( data, ba.data(), ba.count() );
 
     return ba.count();
@@ -161,7 +163,7 @@ BufferIODevice::writeData( const char* data, qint64 maxSize )
 qint64
 BufferIODevice::size() const
 {
-    qDebug() << Q_FUNC_INFO << m_size;
+    Davros::debug() << Q_FUNC_INFO << m_size;
     return m_size;
 }
 
@@ -169,7 +171,7 @@ BufferIODevice::size() const
 bool
 BufferIODevice::atEnd() const
 {
-//    qDebug() << Q_FUNC_INFO << ( m_size <= m_pos );
+//    Davros::debug() << Q_FUNC_INFO << ( m_size <= m_pos );
     return ( m_size <= m_pos );
 }
 
@@ -257,7 +259,7 @@ BufferIODevice::isBlockEmpty( int block ) const
 QByteArray
 BufferIODevice::getData( qint64 pos, qint64 size )
 {
-//    qDebug() << Q_FUNC_INFO << pos << size << 1;
+//    Davros::debug() << Q_FUNC_INFO << pos << size << 1;
     QByteArray ba;
     int block = blockForPos( pos );
     int offset = offsetForPos( pos );
@@ -274,6 +276,6 @@ BufferIODevice::getData( qint64 pos, qint64 size )
         ba.append( m_buffer.at( block++ ).mid( offset ) );
     }
 
-//    qDebug() << Q_FUNC_INFO << pos << size << 2;
+//    Davros::debug() << Q_FUNC_INFO << pos << size << 2;
     return ba.left( size );
 }

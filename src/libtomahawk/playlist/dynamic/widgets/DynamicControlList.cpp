@@ -30,6 +30,8 @@
 #include "DynamicControlWrapper.h"
 #include "dynamic/GeneratorInterface.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -62,7 +64,7 @@ DynamicControlList::~DynamicControlList()
 void
 DynamicControlList::init()
 {
-    qDebug() << "GRIDLAYOUT: " << m_layout->rowCount();
+    Davros::debug() << "GRIDLAYOUT: " << m_layout->rowCount();
     setContentsMargins( 0, 0, 0, 0 );
     setLayout( m_layout );
     m_layout->setColumnStretch( 2, 1 );
@@ -125,7 +127,7 @@ DynamicControlList::setControls( const geninterface_ptr& generator, const QList<
 
     m_generator = generator;
     if( controls.isEmpty() ) {
-        qDebug() << "CREATING DEFAULT CONTROL";
+        Davros::debug() << "CREATING DEFAULT CONTROL";
         DynamicControlWrapper* ctrlW = new DynamicControlWrapper( generator->createControl(), m_layout, m_controls.size(), this );
         connect( ctrlW, SIGNAL( removeControl() ), this, SLOT( removeControl() ) );
         connect( ctrlW, SIGNAL( changed() ), this, SLOT( controlChanged() ) );
@@ -180,8 +182,8 @@ DynamicControlList::controlChanged()
     Q_ASSERT( sender() && qobject_cast<DynamicControlWrapper*>(sender()) );
     DynamicControlWrapper* widget = qobject_cast<DynamicControlWrapper*>(sender());
 
-    qDebug() << "control changed!";
+    Davros::debug() << "control changed!";
     foreach( DynamicControlWrapper* c, m_controls )
-        qDebug() << c->control()->id() << c->control()->selectedType() << c->control()->match() << c->control()->input();
+        Davros::debug() << c->control()->id() << c->control()->selectedType() << c->control()->match() << c->control()->input();
     emit controlChanged( widget->control() );
 }

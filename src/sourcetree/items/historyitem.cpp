@@ -22,6 +22,8 @@
 #include "viewmanager.h"
 #include "genericpageitems.h"
 #include "utils/tomahawkutilsgui.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "playlist/customplaylistview.h"
 #include "temporarypageitem.h"

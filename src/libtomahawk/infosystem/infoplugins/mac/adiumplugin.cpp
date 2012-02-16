@@ -25,6 +25,8 @@
 #include "result.h"
 #include "tomahawksettings.h"
 #include "globalactionmanager.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #include "adiumplugin.h"
@@ -50,7 +52,7 @@ using namespace Tomahawk::InfoSystem;
 AdiumPlugin::AdiumPlugin()
     : InfoPlugin()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     adium_beforeStatus = "if appIsRunning(\"Adium\") then\n";
     adium_beforeStatus.append("tell application \"Adium\"\n");
@@ -81,7 +83,7 @@ AdiumPlugin::AdiumPlugin()
 
 AdiumPlugin::~AdiumPlugin()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     if( m_active )
       setStatus( "" );
 }
@@ -117,7 +119,7 @@ AdiumPlugin::shortLinkReady( QUrl longUrl, QUrl shortUrl )
 void
 AdiumPlugin::clearStatus()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     setStatus( "" );
 }
 
@@ -132,7 +134,7 @@ AdiumPlugin::settingsChanged()
 void
 AdiumPlugin::pushInfo( QString caller, Tomahawk::InfoSystem::InfoType type, QVariant input )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if( !m_active )
         return;
@@ -165,7 +167,7 @@ AdiumPlugin::pushInfo( QString caller, Tomahawk::InfoSystem::InfoType type, QVar
 void
 AdiumPlugin::audioStarted( const QVariant &input )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if ( !input.canConvert< Tomahawk::InfoSystem::InfoStringHash >() )
         return;
@@ -201,27 +203,27 @@ AdiumPlugin::openLinkFromHash( const Tomahawk::InfoSystem::InfoStringHash& hash 
 void
 AdiumPlugin::audioFinished( const QVariant &input )
 {
-    //qDebug() << Q_FUNC_INFO;
+    //Davros::debug() << Q_FUNC_INFO;
 }
 
 void
 AdiumPlugin::audioStopped()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     setStatus( "" );
 }
 
 void
 AdiumPlugin::audioPaused()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     m_pauseTimer->start( 60 * 1000 );
 }
 
 void
 AdiumPlugin::audioResumed( const QVariant &input )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     audioStarted( input );
 }
 

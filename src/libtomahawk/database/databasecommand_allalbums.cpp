@@ -24,6 +24,8 @@
 #include "databaseimpl.h"
 #include "source.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "libdavros/block.h"
 

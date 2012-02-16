@@ -24,6 +24,8 @@
 #include "playlist/playlistproxymodel.h"
 #include "widgets/overlaywidget.h"
 #include "viewmanager.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "PlaylistUpdaterInterface.h"
 
@@ -42,7 +44,7 @@ PlaylistView::PlaylistView( QWidget* parent )
 
 PlaylistView::~PlaylistView()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 
@@ -50,7 +52,7 @@ void
 PlaylistView::setModel( QAbstractItemModel* model )
 {
     Q_UNUSED( model );
-    qDebug() << "Explicitly use setPlaylistModel instead";
+    Davros::debug() << "Explicitly use setPlaylistModel instead";
     Q_ASSERT( false );
 }
 
@@ -85,7 +87,7 @@ PlaylistView::setPlaylistModel( PlaylistModel* model )
 void
 PlaylistView::keyPressEvent( QKeyEvent* event )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     TrackView::keyPressEvent( event );
 
     if ( !model() )
@@ -93,7 +95,7 @@ PlaylistView::keyPressEvent( QKeyEvent* event )
 
     if ( ( event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace ) && !model()->isReadOnly() )
     {
-        qDebug() << "Removing selected items";
+        Davros::debug() << "Removing selected items";
         proxyModel()->remove( selectedIndexes() );
     }
 }
@@ -160,7 +162,7 @@ PlaylistView::jumpToCurrentTrack()
 void
 PlaylistView::onDeleted()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     emit destroyed( widget() );
 }
 

@@ -22,6 +22,8 @@
 #include "artist.h"
 #include "albumitem.h"
 #include "query.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -81,7 +83,7 @@ AlbumProxyModelPlaylistInterface::filter() const
 void
 AlbumProxyModelPlaylistInterface::setFilter( const QString& pattern )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if ( m_proxyModel.isNull() )
         return;
@@ -95,6 +97,6 @@ Tomahawk::result_ptr
 AlbumProxyModelPlaylistInterface::siblingItem( int itemsAway )
 {
     Q_UNUSED( itemsAway );
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     return Tomahawk::result_ptr( 0 );
 }

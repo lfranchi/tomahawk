@@ -27,6 +27,8 @@
 #include "widgets/newplaylistwidget.h"
 #include "widgets/playlisttypeselectordlg.h"
 #include <playlist/dynamic/GeneratorInterface.h>
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "dropjob.h"
 

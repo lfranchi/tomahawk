@@ -21,6 +21,8 @@
 #include <echonest/ArtistTypes.h>
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #include <QNetworkConfiguration>
@@ -33,7 +35,7 @@ using namespace Echonest;
 EchoNestPlugin::EchoNestPlugin()
     : InfoPlugin()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     m_supportedGetTypes << Tomahawk::InfoSystem::InfoArtistBiography << Tomahawk::InfoSystem::InfoArtistFamiliarity << Tomahawk::InfoSystem::InfoArtistHotttness << Tomahawk::InfoSystem::InfoArtistTerms << Tomahawk::InfoSystem::InfoMiscTopTerms;
     Echonest::Config::instance()->setNetworkAccessManager( TomahawkUtils::nam() );
 }
@@ -41,7 +43,7 @@ EchoNestPlugin::EchoNestPlugin()
 
 EchoNestPlugin::~EchoNestPlugin()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 }
 
 
@@ -109,7 +111,7 @@ EchoNestPlugin::getArtistFamiliarity( const Tomahawk::InfoSystem::InfoRequestDat
     if( !isValidArtistData( requestData ) )
         return;
 
-    qDebug() << "Fetching artist familiarity!" << requestData.input;
+    Davros::debug() << "Fetching artist familiarity!" << requestData.input;
     Echonest::Artist artist( requestData.input.toString() );
     QNetworkReply* reply = artist.fetchFamiliarity();
     reply->setProperty( "artist", QVariant::fromValue< Echonest::Artist >( artist ) );

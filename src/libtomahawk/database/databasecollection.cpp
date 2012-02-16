@@ -26,6 +26,8 @@
 #include "databasecommand_loadallautoplaylists.h"
 #include "databasecommand_loadallstations.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -76,7 +78,7 @@ DatabaseCollection::loadStations()
 void
 DatabaseCollection::addTracks( const QList<QVariant>& newitems )
 {
-    qDebug() << Q_FUNC_INFO << newitems.length();
+    Davros::debug() << Q_FUNC_INFO << newitems.length();
     DatabaseCommand_AddFiles* cmd = new DatabaseCommand_AddFiles( newitems, source() );
 
     Database::instance()->enqueue( QSharedPointer<DatabaseCommand>( cmd ) );
@@ -86,7 +88,7 @@ DatabaseCollection::addTracks( const QList<QVariant>& newitems )
 void
 DatabaseCollection::removeTracks( const QDir& dir )
 {
-    qDebug() << Q_FUNC_INFO << dir;
+    Davros::debug() << Q_FUNC_INFO << dir;
     DatabaseCommand_DeleteFiles* cmd = new DatabaseCommand_DeleteFiles( dir, source() );
 
     Database::instance()->enqueue( QSharedPointer<DatabaseCommand>( cmd ) );

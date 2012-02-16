@@ -24,6 +24,8 @@
 #include "artist.h"
 #include "albumitem.h"
 #include "query.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -43,7 +45,7 @@ void
 AlbumProxyModel::setSourceModel( QAbstractItemModel* sourceModel )
 {
     Q_UNUSED( sourceModel );
-    qDebug() << "Explicitly use setSourceAlbumModel instead";
+    Davros::debug() << "Explicitly use setSourceAlbumModel instead";
     Q_ASSERT( false );
 }
 
@@ -116,7 +118,7 @@ AlbumProxyModel::lessThan( const QModelIndex& left, const QModelIndex& right ) c
 void
 AlbumProxyModel::removeIndex( const QModelIndex& index )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if ( !sourceModel() )
         return;

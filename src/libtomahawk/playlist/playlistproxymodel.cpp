@@ -19,6 +19,8 @@
 #include "playlistproxymodel.h"
 
 #include "playlistproxymodelplaylistinterface.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 

@@ -19,6 +19,8 @@
 #include "playlistproxymodelplaylistinterface.h"
 
 #include "playlistproxymodel.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;

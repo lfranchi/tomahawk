@@ -16,6 +16,8 @@
 */
 
 #include "ubuntuunityhack.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #include <QProcess>
@@ -60,7 +62,7 @@ void UbuntuUnityHack::GetFinished(int exit_code) {
 
   QByteArray whitelist = get->readAllStandardOutput();
 
-  tDebug() << "Unity whitelist is" << whitelist;
+  Davros::debug() << "Unity whitelist is" << whitelist;
 
   int index = whitelist.lastIndexOf(']');
   if (index == -1 || whitelist.contains("'tomahawk'")) {
@@ -70,14 +72,14 @@ void UbuntuUnityHack::GetFinished(int exit_code) {
   whitelist = whitelist.left(index) + QString(", 'tomahawk'").toUtf8() +
               whitelist.mid(index);
 
-  tLog() << "Setting unity whitelist to" << whitelist;
+  Davros::debug() << "Setting unity whitelist to" << whitelist;
 
   QProcess* set = new QProcess(this);
   connect(set, SIGNAL(finished(int)), set, SLOT(deleteLater()));
   set->start(kGSettingsFileName, QStringList()
              << "set" << kUnityPanel << kUnitySystrayWhitelist << whitelist);
 
-  tLog() << "Tomahawk has added itself to the Unity system tray" <<
+  Davros::debug() << "Tomahawk has added itself to the Unity system tray" <<
                 "whitelist, but this won't take effect until the next time" <<
                 "you log out and log back in.";
 }

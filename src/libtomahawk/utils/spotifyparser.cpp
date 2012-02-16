@@ -19,6 +19,8 @@
 
 #include "spotifyparser.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "utils/tomahawkutils.h"
 #include "query.h"
@@ -93,7 +95,7 @@ SpotifyParser::lookupUrl( const QString& link )
 void
 SpotifyParser::lookupSpotifyBrowse( const QString& linkRaw )
 {
-    tLog() << "Parsing Spotify Browse URI:" << linkRaw;
+    Davros::debug() << "Parsing Spotify Browse URI:" << linkRaw;
     QString browseUri = linkRaw;
     if ( browseUri.contains( "open.spotify.com/" ) ) // convert to a URI
     {
@@ -121,7 +123,7 @@ SpotifyParser::lookupSpotifyBrowse( const QString& linkRaw )
     else
          url = QUrl( QString( SPOTIFY_PLAYLIST_API_URL "/browse/%1/%2" ).arg( browseUri )
                                                                         .arg ( m_limit ) );
-    tDebug() << "Looking up URL..." << url.toString();
+    Davros::debug() << "Looking up URL..." << url.toString();
 
     QNetworkReply* reply = TomahawkUtils::nam()->get( QNetworkRequest( url ) );
     connect( reply, SIGNAL( finished() ), this, SLOT( spotifyBrowseFinished() ) );
@@ -135,7 +137,7 @@ SpotifyParser::lookupSpotifyBrowse( const QString& linkRaw )
 void
 SpotifyParser::lookupTrack( const QString& link )
 {
-    tDebug() << "Got a QString " << link;
+    Davros::debug() << "Got a QString " << link;
     if ( !link.contains( "track" )) // we only support track links atm
         return;
 
@@ -149,7 +151,7 @@ SpotifyParser::lookupTrack( const QString& link )
     }
 
     QUrl url = QUrl( QString( "http://ws.spotify.com/lookup/1/.json?uri=%1" ).arg( uri ) );
-    tDebug() << "Looking up URL..." << url.toString();
+    Davros::debug() << "Looking up URL..." << url.toString();
 
     QNetworkReply* reply = TomahawkUtils::nam()->get( QNetworkRequest( url ) );
     connect( reply, SIGNAL( finished() ), this, SLOT( spotifyTrackLookupFinished() ) );
@@ -179,7 +181,7 @@ SpotifyParser::spotifyBrowseFinished()
 
         if ( !ok )
         {
-            tLog() << "Failed to parse json from Spotify browse item :" << p.errorString() << "On line" << p.errorLine();
+            Davros::debug() << "Failed to parse json from Spotify browse item :" << p.errorString() << "On line" << p.errorLine();
             checkTrackFinished();
             return;
         }
@@ -208,7 +210,7 @@ SpotifyParser::spotifyBrowseFinished()
 
                 if ( title.isEmpty() && artist.isEmpty() ) // don't have enough...
                 {
-                    tLog() << "Didn't get an artist and track name from spotify, not enough to build a query on. Aborting" << title << artist << album;
+                    Davros::debug() << "Didn't get an artist and track name from spotify, not enough to build a query on. Aborting" << title << artist << album;
                     return;
                 }
 
@@ -220,7 +222,7 @@ SpotifyParser::spotifyBrowseFinished()
 
     } else
     {
-        tLog() << "Error in network request to Spotify for track decoding:" << r->errorString();
+        Davros::debug() << "Error in network request to Spotify for track decoding:" << r->errorString();
     }
 
     if ( m_trackMode )
@@ -247,12 +249,12 @@ SpotifyParser::spotifyTrackLookupFinished()
 
         if ( !ok )
         {
-            tLog() << "Failed to parse json from Spotify track lookup:" << p.errorString() << "On line" << p.errorLine();
+            Davros::debug() << "Failed to parse json from Spotify track lookup:" << p.errorString() << "On line" << p.errorLine();
             checkTrackFinished();
             return;
         } else if ( !res.contains( "track" ) )
         {
-            tLog() << "No 'track' item in the spotify track lookup result... not doing anything";
+            Davros::debug() << "No 'track' item in the spotify track lookup result... not doing anything";
             checkTrackFinished();
             return;
         }
@@ -271,7 +273,7 @@ SpotifyParser::spotifyTrackLookupFinished()
 
         if ( title.isEmpty() && artist.isEmpty() ) // don't have enough...
         {
-            tLog() << "Didn't get an artist and track name from spotify, not enough to build a query on. Aborting" << title << artist << album;
+            Davros::debug() << "Didn't get an artist and track name from spotify, not enough to build a query on. Aborting" << title << artist << album;
             return;
         }
 
@@ -279,7 +281,7 @@ SpotifyParser::spotifyTrackLookupFinished()
         m_tracks << q;
     } else
     {
-        tLog() << "Error in network request to Spotify for track decoding:" << r->errorString();
+        Davros::debug() << "Error in network request to Spotify for track decoding:" << r->errorString();
     }
 
     if ( m_trackMode )
@@ -292,7 +294,7 @@ SpotifyParser::spotifyTrackLookupFinished()
 void
 SpotifyParser::checkBrowseFinished()
 {
-    tDebug() << "Checking for spotify batch playlist job finished" << m_queries.isEmpty() << m_createNewPlaylist;
+    Davros::debug() << "Checking for spotify batch playlist job finished" << m_queries.isEmpty() << m_createNewPlaylist;
     if ( m_queries.isEmpty() ) // we're done
     {
         if ( m_browseJob )
@@ -323,7 +325,7 @@ SpotifyParser::checkBrowseFinished()
 void
 SpotifyParser::checkTrackFinished()
 {
-    tDebug() << "Checking for spotify batch track job finished" << m_queries.isEmpty();
+    Davros::debug() << "Checking for spotify batch track job finished" << m_queries.isEmpty();
     if ( m_queries.isEmpty() ) // we're done
     {
         if ( m_browseJob )

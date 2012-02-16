@@ -19,6 +19,8 @@
 
 #include "shortenedlinkparser.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "utils/tomahawkutils.h"
 #include "query.h"
@@ -64,7 +66,7 @@ ShortenedLinkParser::handlesUrl( const QString& url )
 void
 ShortenedLinkParser::lookupUrl ( const QString& url )
 {
-    tDebug() << "Looking up..." << url;
+    Davros::debug() << "Looking up..." << url;
 
     QNetworkReply* reply = TomahawkUtils::nam()->get( QNetworkRequest( QUrl( url ) ) );
     connect( reply, SIGNAL( finished() ), this, SLOT( lookupFinished() ) );
@@ -81,14 +83,14 @@ ShortenedLinkParser::lookupFinished()
     QVariant redir = r->attribute( QNetworkRequest::RedirectionTargetAttribute );
     if ( redir.isValid() && !redir.toUrl().isEmpty() )
     {
-        tDebug() << "RedirectionTargetAttribute set on " << redir;
+        Davros::debug() << "RedirectionTargetAttribute set on " << redir;
         m_queries.remove( r );
         r->deleteLater();
         lookupUrl( redir.toUrl().toString() );
     }
     else
     {
-        tLog() << "Got a redirected url:" << r->url().toString();
+        Davros::debug() << "Got a redirected url:" << r->url().toString();
         m_links << r->url().toString();   
         m_queries.remove( r );
         r->deleteLater();
@@ -102,7 +104,7 @@ ShortenedLinkParser::checkFinished()
 {
     if ( m_queries.isEmpty() ) // we're done
     {
-        qDebug() << "DONE and found redirected urls:" << m_links;
+        Davros::debug() << "DONE and found redirected urls:" << m_links;
         emit urls( m_links );
 
         deleteLater();

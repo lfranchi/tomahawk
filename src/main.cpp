@@ -22,6 +22,7 @@
 #include "thirdparty/kdsingleapplicationguard/kdsingleapplicationguard.h"
 #include "ubuntuunityhack.h"
 #include "tomahawksettings.h"
+#include "libdavros/davros.h"
 
 #include <QTranslator>
 
@@ -81,6 +82,8 @@ main( int argc, char *argv[] )
     AEInstallEventHandler( 'GURL', 'GURL', h, 0, false );
 #endif
 
+    Davros::setMinimumDebugLevel(QtDebugMsg);
+
     TomahawkApp a( argc, argv );
 
     // MUST register StateHash ****before*** initing TomahawkSettingsGui as constructor of settings does upgrade before Gui subclass registers type
@@ -109,11 +112,11 @@ main( int argc, char *argv[] )
     QTranslator translator;
     if ( translator.load( QString( ":/lang/tomahawk_" ) + locale ) )
     {
-        tDebug() << "Using system locale:" << locale;
+        Davros::debug() << "Using system locale:" << locale;
     }
     else
     {
-        tDebug() << "Using default locale, system locale one not found:" << locale;
+        Davros::debug() << "Using default locale, system locale one not found:" << locale;
         translator.load( QString( ":/lang/tomahawk_en" ) );
     }
     a.installTranslator( &translator );

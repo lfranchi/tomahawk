@@ -159,6 +159,8 @@ INCLUDE_DIRECTORIES(
     ${THIRDPARTY_DIR}/qtweetlib/qtweetlib/src
     ${THIRDPARTY_DIR}/qtweetlib/tomahawk-custom
     ${THIRDPARTY_DIR}/breakpad
+    ${THIRDPARTY_DIR}/libdavros
+    ${THIRDPARTY_DIR}
 
     ${TAGLIB_INCLUDES}
     ${PHONON_INCLUDES}
@@ -246,6 +248,7 @@ ENDIF(QCA2_FOUND)
 
 TARGET_LINK_LIBRARIES( tomahawk
     tomahawk_breakpad
+    davros
     ${LINK_LIBRARIES}
     ${TOMAHAWK_LIBRARIES}
     ${PHONON_LIBS}

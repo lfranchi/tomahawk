@@ -26,6 +26,9 @@
 #include "resolvers/scriptresolver.h"
 #include "resolvers/qtscriptresolver.h"
 
+
+#include "libdavros/davros.h"
+#include "utils/logger.h"
 #include "utils/logger.h"
 
 #define DEFAULT_CONCURRENT_QUERIES 4
@@ -52,7 +55,7 @@ Pipeline::Pipeline( QObject* parent )
     s_instance = this;
 
     m_maxConcurrentQueries = qBound( DEFAULT_CONCURRENT_QUERIES, QThread::idealThreadCount(), MAX_CONCURRENT_QUERIES );
-    tDebug() << Q_FUNC_INFO << "Using" << m_maxConcurrentQueries << "threads";
+    Davros::debug() << Q_FUNC_INFO << "Using" << m_maxConcurrentQueries << "threads";
 
     m_temporaryQueryTimer.setInterval( CLEANUP_TIMEOUT );
     connect( &m_temporaryQueryTimer, SIGNAL( timeout() ), SLOT( onTemporaryQueryTimer() ) );
@@ -83,7 +86,7 @@ Pipeline::databaseReady()
 void
 Pipeline::start()
 {
-    tDebug() << Q_FUNC_INFO << "Shunting this many pending queries:" << m_queries_pending.size();
+    Davros::debug() << Q_FUNC_INFO << "Shunting this many pending queries:" << m_queries_pending.size();
     m_running = true;
 
     shuntNext();
@@ -112,7 +115,7 @@ Pipeline::addResolver( Resolver* r )
 {
     QMutexLocker lock( &m_mut );
 
-    tDebug() << "Adding resolver" << r->name();
+    Davros::debug() << "Adding resolver" << r->name();
     m_resolvers.append( r );
     emit resolverAdded( r );
 }
@@ -255,7 +258,7 @@ Pipeline::reportResults( QID qid, const QList< result_ptr >& results )
 
     if ( !m_qids.contains( qid ) )
     {
-        tDebug() << "Result arrived too late for:" << qid;
+        Davros::debug() << "Result arrived too late for:" << qid;
         return;
     }
     const query_ptr& q = m_qids.value( qid );
@@ -298,7 +301,7 @@ Pipeline::reportAlbums( QID qid, const QList< album_ptr >& albums )
 
     if ( !m_qids.contains( qid ) )
     {
-        tDebug() << "Albums arrived too late for:" << qid;
+        Davros::debug() << "Albums arrived too late for:" << qid;
         return;
     }
     const query_ptr& q = m_qids.value( qid );
@@ -327,7 +330,7 @@ Pipeline::reportArtists( QID qid, const QList< artist_ptr >& artists )
 
     if ( !m_qids.contains( qid ) )
     {
-        tDebug() << "Artists arrived too late for:" << qid;
+        Davros::debug() << "Artists arrived too late for:" << qid;
         return;
     }
     const query_ptr& q = m_qids.value( qid );
@@ -520,7 +523,7 @@ void
 Pipeline::onTemporaryQueryTimer()
 {
     QMutexLocker lock( &m_mut );
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     m_temporaryQueryTimer.stop();
 
     for ( int i = m_queries_temporary.count() - 1; i >= 0; i-- )

@@ -21,6 +21,8 @@
 #include <QSqlQuery>
 
 #include "databaseimpl.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -60,7 +62,7 @@ DatabaseCommand_addSource::exec( DatabaseImpl* dbi )
     query.exec();
 
     unsigned int id = query.lastInsertId().toUInt();
-    tDebug() << "Inserted new source to DB, id:" << id << "friendlyname" << m_username;
+    Davros::debug() << "Inserted new source to DB, id:" << id << "friendlyname" << m_username;
 
     emit done( id, m_fname );
 }

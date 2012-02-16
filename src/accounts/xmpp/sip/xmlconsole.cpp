@@ -28,6 +28,8 @@
 #include <QFileDialog>
 #include <QTextDocumentWriter>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Jreen;
@@ -161,7 +163,7 @@ void XmlConsole::stackProcess(const QByteArray &data, bool incoming)
 //	debug() << incoming << data;
 //	debug() << "==================================================================";
 	while (d->reader.readNext() > QXmlStreamReader::Invalid) {
-//		qDebug() << incoming << d->reader.tokenString();
+//		Davros::debug() << incoming << d->reader.tokenString();
 		switch(d->reader.tokenType()) {
 		case QXmlStreamReader::StartElement:
 //			dbg << d->reader.name().toString() << d->depth
@@ -289,7 +291,7 @@ void XmlConsole::stackProcess(const QByteArray &data, bool incoming)
 			break;
 		}
 	}
-//	qDebug() << d->reader.tokenString();
+//	Davros::debug() << d->reader.tokenString();
 //	if (d->reader.tokenType() == QXmlStreamReader::Invalid)
 //		dbg << d->reader.error() << d->reader.errorString();
 	if (!incoming && d->depth > 1) {
@@ -345,7 +347,7 @@ void XmlConsole::on_lineEdit_textChanged(const QString &text)
 		ok &= bool(node.type & m_filter);
 		node.block.setVisible(ok);
 		node.block.setLineCount(ok ? node.lineCount : 0);
-		//		qDebug() << node.block.lineCount();
+		//		Davros::debug() << node.block.lineCount();
 	}
 	QAbstractTextDocumentLayout *layout = m_ui->xmlBrowser->document()->documentLayout();
 	Q_ASSERT(qobject_cast<QPlainTextDocumentLayout*>(layout));

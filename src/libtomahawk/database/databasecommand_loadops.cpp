@@ -21,6 +21,8 @@
 #include "databaseimpl.h"
 #include "tomahawksqlquery.h"
 #include "source.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -38,7 +40,7 @@ DatabaseCommand_loadOps::exec( DatabaseImpl* dbi )
 
         if ( !query.next() )
         {
-            tLog() << "Unknown oplog guid, requested, not replying:" << m_since;
+            Davros::debug() << "Unknown oplog guid, requested, not replying:" << m_since;
             Q_ASSERT( false );
             emit done( m_since, m_since, ops );
             return;
@@ -71,6 +73,6 @@ DatabaseCommand_loadOps::exec( DatabaseImpl* dbi )
         ops << op;
     }
 
-//    qDebug() << "Loaded" << ops.length() << "ops from db";
+//    Davros::debug() << "Loaded" << ops.length() << "ops from db";
     emit done( m_since, lastguid, ops );
 }

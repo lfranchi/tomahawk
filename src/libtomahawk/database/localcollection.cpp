@@ -22,6 +22,8 @@
 
 #include "sourcelist.h"
 #include <tomahawksettings.h>
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #ifndef ENABLE_HEADLESS

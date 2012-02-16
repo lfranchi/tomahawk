@@ -23,6 +23,8 @@
 #include <QStyleOption>
 #include <QWidget>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define ARROW_WIDTH 7

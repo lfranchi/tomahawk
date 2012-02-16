@@ -22,6 +22,8 @@
 #include "shortenedlinkparser.h"
 #include "config.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "dropjob.h"
 #include "jobview/JobStatusView.h"
@@ -101,7 +103,7 @@ RdioParser::parseUrl( const QString& url )
             type = DropJob::Playlist;
         else
         {
-            tLog() << "Got Rdio URL I can't parse!" << url;
+            Davros::debug() << "Got Rdio URL I can't parse!" << url;
             return;
         }
 
@@ -152,7 +154,7 @@ RdioParser::rdioReturned()
 
         if ( !ok || result.isEmpty() )
         {
-            tLog() << "Failed to parse json from Rdio browse item :" << p.errorString() << "On line" << p.errorLine() << "With data:" << res;
+            Davros::debug() << "Failed to parse json from Rdio browse item :" << p.errorString() << "On line" << p.errorLine() << "With data:" << res;
 
             return;
         }
@@ -160,7 +162,7 @@ RdioParser::rdioReturned()
         QVariantList tracks = result.value( "tracks" ).toList();
         if ( tracks.isEmpty() )
         {
-            tLog() << "Got no tracks in result, ignoring!" << result;
+            Davros::debug() << "Got no tracks in result, ignoring!" << result;
             return;
         }
 
@@ -179,7 +181,7 @@ RdioParser::rdioReturned()
 
             if ( title.isEmpty() && artist.isEmpty() ) // don't have enough...
             {
-                tLog() << "Didn't get an artist and track name from Rdio, not enough to build a query on. Aborting" << title << artist << album;
+                Davros::debug() << "Didn't get an artist and track name from Rdio, not enough to build a query on. Aborting" << title << artist << album;
                 return;
             }
 
@@ -189,7 +191,7 @@ RdioParser::rdioReturned()
 
     } else
     {
-        tLog() << "Error in network request to Rdio for track decoding:" << r->errorString();
+        Davros::debug() << "Error in network request to Rdio for track decoding:" << r->errorString();
     }
 
 
@@ -230,7 +232,7 @@ RdioParser::parseTrack( const QString& origUrl )
 
     if ( trk.isEmpty() || artist.isEmpty() )
     {
-        tLog() << "Parsed Rdio track url but it's missing artist or track!" << url;
+        Davros::debug() << "Parsed Rdio track url but it's missing artist or track!" << url;
         return;
     }
 
@@ -271,7 +273,7 @@ RdioParser::generateRequest( const QString& method, const QString& url, const QL
     data->truncate( data->size() - 1 ); // remove extra &
 
     QByteArray toSign = "POST&" + QUrl::toPercentEncoding( fetchUrl.toEncoded() ) + '&' + QUrl::toPercentEncoding( *data );
-    qDebug() << "Rdio" << toSign;
+    Davros::debug() << "Rdio" << toSign;
 
     toSignUrl.addEncodedQueryItem( "oauth_signature", QUrl::toPercentEncoding( hmacSha1("yt35kakDyW&", toSign ) ) );
 
@@ -283,7 +285,7 @@ RdioParser::generateRequest( const QString& method, const QString& url, const QL
     }
     data->truncate( data->size() - 1 ); // remove extra &
 
-    qDebug() << "POST data:" << *data;
+    Davros::debug() << "POST data:" << *data;
 
     QNetworkRequest request = QNetworkRequest( fetchUrl );
     request.setHeader( QNetworkRequest::ContentTypeHeader, QLatin1String( "application/x-www-form-urlencoded" ) );
@@ -306,7 +308,7 @@ RdioParser::hmacSha1(QByteArray key, QByteArray baseString)
     QByteArray result = resultArray.toByteArray().toBase64();
     return result;
 #else
-    tLog() << "Tomahawk compiled without QCA support, cannot generate HMAC signature";
+    Davros::debug() << "Tomahawk compiled without QCA support, cannot generate HMAC signature";
     return QByteArray();
 #endif
 }
@@ -314,7 +316,7 @@ RdioParser::hmacSha1(QByteArray key, QByteArray baseString)
 void
 RdioParser::checkFinished()
 {
-    tDebug() << "Checking for Rdio batch playlist job finished" << m_reqQueries.isEmpty();
+    Davros::debug() << "Checking for Rdio batch playlist job finished" << m_reqQueries.isEmpty();
     if ( m_reqQueries.isEmpty() ) // we're done
     {
         if ( m_browseJob )

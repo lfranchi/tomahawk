@@ -24,6 +24,8 @@
 #include "playlist.h"
 #include "source.h"
 #include "databaseimpl.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;

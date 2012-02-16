@@ -32,6 +32,8 @@
 #include "playlist/playlistmodel.h"
 #include "widgets/overlaywidget.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "dynamic/GeneratorInterface.h"
 #include "RecentlyPlayedPlaylistsModel.h"

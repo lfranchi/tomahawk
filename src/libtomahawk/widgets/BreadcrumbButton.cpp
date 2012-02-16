@@ -23,6 +23,8 @@
 #include "combobox.h"
 #include "utils/stylehelper.h"
 #include "utils/tomahawkutilsgui.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #include <QPaintEvent>

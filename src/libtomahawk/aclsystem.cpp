@@ -20,9 +20,12 @@
 
 #include <QMutexLocker>
 #include <QVariant>
+#include <QStringList>
 
 #include "tomahawksettings.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 
@@ -72,10 +75,10 @@ ACLSystem::~ACLSystem()
 ACLSystem::ACL
 ACLSystem::isAuthorizedUser( const QString& dbid )
 {
-//    qDebug() << Q_FUNC_INFO;
+//    Davros::debug() << Q_FUNC_INFO;
     QMutexLocker locker( &m_cacheMutex );
-    qDebug() << "Current cache keys =" << m_cache.keys();
-//    qDebug() << "Looking up dbid";
+    Davros::debug() << "Current cache keys =" << m_cache.keys();
+//    Davros::debug() << "Looking up dbid";
     if( !m_cache.contains( dbid ) )
         return ACLSystem::NotFound;
     else
@@ -90,7 +93,7 @@ ACLSystem::isAuthorizedUser( const QString& dbid )
 void
 ACLSystem::authorizeUser( const QString& dbid, ACLSystem::ACL globalType )
 {
-//    qDebug() << Q_FUNC_INFO;
+//    Davros::debug() << Q_FUNC_INFO;
     if( globalType == ACLSystem::NotFound )
         return;
 
@@ -128,7 +131,7 @@ ACLSystem::authorizePath( const QString& dbid, const QString& path, ACLSystem::A
     TomahawkSettings *s = TomahawkSettings::instance();
     if( !s->scannerPaths().contains( path ) )
     {
-        qDebug() << "path selected is not in our scanner path!";
+        Davros::debug() << "path selected is not in our scanner path!";
         return;
     }
     QMutexLocker locker( &m_cacheMutex );

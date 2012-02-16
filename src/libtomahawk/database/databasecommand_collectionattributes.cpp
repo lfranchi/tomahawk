@@ -44,7 +44,7 @@ DatabaseCommand_CollectionAttributes::exec( DatabaseImpl *lib )
         typeStr = "echonest_artist";
 
     QString queryStr = QString( "SELECT id, v FROM collection_attributes WHERE k = \"%1\"" ).arg( typeStr );
-    qDebug() << "Doing queryL" << queryStr;
+    Davros::debug() << "Doing queryL" << queryStr;
     query.exec( queryStr );
     PairList data;
     while ( query.next() )

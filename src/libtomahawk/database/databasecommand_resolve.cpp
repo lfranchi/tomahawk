@@ -21,6 +21,8 @@
 #include "artist.h"
 #include "album.h"
 #include "sourcelist.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -47,12 +49,12 @@ DatabaseCommand_Resolve::exec( DatabaseImpl* lib )
 
     if ( !m_query->resultHint().isEmpty() )
     {
-        qDebug() << "Using result-hint to speed up resolving:" << m_query->resultHint();
+        Davros::debug() << "Using result-hint to speed up resolving:" << m_query->resultHint();
 
         Tomahawk::result_ptr result = lib->resultFromHint( m_query );
-        /*        qDebug() << "Result null:" << result.isNull();
-         *        qDebug() << "Collection null:" << result->collection().isNull();
-         *        qDebug() << "Source null:" << result->collection()->source().isNull();*/
+        /*        Davros::debug() << "Result null:" << result.isNull();
+         *        Davros::debug() << "Collection null:" << result->collection().isNull();
+         *        Davros::debug() << "Source null:" << result->collection()->source().isNull();*/
         if ( !result.isNull() && !result->collection().isNull() && result->collection()->source()->isOnline() )
         {
             QList<Tomahawk::result_ptr> res;
@@ -82,7 +84,7 @@ DatabaseCommand_Resolve::resolve( DatabaseImpl* lib )
 
     if ( artists.length() == 0 || tracks.length() == 0 )
     {
-        qDebug() << "No candidates found in first pass, aborting resolve" << m_query->artist() << m_query->track();
+        Davros::debug() << "No candidates found in first pass, aborting resolve" << m_query->artist() << m_query->track();
         emit results( m_query->id(), res );
         return;
     }
@@ -140,7 +142,7 @@ DatabaseCommand_Resolve::resolve( DatabaseImpl* lib )
             s = SourceList::instance()->get( files_query.value( 16 ).toUInt() );
             if( s.isNull() )
             {
-                qDebug() << "Could not find source" << files_query.value( 16 ).toUInt();
+                Davros::debug() << "Could not find source" << files_query.value( 16 ).toUInt();
                 continue;
             }
 
@@ -238,7 +240,7 @@ DatabaseCommand_Resolve::fullTextResolve( DatabaseImpl* lib )
 
     if ( artistPairs.length() == 0 && trackPairs.length() == 0 && albumPairs.length() == 0 )
     {
-        qDebug() << "No candidates found in first pass, aborting resolve" << m_query->artist() << m_query->track();
+        Davros::debug() << "No candidates found in first pass, aborting resolve" << m_query->artist() << m_query->track();
         emit results( m_query->id(), res );
         return;
     }
@@ -298,7 +300,7 @@ DatabaseCommand_Resolve::fullTextResolve( DatabaseImpl* lib )
             s = SourceList::instance()->get( files_query.value( 16 ).toUInt() );
             if( s.isNull() )
             {
-                qDebug() << "Could not find source" << files_query.value( 16 ).toUInt();
+                Davros::debug() << "Could not find source" << files_query.value( 16 ).toUInt();
                 continue;
             }
 

@@ -18,6 +18,8 @@
 
 #include "animatedsplitter.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define ANIMATION_TIME 400
@@ -76,7 +78,7 @@ AnimatedSplitter::onShowRequest()
     if ( indexOf( w ) > 0 )
         show( indexOf( w ) );
     else
-        qDebug() << "Could not find widget:" << sender();
+        Davros::debug() << "Could not find widget:" << sender();
 }
 
 
@@ -87,7 +89,7 @@ AnimatedSplitter::onHideRequest()
     if ( indexOf( w ) > 0 )
         hide( indexOf( w ) );
     else
-        qDebug() << "Could not find widget:" << sender();
+        Davros::debug() << "Could not find widget:" << sender();
 }
 
 

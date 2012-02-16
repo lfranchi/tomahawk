@@ -29,6 +29,8 @@
 #include "tomahawksettings.h"
 #include "infosystem/infosystem.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 static QString s_scInfoIdentifier = QString( "SCROBBLER" );
@@ -70,7 +72,7 @@ void
 Scrobbler::trackStarted( const Tomahawk::result_ptr& track )
 {
     Q_ASSERT( QThread::currentThread() == thread() );
-//    qDebug() << Q_FUNC_INFO;
+//    Davros::debug() << Q_FUNC_INFO;
 
     if( m_reachedScrobblePoint )
     {
@@ -148,7 +150,7 @@ Scrobbler::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData requestData, QV
 {
     Q_UNUSED( output );
     if ( requestData.caller == s_scInfoIdentifier )
-        qDebug() << Q_FUNC_INFO;
+        Davros::debug() << Q_FUNC_INFO;
 }
 
 
@@ -157,7 +159,7 @@ Scrobbler::infoSystemFinished( QString target )
 {
     if ( target == s_scInfoIdentifier )
     {
-        qDebug() << Q_FUNC_INFO;
-        qDebug() << "Scrobbler received done signal from InfoSystem";
+        Davros::debug() << Q_FUNC_INFO;
+        Davros::debug() << "Scrobbler received done signal from InfoSystem";
     }
 }

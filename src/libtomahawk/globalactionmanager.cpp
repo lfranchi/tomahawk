@@ -31,6 +31,8 @@
 
 #include "utils/xspfloader.h"
 #include "utils/xspfgenerator.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 #include "utils/tomahawkutils.h"
 
@@ -125,7 +127,7 @@ GlobalActionManager::shortenLink( const QUrl& url )
 {
     if ( QThread::currentThread() != thread() )
     {
-        qDebug() << "Reinvoking in correct thread:" << Q_FUNC_INFO;
+        Davros::debug() << "Reinvoking in correct thread:" << Q_FUNC_INFO;
         QMetaObject::invokeMethod( this, "shortenLink", Qt::QueuedConnection, Q_ARG( QUrl, url ) );
         return;
     }
@@ -145,7 +147,7 @@ GlobalActionManager::copyPlaylistToClipboard( const dynplaylist_ptr& playlist )
     QUrl link( QString( "%1/%2/create/" ).arg( hostname() ).arg( playlist->mode() == OnDemand ? "station" : "autoplaylist" ) );
 
     if( playlist->generator()->type() != "echonest" ) {
-        tLog() << "Only echonest generators are supported";
+        Davros::debug() << "Only echonest generators are supported";
         return QString();
     }
 
@@ -230,7 +232,7 @@ GlobalActionManager::parseTomahawkLink( const QString& urlIn )
     if( url.contains( "tomahawk://" ) ) {
         QString cmd = url.mid( 11 );
         cmd.replace( "%2B", "%20" );
-        tLog() << "Parsing tomahawk link command" << cmd;
+        Davros::debug() << "Parsing tomahawk link command" << cmd;
 
         QString cmdType = cmd.split( "/" ).first();
         QUrl u = QUrl::fromEncoded( cmd.toUtf8() );
@@ -240,7 +242,7 @@ GlobalActionManager::parseTomahawkLink( const QString& urlIn )
             if( u.hasQueryItem( "xspf" ) ) {
                 QUrl xspf = QUrl::fromUserInput( u.queryItemValue( "xspf" ) );
                 XSPFLoader* l = new XSPFLoader( true, this );
-                tDebug() << "Loading spiff:" << xspf.toString();
+                Davros::debug() << "Loading spiff:" << xspf.toString();
                 l->load( xspf );
                 connect( l, SIGNAL( ok( Tomahawk::playlist_ptr ) ), ViewManager::instance(), SLOT( show( Tomahawk::playlist_ptr ) ) );
 
@@ -249,7 +251,7 @@ GlobalActionManager::parseTomahawkLink( const QString& urlIn )
                 QUrl jspf = QUrl::fromUserInput( u.queryItemValue( "jspf" ) );
                 JSPFLoader* l = new JSPFLoader( true, this );
 
-                tDebug() << "Loading jspiff:" << jspf.toString();
+                Davros::debug() << "Loading jspiff:" << jspf.toString();
                 l->load( jspf );
                 connect( l, SIGNAL( ok( Tomahawk::playlist_ptr ) ), ViewManager::instance(), SLOT( show( Tomahawk::playlist_ptr ) ) );
 
@@ -278,11 +280,11 @@ GlobalActionManager::parseTomahawkLink( const QString& urlIn )
         } else if( cmdType == "view" ) {
             return handleViewCommand( u );
         } else {
-            tLog() << "Tomahawk link not supported, command not known!" << cmdType << u.path();
+            Davros::debug() << "Tomahawk link not supported, command not known!" << cmdType << u.path();
             return false;
         }
     } else {
-        tLog() << "Not a tomahawk:// link!";
+        Davros::debug() << "Not a tomahawk:// link!";
         return false;
     }
 }
@@ -293,13 +295,13 @@ GlobalActionManager::handlePlaylistCommand( const QUrl& url )
 {
     QStringList parts = url.path().split( "/" ).mid( 1 ); // get the rest of the command
     if( parts.isEmpty() ) {
-        tLog() << "No specific playlist command:" << url.toString();
+        Davros::debug() << "No specific playlist command:" << url.toString();
         return false;
     }
 
     if( parts[ 0 ] == "import" ) {
         if( !url.hasQueryItem( "xspf" ) ) {
-            tDebug() << "No xspf to load...";
+            Davros::debug() << "No xspf to load...";
             return false;
         }
         QUrl xspf = QUrl::fromUserInput( url.queryItemValue( "xspf" ) );
@@ -311,14 +313,14 @@ GlobalActionManager::handlePlaylistCommand( const QUrl& url )
 
     } else if( parts [ 0 ] == "new" ) {
         if( !url.hasQueryItem( "title" ) ) {
-            tLog() << "New playlist command needs a title...";
+            Davros::debug() << "New playlist command needs a title...";
             return false;
         }
         playlist_ptr pl = Playlist::create( SourceList::instance()->getLocal(), uuid(), url.queryItemValue( "title" ), QString(), QString(), false );
         ViewManager::instance()->show( pl );
     } else if( parts[ 0 ] == "add" ) {
         if( !url.hasQueryItem( "playlistid" ) || !url.hasQueryItem( "title" ) || !url.hasQueryItem( "artist" ) ) {
-            tLog() << "Add to playlist command needs playlistid, track, and artist..." << url.toString();
+            Davros::debug() << "Add to playlist command needs playlistid, track, and artist..." << url.toString();
             return false;
         }
         // TODO implement. Let the user select what playlist to add to
@@ -350,7 +352,7 @@ GlobalActionManager::handleCollectionCommand( const QUrl& url )
 {
     QStringList parts = url.path().split( "/" ).mid( 1 ); // get the rest of the command
     if( parts.isEmpty() ) {
-        tLog() << "No specific collection command:" << url.toString();
+        Davros::debug() << "No specific collection command:" << url.toString();
         return false;
     }
 
@@ -367,7 +369,7 @@ GlobalActionManager::handleOpenCommand(const QUrl& url)
 {
     QStringList parts = url.path().split( "/" ).mid( 1 );
     if( parts.isEmpty() ) {
-        tLog() << "No specific type to open:" << url.toString();
+        Davros::debug() << "No specific type to open:" << url.toString();
         return false;
     }
     // TODO user configurable in the UI
@@ -400,14 +402,14 @@ GlobalActionManager::handleQueueCommand( const QUrl& url )
 {
     QStringList parts = url.path().split( "/" ).mid( 1 ); // get the rest of the command
     if( parts.isEmpty() ) {
-        tLog() << "No specific queue command:" << url.toString();
+        Davros::debug() << "No specific queue command:" << url.toString();
         return false;
     }
 
     if( parts[ 0 ] == "add" ) {
         doQueueAdd( parts.mid( 1 ), url.queryItems() );
     } else {
-        tLog() << "Only queue/add/track is support at the moment, got:" << parts;
+        Davros::debug() << "Only queue/add/track is support at the moment, got:" << parts;
         return false;
     }
 
@@ -551,7 +553,7 @@ GlobalActionManager::handleViewCommand( const QUrl& url )
 {
     QStringList parts = url.path().split( "/" ).mid( 1 ); // get the rest of the command
     if( parts.isEmpty() ) {
-        tLog() << "No specific view command:" << url.toString();
+        Davros::debug() << "No specific view command:" << url.toString();
         return false;
     }
 
@@ -560,7 +562,7 @@ GlobalActionManager::handleViewCommand( const QUrl& url )
         const QString artist = url.queryItemValue( "name" );
         if ( artist.isEmpty() )
         {
-            tLog() << "Not artist supplied for view/artist command.";
+            Davros::debug() << "Not artist supplied for view/artist command.";
             return false;
         }
         artist_ptr artistPtr = Artist::get( artist );
@@ -575,7 +577,7 @@ GlobalActionManager::handleViewCommand( const QUrl& url )
         const QString album = url.queryItemValue( "name" );
         if ( artist.isEmpty() || album.isEmpty() )
         {
-            tLog() << "Not artist or album supplied for view/artist command:" << url;
+            Davros::debug() << "Not artist or album supplied for view/artist command:" << url;
             return false;
         }
         album_ptr albumPtr = Album::get( Artist::get( artist, false ), album, false );
@@ -601,13 +603,13 @@ GlobalActionManager::loadDynamicPlaylist( const QUrl& url, bool station )
 {
     QStringList parts = url.path().split( "/" ).mid( 1 ); // get the rest of the command
     if( parts.isEmpty() ) {
-        tLog() << "No specific station command:" << url.toString();
+        Davros::debug() << "No specific station command:" << url.toString();
         return Tomahawk::dynplaylist_ptr();
     }
 
     if( parts[ 0 ] == "create" ) {
         if( !url.hasQueryItem( "title" ) || !url.hasQueryItem( "type" ) ) {
-            tLog() << "Station create command needs title and type..." << url.toString();
+            Davros::debug() << "Station create command needs title and type..." << url.toString();
             return Tomahawk::dynplaylist_ptr();
         }
         QString title = url.queryItemValue( "title" );
@@ -753,7 +755,7 @@ GlobalActionManager::handlePlayCommand( const QUrl& url )
 {
     QStringList parts = url.path().split( "/" ).mid( 1 ); // get the rest of the command
     if( parts.isEmpty() ) {
-        tLog() << "No specific play command:" << url.toString();
+        Davros::debug() << "No specific play command:" << url.toString();
         return false;
     }
 
@@ -842,7 +844,7 @@ bool GlobalActionManager::handleBookmarkCommand(const QUrl& url)
 {
     QStringList parts = url.path().split( "/" ).mid( 1 ); // get the rest of the command
     if( parts.isEmpty() ) {
-        tLog() << "No specific bookmark command:" << url.toString();
+        Davros::debug() << "No specific bookmark command:" << url.toString();
         return false;
     }
 
@@ -885,7 +887,7 @@ bool GlobalActionManager::handleBookmarkCommand(const QUrl& url)
 void
 GlobalActionManager::shortenLinkRequestFinished()
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
     QNetworkReply *reply = qobject_cast<QNetworkReply*>( sender() );
     bool error = false;
 
@@ -936,8 +938,8 @@ GlobalActionManager::shortenLinkRequestFinished()
 void
 GlobalActionManager::shortenLinkRequestError( QNetworkReply::NetworkError error )
 {
-    qDebug() << Q_FUNC_INFO;
-    qDebug() << "Network Error: " << error;
+    Davros::debug() << Q_FUNC_INFO;
+    Davros::debug() << "Network Error: " << error;
 
     QNetworkReply *reply = qobject_cast<QNetworkReply*>( sender() );
 

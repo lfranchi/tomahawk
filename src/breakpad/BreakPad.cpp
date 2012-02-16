@@ -19,6 +19,8 @@
 #include "BreakPad.h"
 
 #include "config.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #include <QCoreApplication>
@@ -89,7 +91,7 @@ BreakPad::BreakPad( const QString& path, bool active )
     else if ( QFileInfo( globalReporter ).exists() )
         reporter = globalReporter;
     else
-        tLog() << "Could not find \"" CRASH_REPORTER_BINARY "\" in \"" CMAKE_INSTALL_FULL_LIBEXECDIR "\" or application path";
+        Davros::debug() << "Could not find \"" CRASH_REPORTER_BINARY "\" in \"" CMAKE_INSTALL_FULL_LIBEXECDIR "\" or application path";
 
     char* creporter;
     std::string sreporter = reporter.toStdString();

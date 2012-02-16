@@ -21,6 +21,8 @@
 #include <QSqlQuery>
 
 #include "network/servent.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -36,7 +38,7 @@ DatabaseCommand_DeletePlaylist::DatabaseCommand_DeletePlaylist( const source_ptr
 void
 DatabaseCommand_DeletePlaylist::exec( DatabaseImpl* lib )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     TomahawkSqlQuery cre = lib->newquery();
 
@@ -52,10 +54,10 @@ DatabaseCommand_DeletePlaylist::exec( DatabaseImpl* lib )
 void
 DatabaseCommand_DeletePlaylist::postCommitHook()
 {
-    qDebug() << Q_FUNC_INFO << "..reporting..";
+    Davros::debug() << Q_FUNC_INFO << "..reporting..";
     if ( source().isNull() || source()->collection().isNull() )
     {
-        qDebug() << "Source has gone offline, not emitting to GUI.";
+        Davros::debug() << "Source has gone offline, not emitting to GUI.";
         return;
     }
 

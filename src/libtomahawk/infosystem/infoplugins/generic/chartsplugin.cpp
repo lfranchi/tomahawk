@@ -30,6 +30,8 @@
 #include "audio/audioengine.h"
 #include "tomahawksettings.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define CHART_URL "http://charts.tomahawk-player.org/"
@@ -70,8 +72,8 @@ ChartsPlugin::dataError( Tomahawk::InfoSystem::InfoRequestData requestData )
 void
 ChartsPlugin::getInfo( Tomahawk::InfoSystem::InfoRequestData requestData )
 {
-    //qDebug() << Q_FUNC_INFO << requestData.caller;
-    //qDebug() << Q_FUNC_INFO << requestData.customData;
+    //Davros::debug() << Q_FUNC_INFO << requestData.caller;
+    //Davros::debug() << Q_FUNC_INFO << requestData.customData;
 
     InfoStringHash hash = requestData.input.value< Tomahawk::InfoSystem::InfoStringHash >();
     bool foundSource = false;
@@ -199,7 +201,7 @@ ChartsPlugin::notInCacheSlot( QHash<QString, QString> criteria, Tomahawk::InfoSy
                     QNetworkReply* reply = TomahawkUtils::nam()->get( QNetworkRequest( url ) );
                     reply->setProperty( "chart_resource", resource);
 
-                    tDebug() << "fetching:" << url;
+                    Davros::debug() << "fetching:" << url;
                     connect( reply, SIGNAL( finished() ), SLOT( chartTypes() ) );
 
                     m_chartsFetchJobs++;
@@ -219,7 +221,7 @@ ChartsPlugin::notInCacheSlot( QHash<QString, QString> criteria, Tomahawk::InfoSy
 
         default:
         {
-            tLog() << Q_FUNC_INFO << "Couldn't figure out what to do with this type of request after cache miss";
+            Davros::debug() << Q_FUNC_INFO << "Couldn't figure out what to do with this type of request after cache miss";
             emit info( requestData, QVariant() );
             return;
         }
@@ -244,7 +246,7 @@ ChartsPlugin::chartTypes()
 
         if ( !ok )
         {
-            tLog() << "Failed to parse resources" << p.errorString() << "On line" << p.errorLine();
+            Davros::debug() << "Failed to parse resources" << p.errorString() << "On line" << p.errorLine();
 
             return;
         }
@@ -414,7 +416,7 @@ ChartsPlugin::chartTypes()
     }
     else
     {
-        tLog() << "Error fetching charts:" << reply->errorString();
+        Davros::debug() << "Error fetching charts:" << reply->errorString();
     }
 
     m_chartsFetchJobs--;
@@ -450,7 +452,7 @@ ChartsPlugin::chartReturned()
 
         if ( !ok )
         {
-            tLog() << "Failed to parse json from chart lookup:" << p.errorString() << "On line" << p.errorLine();
+            Davros::debug() << "Failed to parse json from chart lookup:" << p.errorString() << "On line" << p.errorLine();
             return;
         }
 
@@ -473,7 +475,7 @@ ChartsPlugin::chartReturned()
             setChartType( None );
 
 
-//         qDebug() << "Got chart returned!" << res;
+//         Davros::debug() << "Got chart returned!" << res;
         foreach ( QVariant chartR, chartResponse )
         {
             QString title, artist, album;
@@ -542,21 +544,21 @@ ChartsPlugin::chartReturned()
 
         if( chartType() == Artist )
         {
-            tDebug() << "ChartsPlugin:" << "\tgot " << top_artists.size() << " artists";
+            Davros::debug() << "ChartsPlugin:" << "\tgot " << top_artists.size() << " artists";
             returnedData[ "artists" ] = QVariant::fromValue< QStringList >( top_artists );
             returnedData[ "type" ] = "artists";
         }
 
         if( chartType() == Track )
         {
-            tDebug() << "ChartsPlugin:" << "\tgot " << top_tracks.size() << " tracks";
+            Davros::debug() << "ChartsPlugin:" << "\tgot " << top_tracks.size() << " tracks";
             returnedData[ "tracks" ] = QVariant::fromValue< QList< Tomahawk::InfoSystem::InfoStringHash > >( top_tracks );
             returnedData[ "type" ] = "tracks";
         }
 
         if( chartType() == Album )
         {
-            tDebug() << "ChartsPlugin:" << "\tgot " << top_albums.size() << " albums";
+            Davros::debug() << "ChartsPlugin:" << "\tgot " << top_albums.size() << " albums";
             returnedData[ "albums" ] = QVariant::fromValue< QList< Tomahawk::InfoSystem::InfoStringHash > >( top_albums );
             returnedData[ "type" ] = "albums";
         }

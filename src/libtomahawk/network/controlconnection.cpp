@@ -26,6 +26,8 @@
 #include "network/dbsyncconnection.h"
 #include "network/servent.h"
 #include "sip/SipHandler.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define TCP_TIMEOUT 600
@@ -39,7 +41,7 @@ ControlConnection::ControlConnection( Servent* parent, const QHostAddress &ha )
     , m_registered( false )
     , m_pingtimer( 0 )
 {
-    qDebug() << "CTOR controlconnection";
+    Davros::debug() << "CTOR controlconnection";
     setId("ControlConnection()");
 
     // auto delete when connection closes:
@@ -58,7 +60,7 @@ ControlConnection::ControlConnection( Servent* parent, const QString &ha )
     , m_registered( false )
     , m_pingtimer( 0 )
 {
-    qDebug() << "CTOR controlconnection";
+    Davros::debug() << "CTOR controlconnection";
     setId("ControlConnection()");
 
     // auto delete when connection closes:
@@ -84,7 +86,7 @@ ControlConnection::ControlConnection( Servent* parent, const QString &ha )
 
 ControlConnection::~ControlConnection()
 {
-    qDebug() << "DTOR controlconnection";
+    Davros::debug() << "DTOR controlconnection";
 
     if ( !m_source.isNull() )
         m_source->setOffline();
@@ -114,18 +116,18 @@ ControlConnection::clone()
 void
 ControlConnection::setup()
 {
-    qDebug() << Q_FUNC_INFO << id() << name();
+    Davros::debug() << Q_FUNC_INFO << id() << name();
 
     if ( !m_source.isNull() )
     {
-        qDebug() << "This source seems to be online already.";
+        Davros::debug() << "This source seems to be online already.";
         Q_ASSERT( false );
         return;
     }
 
     QString friendlyName = name();
 
-    tDebug() << "Detected name:" << name() << friendlyName << m_sock->peerAddress();
+    Davros::debug() << "Detected name:" << name() << friendlyName << m_sock->peerAddress();
 
     // setup source and remote collection for this peer
     m_source = SourceList::instance()->get( id(), friendlyName );
@@ -150,13 +152,13 @@ ControlConnection::setup()
 void
 ControlConnection::registerSource()
 {
-    qDebug() << Q_FUNC_INFO << m_source->id();
+    Davros::debug() << Q_FUNC_INFO << m_source->id();
     Source* source = (Source*) sender();
     Q_UNUSED( source )
     Q_ASSERT( source == m_source.data() );
 
 #ifndef ENABLE_HEADLESS
-//    qDebug() << Q_FUNC_INFO << "Setting avatar ... " << name() << !SipHandler::instance()->avatar( name() ).isNull();
+//    Davros::debug() << Q_FUNC_INFO << "Setting avatar ... " << name() << !SipHandler::instance()->avatar( name() ).isNull();
     if( !SipHandler::instance()->avatar( name() ).isNull() )
     {
         source->setAvatar( SipHandler::instance()->avatar( name() ) );
@@ -172,7 +174,7 @@ ControlConnection::registerSource()
 void
 ControlConnection::setupDbSyncConnection( bool ondemand )
 {
-    qDebug() << Q_FUNC_INFO << ondemand << m_source->id() << m_dbconnkey << m_dbsyncconn << m_registered;
+    Davros::debug() << Q_FUNC_INFO << ondemand << m_source->id() << m_dbconnkey << m_dbsyncconn << m_registered;
 
     if ( m_dbsyncconn || !m_registered )
         return;
@@ -181,7 +183,7 @@ ControlConnection::setupDbSyncConnection( bool ondemand )
 
     if( !m_dbconnkey.isEmpty() )
     {
-        qDebug() << "Connecting to DBSync offer from peer...";
+        Davros::debug() << "Connecting to DBSync offer from peer...";
         m_dbsyncconn = new DBSyncConnection( m_servent, m_source );
 
         m_servent->createParallelConnection( this, m_dbsyncconn, m_dbconnkey );
@@ -189,7 +191,7 @@ ControlConnection::setupDbSyncConnection( bool ondemand )
     }
     else if( !outbound() || ondemand ) // only one end makes the offer
     {
-        qDebug() << "Offering a DBSync key to peer...";
+        Davros::debug() << "Offering a DBSync key to peer...";
         m_dbsyncconn = new DBSyncConnection( m_servent, m_source );
 
         QString key = uuid();
@@ -214,21 +216,21 @@ ControlConnection::setupDbSyncConnection( bool ondemand )
 void
 ControlConnection::dbSyncConnFinished( QObject* c )
 {
-    qDebug() << Q_FUNC_INFO << "DBSync connection closed (for now)";
+    Davros::debug() << Q_FUNC_INFO << "DBSync connection closed (for now)";
     if( (DBSyncConnection*)c == m_dbsyncconn )
     {
-        //qDebug() << "Setting m_dbsyncconn to NULL";
+        //Davros::debug() << "Setting m_dbsyncconn to NULL";
         m_dbsyncconn = NULL;
     }
     else
-        qDebug() << "Old DbSyncConn destroyed?!";
+        Davros::debug() << "Old DbSyncConn destroyed?!";
 }
 
 
 DBSyncConnection*
 ControlConnection::dbSyncConnection()
 {
-    qDebug() << Q_FUNC_INFO << m_source->id();
+    Davros::debug() << Q_FUNC_INFO << m_source->id();
     if ( !m_dbsyncconn )
     {
         setupDbSyncConnection( true );
@@ -244,7 +246,7 @@ ControlConnection::handleMsg( msg_ptr msg )
 {
     if ( msg->is( Msg::PING ) )
     {
-        // qDebug() << "Received Connection PING, nice." << m_pingtimer_mark.elapsed();
+        // Davros::debug() << "Received Connection PING, nice." << m_pingtimer_mark.elapsed();
         m_pingtimer_mark.restart();
         return;
     }
@@ -252,7 +254,7 @@ ControlConnection::handleMsg( msg_ptr msg )
     // if small and not compresed, print it out for debug
     if( msg->length() < 1024 && !msg->is( Msg::COMPRESSED ) )
     {
-        qDebug() << id() << "got msg:" << QString::fromAscii( msg->payload() );
+        Davros::debug() << id() << "got msg:" << QString::fromAscii( msg->payload() );
     }
 
     // All control connection msgs are JSON
@@ -280,19 +282,19 @@ ControlConnection::handleMsg( msg_ptr msg )
         }
         else if( m.value( "method" ) == "protovercheckfail" )
         {
-            qDebug() << "*** Remote peer protocol version mismatch, connection closed";
+            Davros::debug() << "*** Remote peer protocol version mismatch, connection closed";
             shutdown( true );
             return;
         }
         else
         {
-            qDebug() << id() << "Unhandled msg:" << QString::fromAscii( msg->payload() );
+            Davros::debug() << id() << "Unhandled msg:" << QString::fromAscii( msg->payload() );
         }
 
         return;
     }
 
-    qDebug() << id() << "Invalid msg:" << QString::fromAscii(msg->payload());
+    Davros::debug() << id() << "Invalid msg:" << QString::fromAscii(msg->payload());
 }
 
 
@@ -302,7 +304,7 @@ ControlConnection::onPingTimer()
 {
     if ( m_pingtimer_mark.elapsed() >= TCP_TIMEOUT * 1000 )
     {
-        qDebug() << "Timeout reached! Shutting down connection to" << m_source->friendlyName();
+        Davros::debug() << "Timeout reached! Shutting down connection to" << m_source->friendlyName();
         shutdown( true );
     }
 

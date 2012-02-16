@@ -24,6 +24,8 @@
 #include "database/databasecommand_alltracks.h"
 #include "query.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;

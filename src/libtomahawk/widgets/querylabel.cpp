@@ -29,6 +29,8 @@
 #include "query.h"
 #include "contextmenu.h"
 #include "utils/tomahawkutilsgui.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define BOXMARGIN 2
@@ -512,7 +514,7 @@ QueryLabel::mouseReleaseEvent( QMouseEvent* event )
     QFrame::mouseReleaseEvent( event );
 
     m_dragPos = QPoint();
-    qDebug() << "ELAPSED TIME" << m_time.elapsed() << "limit:" << qApp->doubleClickInterval();
+    Davros::debug() << "ELAPSED TIME" << m_time.elapsed() << "limit:" << qApp->doubleClickInterval();
     if ( m_time.elapsed() < qApp->doubleClickInterval() )
     {
         switch( m_hoverType )

@@ -27,6 +27,8 @@
 #include "database/databasecommand_alltracks.h"
 #include "database/database.h"
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -90,7 +92,7 @@ TreeModel::collection() const
 void
 TreeModel::setCurrentItem( const QModelIndex& index )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     TreeModelItem* oldEntry = itemFromIndex( m_currentIndex );
     if ( oldEntry )
@@ -157,12 +159,12 @@ TreeModel::fetchMore( const QModelIndex& parent )
     parentItem->fetchingMore = true;
     if ( !parentItem->artist().isNull() )
     {
-        qDebug() << Q_FUNC_INFO << "Loading Artist:" << parentItem->artist()->name();
+        Davros::debug() << Q_FUNC_INFO << "Loading Artist:" << parentItem->artist()->name();
         addAlbums( parentItem->artist(), parent );
     }
     else if ( !parentItem->album().isNull() )
     {
-        qDebug() << Q_FUNC_INFO << "Loading Album:" << parentItem->album()->name();
+        Davros::debug() << Q_FUNC_INFO << "Loading Album:" << parentItem->album()->name();
         addTracks( parentItem->album(), parent );
     }
     else
@@ -391,7 +393,7 @@ TreeModel::mimeTypes() const
 QMimeData*
 TreeModel::mimeData( const QModelIndexList &indexes ) const
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     QByteArray resultData;
     QDataStream resultStream( &resultData, QIODevice::WriteOnly );
@@ -523,7 +525,7 @@ TreeModel::mimeData( const QModelIndexList &indexes ) const
 void
 TreeModel::removeIndex( const QModelIndex& index )
 {
-    qDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if ( index.column() > 0 )
         return;
@@ -663,7 +665,7 @@ TreeModel::addTracks( const album_ptr& album, const QModelIndex& parent, bool au
 void
 TreeModel::addCollection( const collection_ptr& collection )
 {
-    qDebug() << Q_FUNC_INFO << collection->name()
+    Davros::debug() << Q_FUNC_INFO << collection->name()
                             << collection->source()->id()
                             << collection->source()->userName();
 
@@ -690,7 +692,7 @@ TreeModel::addCollection( const collection_ptr& collection )
 void
 TreeModel::addFilteredCollection( const collection_ptr& collection, unsigned int amount, DatabaseCommand_AllArtists::SortOrder order )
 {
-    qDebug() << Q_FUNC_INFO << collection->name()
+    Davros::debug() << Q_FUNC_INFO << collection->name()
                             << collection->source()->id()
                             << collection->source()->userName()
                             << amount << order;

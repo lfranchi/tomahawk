@@ -31,6 +31,8 @@
 #include "database/databasecommand_deletefiles.h"
 #include "taghandlers/tag.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -93,7 +95,7 @@ DirLister::scanDir( QDir dir, int depth )
     m_opcount--;
     if ( m_opcount == 0 )
     {
-        tDebug() << Q_FUNC_INFO << "emitting finished";
+        Davros::debug() << Q_FUNC_INFO << "emitting finished";
         emit finished();
     }
 }
@@ -119,7 +121,7 @@ MusicScanner::MusicScanner( const QStringList& dirs, quint32 bs )
 
 MusicScanner::~MusicScanner()
 {
-    tDebug() << Q_FUNC_INFO;
+    Davros::debug() << Q_FUNC_INFO;
 
     if ( !m_dirLister.isNull() )
     {
@@ -198,7 +200,7 @@ MusicScanner::listerFinished()
     foreach( const QString& key, m_filemtimes.keys() )
         m_filesToDelete << m_filemtimes[ key ].keys().first();
 
-    tDebug() << "Lister finished: to delete:" << m_filesToDelete;
+    Davros::debug() << "Lister finished: to delete:" << m_filesToDelete;
 
     if ( m_filesToDelete.length() || m_scannedfiles.length() )
     {
@@ -229,7 +231,7 @@ MusicScanner::cleanup()
         m_dirListerThreadController = 0;
     }
 
-    tDebug() << Q_FUNC_INFO << "emitting finished!";
+    Davros::debug() << Q_FUNC_INFO << "emitting finished!";
     emit finished();
 }
 
@@ -254,7 +256,7 @@ MusicScanner::commitBatch( const QVariantList& tracks, const QVariantList& delet
 void
 MusicScanner::executeCommand( QSharedPointer< DatabaseCommand > cmd )
 {
-    tDebug() << Q_FUNC_INFO << m_cmdQueue;
+    Davros::debug() << Q_FUNC_INFO << m_cmdQueue;
     m_cmdQueue++;
     connect( cmd.data(), SIGNAL( finished() ), SLOT( commandFinished() ) );
     Database::instance()->enqueue( cmd );
@@ -264,7 +266,7 @@ MusicScanner::executeCommand( QSharedPointer< DatabaseCommand > cmd )
 void
 MusicScanner::commandFinished()
 {
-    tDebug() << Q_FUNC_INFO << m_cmdQueue;
+    Davros::debug() << Q_FUNC_INFO << m_cmdQueue;
 
     if ( --m_cmdQueue == 0 )
         cleanup();

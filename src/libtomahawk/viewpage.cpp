@@ -18,6 +18,8 @@
 
 #include "viewpage.h"
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;

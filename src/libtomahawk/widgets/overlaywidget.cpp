@@ -21,6 +21,8 @@
 #include <QPainter>
 #include <QPropertyAnimation>
 
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #define CORNER_ROUNDNESS 8.0

@@ -31,6 +31,8 @@
 #include "dynamic/widgets/DynamicWidget.h"
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 using namespace Tomahawk;
@@ -227,7 +229,7 @@ EchonestSteerer::applySteering()
 void
 EchonestSteerer::resizeFrame( int width )
 {
-//     qDebug() << "RESIZING TO:" << width;
+//     Davros::debug() << "RESIZING TO:" << width;
     resize( width, sizeHint().height() );
     repaint();
 

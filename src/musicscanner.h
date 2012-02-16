@@ -49,12 +49,12 @@ public:
     DirLister( const QStringList& dirs )
         : QObject(), m_dirs( dirs ), m_opcount( 0 ), m_deleting( false )
     {
-        qDebug() << Q_FUNC_INFO;
+        Davros::debug() << Q_FUNC_INFO;
     }
 
     ~DirLister()
     {
-        qDebug() << Q_FUNC_INFO;
+        Davros::debug() << Q_FUNC_INFO;
     }
 
     bool isDeleting() { QMutexLocker locker( &m_deletingMutex ); return m_deleting; };

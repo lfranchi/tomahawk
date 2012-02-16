@@ -27,6 +27,8 @@
 #include "result.h"
 
 #include "utils/tomahawkutils.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #include "playlist/albumitem.h"

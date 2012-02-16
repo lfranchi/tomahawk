@@ -27,6 +27,8 @@
 #include "databaseimpl.h"
 #include "databasecommandloggable.h"
 #include "tomahawksqlquery.h"
+
+#include "libdavros/davros.h"
 #include "utils/logger.h"
 
 #ifndef QT_NO_DEBUG
@@ -43,19 +45,19 @@ DatabaseWorker::DatabaseWorker( DatabaseImpl* lib, Database* db, bool mutates )
 
     moveToThread( this );
 
-    qDebug() << "CTOR DatabaseWorker" << this->thread();
+    Davros::debug() << "CTOR DatabaseWorker" << this->thread();
 }
 
 
 DatabaseWorker::~DatabaseWorker()
 {
-    tDebug() << Q_FUNC_INFO << m_outstanding;
+    Davros::debug() << Q_FUNC_INFO << m_outstanding;
 
     if ( m_outstanding )
     {
         foreach ( const QSharedPointer<DatabaseCommand>& cmd, m_commands )
         {
-            tDebug() << "Outstanding db command to finish:" << cmd->guid() << cmd->commandname();
+            Davros::debug() << "Outstanding db command to finish:" << cmd->guid() << cmd->commandname();
         }
     }
 
@@ -68,7 +70,7 @@ void
 DatabaseWorker::run()
 {
     exec();
-    qDebug() << Q_FUNC_INFO << "DatabaseWorker finishing...";
+    Davros::debug() << Q_FUNC_INFO << "DatabaseWorker finishing...";
 }
 
 
@@ -189,30 +191,30 @@ DatabaseWorker::doWork()
 
             if ( cmd->doesMutates() )
             {
-                qDebug() << "Committing" << cmd->commandname() << cmd->guid();
+                Davros::debug() << "Committing" << cmd->commandname() << cmd->guid();
                 if ( !m_dbimpl->database().commit() )
                 {
-                    tDebug() << "FAILED TO COMMIT TRANSACTION*";
+                    Davros::debug() << "FAILED TO COMMIT TRANSACTION*";
                     throw "commit failed";
                 }
             }
 
 #ifdef DEBUG_TIMING
             uint duration = timer.elapsed();
-            tDebug() << "DBCmd Duration:" << duration << "ms, now running postcommit for" << cmd->commandname();
+            Davros::debug() << "DBCmd Duration:" << duration << "ms, now running postcommit for" << cmd->commandname();
 #endif
 
             foreach ( QSharedPointer<DatabaseCommand> c, cmdGroup )
                 c->postCommit();
 
 #ifdef DEBUG_TIMING
-            tDebug() << "Post commit finished in" << timer.elapsed() - duration << "ms for" << cmd->commandname();
+            Davros::debug() << "Post commit finished in" << timer.elapsed() - duration << "ms for" << cmd->commandname();
 #endif
         }
     }
     catch( const char * msg )
     {
-        tLog() << endl
+        Davros::debug() << endl
                  << "*ERROR* processing databasecommand:"
                  << cmd->commandname()
                  << msg
@@ -227,7 +229,7 @@ DatabaseWorker::doWork()
     }
     catch(...)
     {
-        qDebug() << "Uncaught exception processing dbcmd";
+        Davros::debug() << "Uncaught exception processing dbcmd";
         if ( cmd->doesMutates() )
             m_dbimpl->database().rollback();
 
@@ -250,14 +252,14 @@ void
 DatabaseWorker::logOp( DatabaseCommandLoggable* command )
 {
     TomahawkSqlQuery oplogquery = m_dbimpl->newquery();
-    qDebug() << "INSERTING INTO OPTLOG:" << command->source()->id() << command->guid() << command->commandname();
+    Davros::debug() << "INSERTING INTO OPTLOG:" << command->source()->id() << command->guid() << command->commandname();
     oplogquery.prepare( "INSERT INTO oplog(source, guid, command, singleton, compressed, json) "
                         "VALUES(?, ?, ?, ?, ?, ?)" );
 
     QVariantMap variant = QJson::QObjectHelper::qobject2qvariant( command );
     QByteArray ba = m_serializer.serialize( variant );
 
-//     qDebug() << "OP JSON:" << ba.isNull() << ba << "from:" << variant; // debug
+//     Davros::debug() << "OP JSON:" << ba.isNull() << ba << "from:" << variant; // debug
 
     bool compressed = false;
     if( ba.length() >= 512 )
@@ -265,15 +267,15 @@ DatabaseWorker::logOp( DatabaseCommandLoggable* command )
         // We need to compress this in this thread, since inserting into the log
         // has to happen as part of the same transaction as the dbcmd.
         // (we are in a worker thread for RW dbcmds anyway, so it's ok)
-        //qDebug() << "Compressing DB OP JSON, uncompressed size:" << ba.length();
+        //Davros::debug() << "Compressing DB OP JSON, uncompressed size:" << ba.length();
         ba = qCompress( ba, 9 );
         compressed = true;
-        //qDebug() << "Compressed DB OP JSON size:" << ba.length();
+        //Davros::debug() << "Compressed DB OP JSON size:" << ba.length();
     }
 
     if ( command->singletonCmd() )
     {
-        tDebug() << "Singleton command, deleting previous oplog commands";
+        Davros::debug() << "Singleton command, deleting previous oplog commands";
 
         TomahawkSqlQuery oplogdelquery = m_dbimpl->newquery();
         oplogdelquery.prepare( QString( "DELETE FROM oplog WHERE source %1 AND singleton = 'true' AND command = ?" )
@@ -283,7 +285,7 @@ DatabaseWorker::logOp( DatabaseCommandLoggable* command )
         oplogdelquery.exec();
     }
 
-    tDebug() << "Saving to oplog:" << command->commandname()
+    Davros::debug() << "Saving to oplog:" << command->commandname()
              << "bytes:" << ba.length()
              << "guid:" << command->guid();
 
@@ -296,7 +298,7 @@ DatabaseWorker::logOp( DatabaseCommandLoggable* command )
     oplogquery.bindValue( 5, ba );
     if( !oplogquery.exec() )
     {
-        tLog() << "Error saving to oplog";
+        Davros::debug() << "Error saving to oplog";
         throw "Failed to save to oplog";
     }
 }
