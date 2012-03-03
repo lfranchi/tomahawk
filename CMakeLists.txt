@@ -20,9 +20,6 @@ SET( TOMAHAWK_VERSION_PATCH 99 )
 
 #SET( TOMAHAWK_VERSION_RC 0 )
 
-# enforce proper symbol exporting on all platforms
-add_definitions( "-fvisibility=hidden" )
-
 # build options
 option(BUILD_GUI "Build Tomahawk with GUI" ON)
 option(BUILD_RELEASE "Generate TOMAHAWK_VERSION without GIT info" OFF)
