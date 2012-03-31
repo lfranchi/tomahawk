@@ -64,13 +64,19 @@ signals:
 
 protected:
     void changeEvent( QEvent* e );
+    void paintEvent( QPaintEvent* e );
 
 private slots:
     void onFilterEdited();
     void artistClicked();
 
 private:
+    void createTallTile();
+
     Ui::InfoBar* ui;
+
+    QPixmap m_tileSrc;
+    QImage m_expandedTileSrc;
 
     QSearchField* m_searchWidget;
     QCheckBox* m_autoUpdate;

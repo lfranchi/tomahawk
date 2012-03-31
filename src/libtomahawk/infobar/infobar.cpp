@@ -27,6 +27,8 @@
 #include "utils/tomahawkutils.h"
 #include "utils/logger.h"
 #include <QCheckBox>
+#include <QPaintEvent>
+#include <QPainter>
 #include <widgets/querylabel.h>
 
 #define ANIMATION_TIME 400
@@ -96,17 +98,23 @@ InfoBar::InfoBar( QWidget* parent )
 
     ui->horizontalLayout->addWidget( m_searchWidget );
 
+
+/*
     QLinearGradient gradient = QLinearGradient( QPoint( 0, 0 ), QPoint( 500, 200 ) ); //HACK
     gradient.setColorAt( 0.0, QColor( 100, 100, 100 ) );
     gradient.setColorAt( 0.8, QColor( 63, 63, 63 ) );
 
     QPalette p = palette();
     p.setBrush( QPalette::Window, QBrush( gradient ) );
-    setPalette( p );
+    setPalette( p );*/
     setAutoFillBackground( true );
 
     setMinimumHeight( geometry().height() );
     setMaximumHeight( geometry().height() );
+
+    m_tileSrc = QPixmap( RESPATH "images/playlist-header-tiled.png" );
+    createTallTile();
+
     connect( ViewManager::instance(), SIGNAL( filterAvailable( bool ) ), SLOT( setFilterAvailable( bool ) ) );
     connect( ViewManager::instance(), SIGNAL( autoUpdateAvailable( bool ) ), SLOT( setAutoUpdateAvailable( bool ) ) );
 }
@@ -224,6 +232,52 @@ InfoBar::onFilterEdited()
 {
     emit filterTextChanged( m_searchWidget->text() );
 }
+
+
+void
+InfoBar::createTallTile()
+{
+    if ( m_tileSrc.isNull() )
+        return;
+
+    if ( m_tileSrc.height() >= height() )
+    { // no work to do
+        m_expandedTileSrc = m_tileSrc.toImage();
+        return;
+    }
+
+    m_expandedTileSrc = QImage( m_tileSrc.width(), minimumHeight(), QImage::Format_ARGB32_Premultiplied );
+    int current = 0;
+    QPainter p( &m_expandedTileSrc );
+    while ( current < height() )
+    {
+        const QRect r( 0, current, m_tileSrc.width(), m_tileSrc.height() );
+        p.drawPixmap( r, m_tileSrc );
+        current += r.height();
+    }
+}
+
+
+void
+InfoBar::paintEvent( QPaintEvent* e )
+{
+    if ( m_expandedTileSrc.isNull() )
+        return; // oops
+
+    QPainter p( this );
+
+    p.fillRect( rect(), Qt::red );
+
+    const QRect bg = rect();
+    int curX = 0;
+    while ( curX < width() )
+    {
+        const QRect pmRect( curX, 0, m_expandedTileSrc.width(), m_expandedTileSrc.height() );
+        p.drawImage( pmRect, m_expandedTileSrc );
+        curX += pmRect.width();
+    }
+}
+
 
 void
 InfoBar::changeEvent( QEvent* e )
