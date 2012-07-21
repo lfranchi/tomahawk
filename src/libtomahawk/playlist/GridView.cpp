@@ -103,6 +103,8 @@ GridView::setProxyModel( PlayableProxyModel* model )
 
     m_delegate = new GridItemDelegate( this, m_proxyModel );
     connect( m_delegate, SIGNAL( updateIndex( QModelIndex ) ), this, SLOT( update( QModelIndex ) ) );
+    connect( m_delegate, SIGNAL( startedPlaying( QModelIndex ) ), this, SLOT( onDelegatePlaying() ) );
+    connect( m_delegate, SIGNAL( stoppedPlaying( QModelIndex ) ), this, SLOT( onDelegateStopped() ) );
     setItemDelegate( m_delegate );
 
     QListView::setModel( m_proxyModel );
@@ -235,6 +237,20 @@ GridView::verifySize()
         setFixedHeight( newHeight );
 
     m_proxyModel->setMaxVisibleItems( m_model->rowCount( QModelIndex() ) - overlapRows );
+}
+
+
+void
+GridView::onDelegatePlaying()
+{
+    m_isBeingPlayed = true;
+}
+
+
+void
+GridView::onDelegateStopped()
+{
+    m_isBeingPlayed = false;
 }
 
 

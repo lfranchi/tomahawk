@@ -173,6 +173,9 @@ ArtistInfoWidget::playlistInterface() const
 bool
 ArtistInfoWidget::isBeingPlayed() const
 {
+    if ( ui->albums->isBeingPlayed() )
+        return true;
+
     if ( ui->albums->playlistInterface() == AudioEngine::instance()->currentTrackPlaylist() )
         return true;
 

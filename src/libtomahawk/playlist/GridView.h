@@ -72,6 +72,8 @@ public:
     virtual bool setFilter( const QString& filter );
     virtual bool jumpToCurrentTrack() { return false; }
 
+    virtual bool isBeingPlayed() const { return m_isBeingPlayed; }
+
 public slots:
     void onItemActivated( const QModelIndex& index );
 
@@ -94,6 +96,9 @@ private slots:
     void onFilterChanged( const QString& filter );
     void onCustomContextMenu( const QPoint& pos );
 
+    void onDelegatePlaying();
+    void onDelegateStopped();
+
     void layoutItems();
     void verifySize();
 
@@ -111,6 +116,7 @@ private:
     bool m_inited;
     bool m_autoFitItems;
     bool m_autoResize;
+    bool m_isBeingPlayed;
 
     QRect m_paintRect;
 };
