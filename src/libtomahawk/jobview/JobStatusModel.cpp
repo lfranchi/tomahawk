@@ -25,6 +25,75 @@
 #include <QPixmap>
 
 
+JobStatusSortModel::JobStatusSortModel( QObject* parent )
+    : QSortFilterProxyModel( parent )
+{
+    setDynamicSortFilter( true );
+}
+
+
+JobStatusSortModel::~JobStatusSortModel()
+{
+}
+
+
+void
+JobStatusSortModel::setJobModel( JobStatusModel* model )
+{
+    setSourceModel( model );
+
+    m_sourceModel = model;
+
+    connect( m_sourceModel, SIGNAL( customDelegateJobInserted( int, JobStatusItem* ) ), this, SLOT( customDelegateJobInsertedSlot( int, JobStatusItem* ) ) );
+    connect( m_sourceModel, SIGNAL( customDelegateJobRemoved( int ) ), this, SLOT( customDelegateJobRemovedSlot( int ) ) );
+    connect( m_sourceModel, SIGNAL( refreshDelegates() ), this, SLOT( refreshDelegatesSlot() ) );
+}
+
+
+void
+JobStatusSortModel::addJob( JobStatusItem* item )
+{
+    m_sourceModel->addJob( item );
+}
+
+
+void
+JobStatusSortModel::customDelegateJobInsertedSlot( int row, JobStatusItem* item )
+{
+    emit customDelegateJobInserted( mapFromSource( m_sourceModel->index( row ) ).row(), item );
+}
+
+
+void
+JobStatusSortModel::customDelegateJobRemovedSlot( int row )
+{
+    emit customDelegateJobRemoved( mapFromSource( m_sourceModel->index( row ) ).row() );
+}
+
+
+void
+JobStatusSortModel::refreshDelegatesSlot()
+{
+    sort( 0 );
+    emit refreshDelegates();
+}
+
+
+bool
+JobStatusSortModel::lessThan( const QModelIndex& left, const QModelIndex& right ) const
+{
+    const int leftSort = left.data( JobStatusModel::SortRole ).toInt();
+    const int rightSort = right.data( JobStatusModel::SortRole ).toInt();
+
+    if ( leftSort == rightSort )
+        return left.data( JobStatusModel::AgeRole ).toUInt() > right.data( JobStatusModel::AgeRole ).toUInt();
+
+
+    return leftSort < rightSort;
+}
+
+
+
 JobStatusModel::JobStatusModel( QObject* parent )
     : QAbstractListModel ( parent )
 {
@@ -41,6 +110,7 @@ JobStatusModel::~JobStatusModel()
 void
 JobStatusModel::addJob( JobStatusItem* item )
 {
+//    tLog() << Q_FUNC_INFO << "current jobs of item type: " << m_jobTypeCount[ item->type() ] << ", current queue size of item type: " << m_jobQueue[ item->type() ].size();
     if ( item->concurrentJobLimit() > 0 )
     {
         if ( m_jobTypeCount[ item->type() ] >= item->concurrentJobLimit() )
@@ -52,6 +122,8 @@ JobStatusModel::addJob( JobStatusItem* item )
         currentJobCount++;
         m_jobTypeCount[ item->type() ] = currentJobCount;
     }
+
+//    tLog() << Q_FUNC_INFO << "new current jobs of item type: " << m_jobTypeCount[ item->type() ];
 
     connect( item, SIGNAL( statusChanged() ), SLOT( itemUpdated() ) );
     connect( item, SIGNAL( finished() ), SLOT( itemFinished() ) );
@@ -70,7 +142,7 @@ JobStatusModel::addJob( JobStatusItem* item )
         }
 
     }
-    qDebug() << "Adding item:" << item;
+//    tLog() << Q_FUNC_INFO << "Adding item:" << item;
 
     int currentEndRow = m_items.count();
     beginInsertRows( QModelIndex(), currentEndRow, currentEndRow );
@@ -79,9 +151,11 @@ JobStatusModel::addJob( JobStatusItem* item )
 
     if ( item->hasCustomDelegate() )
     {
-        tDebug( LOGVERBOSE ) << Q_FUNC_INFO << "job has custom delegate";
+//        tLog() << Q_FUNC_INFO << "job has custom delegate";
         emit customDelegateJobInserted( currentEndRow, item );
     }
+
+    emit refreshDelegates();
 }
 
 
@@ -106,9 +180,9 @@ JobStatusModel::data( const QModelIndex& index, int role ) const
     {
         case Qt::DecorationRole:
             return item->icon();
-            
+
         case Qt::ToolTipRole:
-            
+
         case Qt::DisplayRole:
         {
             if ( m_collapseCount.contains( item->type() ) )
@@ -116,7 +190,7 @@ JobStatusModel::data( const QModelIndex& index, int role ) const
             else
                 return item->mainText();
         }
-        
+
         case RightColumnRole:
         {
             if ( m_collapseCount.contains( item->type() ) )
@@ -124,12 +198,21 @@ JobStatusModel::data( const QModelIndex& index, int role ) const
             else
                 return item->rightColumnText();
         }
-        
+
         case AllowMultiLineRole:
             return item->allowMultiLine();
 
         case JobDataRole:
             return QVariant::fromValue< JobStatusItem* >( item );
+
+        case SortRole:
+            return item->weight();
+
+        case AgeRole:
+            return item->age();
+
+        default:
+            return QVariant();
     }
 
     return QVariant();
@@ -147,6 +230,7 @@ JobStatusModel::rowCount( const QModelIndex& parent ) const
 void
 JobStatusModel::itemFinished()
 {
+//    tLog( LOGVERBOSE ) << Q_FUNC_INFO;
     JobStatusItem* item = qobject_cast< JobStatusItem* >( sender() );
     Q_ASSERT( item );
 
@@ -184,6 +268,7 @@ JobStatusModel::itemFinished()
             // One less to count, but item is still there
             const QModelIndex idx = index( indexOf, 0, QModelIndex() );
             emit dataChanged( idx, idx );
+            emit refreshDelegates();
             return;
         }
     }
@@ -200,6 +285,9 @@ JobStatusModel::itemFinished()
     if ( item->customDelegate() )
         emit customDelegateJobRemoved( idx );
 
+    emit refreshDelegates();
+
+//    tLog() << Q_FUNC_INFO << "current jobs of item type: " << m_jobTypeCount[ item->type() ] << ", current queue size of item type: " << m_jobQueue[ item->type() ].size();
     if ( item->concurrentJobLimit() > 0 )
     {
         int currentJobs = m_jobTypeCount[ item->type() ];
@@ -220,6 +308,7 @@ JobStatusModel::itemFinished()
 void
 JobStatusModel::itemUpdated()
 {
+//    tLog( LOGVERBOSE ) << Q_FUNC_INFO;
     JobStatusItem* item = qobject_cast< JobStatusItem* >( sender() );
     Q_ASSERT( item );
 

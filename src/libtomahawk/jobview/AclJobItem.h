@@ -20,48 +20,61 @@
 #ifndef ACLJOBITEM_H
 #define ACLJOBITEM_H
 
-#include <jobview/JobStatusItem.h>
 #include "AclRegistry.h"
+#include "DllMacro.h"
+#include "jobview/JobStatusItem.h"
 
 #include <QStyledItemDelegate>
 
 class QListView;
 
-class AclJobDelegate : public QStyledItemDelegate
+class DLLEXPORT ACLJobDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 
 public:
-    explicit AclJobDelegate ( QObject* parent = 0 );
-    virtual ~AclJobDelegate() {}
+    explicit ACLJobDelegate ( QObject* parent = 0 );
+    virtual ~ACLJobDelegate();
 
     virtual void paint( QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
     virtual QSize sizeHint( const QStyleOptionViewItem& option, const QModelIndex& index ) const;
 
+    virtual void emitSizeHintChanged( const QModelIndex &index );
+
+signals:
+    void update( const QModelIndex& idx );
+    void aclResult( ACLRegistry::ACL result );
+
+protected:
+    virtual bool editorEvent( QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index );
+
 private:
-    mutable QHash< QPersistentModelIndex, int > m_cachedMultiLineHeights;
-    QListView* m_parentView;
+    void drawRoundedButton( QPainter* painter, const QRect& btnRect, bool red = false ) const;
+
+    QPoint m_savedHoverPos;
+    mutable QRect m_savedAcceptRect;
+    mutable QRect m_savedDenyRect;
 };
 
 
-class AclJobItem : public JobStatusItem
+class DLLEXPORT ACLJobItem : public JobStatusItem
 {
     Q_OBJECT
 public:
-    explicit AclJobItem( ACLRegistry::User user, const QString &username );
-    virtual ~AclJobItem();
-    
-    void done();
+    explicit ACLJobItem( ACLRegistry::User user, const QString &username );
+    virtual ~ACLJobItem();
 
+    virtual int weight() const { return 99; }
+    
     virtual QString rightColumnText() const { return QString(); }
     virtual QString mainText() const { return QString(); }
     virtual QPixmap icon() const { return QPixmap(); }
     virtual QString type() const { return "acljob"; }
 
     virtual int concurrentJobLimit() const { return 3; }
-    
+
     virtual bool hasCustomDelegate() const { return true; }
-    virtual void createDelegate( QObject* parent );
+    virtual void createDelegate( QObject* parent = 0 );
     virtual QStyledItemDelegate* customDelegate() const { return m_delegate; }
 
     virtual ACLRegistry::User user() const { return m_user; }
@@ -69,6 +82,9 @@ public:
     
 signals:
     void userDecision( ACLRegistry::User user );
+
+public slots:
+    void aclResult( ACLRegistry::ACL result );
     
 private:
     QStyledItemDelegate* m_delegate;

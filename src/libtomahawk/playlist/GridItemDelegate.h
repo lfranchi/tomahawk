@@ -29,6 +29,10 @@ namespace Tomahawk {
     class PixmapDelegateFader;
 }
 
+namespace _detail {
+    class Closure;
+}
+
 class QEvent;
 class QTimeLine;
 class PlayableProxyModel;
@@ -41,6 +45,9 @@ Q_OBJECT
 public:
     GridItemDelegate( QAbstractItemView* parent = 0, PlayableProxyModel* proxy = 0 );
 
+    QSize itemSize() const { return m_itemSize; }
+    void setItemSize( const QSize& size ) { m_itemSize = size; }
+
 protected:
     void paint( QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const;
     QSize sizeHint( const QStyleOptionViewItem& option, const QModelIndex& index ) const;
@@ -51,11 +58,14 @@ protected:
 signals:
     void updateIndex( const QModelIndex& idx );
 
+    void startedPlaying( const QPersistentModelIndex& );
+    void stoppedPlaying( const QPersistentModelIndex& );
+
 private slots:
     void modelChanged();
     void doUpdateIndex( const QPersistentModelIndex& idx );
 
-    void onScrolled( int dx, int dy );
+    void onViewChanged();
     void onPlaybackStarted( const QPersistentModelIndex& index );
     void onPlaybackFinished();
 
@@ -64,11 +74,13 @@ private slots:
 
     void fadingFrameChanged( const QPersistentModelIndex& );
     void fadingFrameFinished( const QPersistentModelIndex& );
+
 private:
     QTimeLine* createTimeline( QTimeLine::Direction direction );
 
     QAbstractItemView* m_view;
     PlayableProxyModel* m_model;
+    QSize m_itemSize;
 
     mutable QHash< QPersistentModelIndex, QRect > m_artistNameRects;
     mutable QHash< QPersistentModelIndex, QSharedPointer< Tomahawk::PixmapDelegateFader > > m_covers;
@@ -81,8 +93,8 @@ private:
     mutable QHash< QPersistentModelIndex, QWidget* > m_spinner;
     mutable QHash< QPersistentModelIndex, ImageButton* > m_playButton;
     mutable QHash< QPersistentModelIndex, ImageButton* > m_pauseButton;
-
     mutable QHash< QPersistentModelIndex, QTimeLine* > m_hoverFaders;
+    mutable QHash< QPersistentModelIndex, _detail::Closure* > m_closures;
 };
 
 #endif // GRIDITEMDELEGATE_H

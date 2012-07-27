@@ -64,7 +64,7 @@ namespace TomahawkUtils
 {
 static quint64 s_infosystemRequestId = 0;
 static QMutex s_infosystemRequestIdMutex;
-
+static bool s_headless = false;
 
 #ifdef Q_WS_MAC
 QString
@@ -74,6 +74,21 @@ appSupportFolderPath()
     return QDir::home().filePath( "Library/Application Support" );
 }
 #endif // Q_WS_MAC
+
+
+bool
+headless()
+{
+    return s_headless;
+}
+
+
+void
+setHeadless( bool headless )
+{
+    tLog() << Q_FUNC_INFO << "headless is" << (headless? "true" : "false");
+    s_headless = headless;
+}
 
 
 QString
@@ -93,7 +108,7 @@ appConfigDir()
     QDir ret;
 
 #ifdef Q_WS_MAC
-    if( getenv( "HOME" ) )
+    if ( getenv( "HOME" ) )
     {
         return QDir( QString( "%1" ).arg( getenv( "HOME" ) ) );
     }
@@ -109,11 +124,11 @@ appConfigDir()
     return QDir( "c:\\" ); //TODO refer to Qt documentation to get code to do this
 
 #else
-    if( getenv( "XDG_CONFIG_HOME" ) )
+    if ( getenv( "XDG_CONFIG_HOME" ) )
     {
         ret = QDir( QString( "%1/Tomahawk" ).arg( getenv( "XDG_CONFIG_HOME" ) ) );
     }
-    else if( getenv( "HOME" ) )
+    else if ( getenv( "HOME" ) )
     {
         ret = QDir( QString( "%1/.config/Tomahawk" ).arg( getenv( "HOME" ) ) );
     }
@@ -124,7 +139,7 @@ appConfigDir()
         ret = QDir( "/tmp" );
     }
 
-    if( !ret.exists() )
+    if ( !ret.exists() )
     {
         ret.mkpath( ret.canonicalPath() );
     }
@@ -314,10 +329,90 @@ void
 msleep( unsigned int ms )
 {
   #ifdef WIN32
-    Sleep( ms );   
+    Sleep( ms );
   #else
     ::usleep( ms * 1000 );
   #endif
+}
+
+
+int
+levenshtein( const QString& source, const QString& target )
+{
+    // Step 1
+    const int n = source.length();
+    const int m = target.length();
+
+    if ( n == 0 )
+        return m;
+    if ( m == 0 )
+        return n;
+
+    // Good form to declare a TYPEDEF
+    typedef QVector< QVector<int> > Tmatrix;
+    Tmatrix matrix;
+    matrix.resize( n + 1 );
+
+    // Size the vectors in the 2.nd dimension. Unfortunately C++ doesn't
+    // allow for allocation on declaration of 2.nd dimension of vec of vec
+    for ( int i = 0; i <= n; i++ )
+    {
+        QVector<int> tmp;
+        tmp.resize( m + 1 );
+        matrix.insert( i, tmp );
+    }
+
+    // Step 2
+    for ( int i = 0; i <= n; i++ )
+        matrix[i][0] = i;
+    for ( int j = 0; j <= m; j++ )
+        matrix[0][j] = j;
+
+    // Step 3
+    for ( int i = 1; i <= n; i++ )
+    {
+        const QChar s_i = source[i - 1];
+
+        // Step 4
+        for ( int j = 1; j <= m; j++ )
+        {
+            const QChar t_j = target[j - 1];
+
+            // Step 5
+            int cost;
+            if ( s_i == t_j )
+                cost = 0;
+            else
+                cost = 1;
+
+            // Step 6
+            const int above = matrix[i - 1][j];
+            const int left = matrix[i][j - 1];
+            const int diag = matrix[i - 1][j - 1];
+
+            int cell = ( ( ( left + 1 ) > ( diag + cost ) ) ? diag + cost : left + 1 );
+            if ( above + 1 < cell )
+                cell = above + 1;
+
+            // Step 6A: Cover transposition, in addition to deletion,
+            // insertion and substitution. This step is taken from:
+            // Berghel, Hal ; Roach, David : "An Extension of Ukkonen's
+            // Enhanced Dynamic Programming ASM Algorithm"
+            // (http://www.acm.org/~hlb/publications/asm/asm.html)
+            if ( i > 2 && j > 2 )
+            {
+                int trans = matrix[i - 2][j - 2] + 1;
+
+                if ( source[ i - 2 ] != t_j ) trans++;
+                if ( s_i != target[ j - 2 ] ) trans++;
+                if ( cell > trans ) cell = trans;
+            }
+            matrix[i][j] = cell;
+        }
+    }
+
+    // Step 7
+    return matrix[n][m];
 }
 
 
@@ -333,14 +428,14 @@ NetworkProxyFactory::NetworkProxyFactory( const NetworkProxyFactory& other )
 QList< QNetworkProxy >
 NetworkProxyFactory::queryProxy( const QNetworkProxyQuery& query )
 {
-    //tDebug() << Q_FUNC_INFO << "query hostname is " << query.peerHostName();
+    //tDebug() << Q_FUNC_INFO << "query hostname is" << query.peerHostName() << ", proxy host is" << m_proxy.hostName();
 
     QList< QNetworkProxy > proxies;
     QString hostname = query.peerHostName();
     s_noProxyHostsMutex.lock();
-    if ( s_noProxyHosts.contains( hostname ) )
+    if ( !hostname.isEmpty() && s_noProxyHosts.contains( hostname ) )
         proxies << QNetworkProxy::NoProxy << systemProxyForQuery( query );
-    else if ( m_proxy.hostName().isEmpty() || hostname.isEmpty() || TomahawkSettings::instance()->proxyType() == QNetworkProxy::NoProxy )
+    else if ( m_proxy.hostName().isEmpty() || TomahawkSettings::instance()->proxyType() == QNetworkProxy::NoProxy )
         proxies << systemProxyForQuery( query );
     else
         proxies << m_proxy << systemProxyForQuery( query );
@@ -354,13 +449,15 @@ NetworkProxyFactory::setNoProxyHosts( const QStringList& hosts )
 {
     QStringList newList;
     tDebug() << Q_FUNC_INFO << "No-proxy hosts:" << hosts;
-    foreach( QString host, hosts )
+    foreach ( const QString& host, hosts )
     {
         QString munge = host.simplified();
         newList << munge;
         //TODO: wildcard support
     }
+
     tDebug() << Q_FUNC_INFO << "New no-proxy hosts:" << newList;
+
     s_noProxyHostsMutex.lock();
     s_noProxyHosts = newList;
     s_noProxyHostsMutex.unlock();
@@ -451,7 +548,7 @@ setProxyFactory( NetworkProxyFactory* factory, bool noMutexLocker )
 
     if ( QThread::currentThread() == TOMAHAWK_APPLICATION::instance()->thread() )
     {
-        foreach( QThread* thread, s_threadProxyFactoryHash.keys() )
+        foreach ( QThread* thread, s_threadProxyFactoryHash.keys() )
         {
             if ( thread != QThread::currentThread() )
             {
@@ -498,9 +595,9 @@ nam()
 
     s_threadNamHash[ QThread::currentThread() ] = newNam;
 
-    tDebug( LOGEXTRA ) << Q_FUNC_INFO << "created new nam for thread " << QThread::currentThread();
+    tDebug( LOGEXTRA ) << Q_FUNC_INFO << "created new nam for thread" << QThread::currentThread();
     //QNetworkProxy proxy = dynamic_cast< TomahawkUtils::NetworkProxyFactory* >( newNam->proxyFactory() )->proxy();
-    //tDebug() << Q_FUNC_INFO << "reply proxy properties: " << proxy.type() << proxy.hostName() << proxy.port();
+    //tDebug() << Q_FUNC_INFO << "reply proxy properties:" << proxy.type() << proxy.hostName() << proxy.port();
 
     return newNam;
 }
@@ -617,23 +714,30 @@ mergePlaylistChanges( const QList< Tomahawk::query_ptr >& orig, const QList< Tom
 bool
 removeDirectory( const QString& dir )
 {
-    const QDir aDir(dir);
+    const QDir aDir( dir );
 
     tLog() << "Deleting DIR:" << dir;
     bool has_err = false;
-    if (aDir.exists()) {
-        foreach(const QFileInfo& entry, aDir.entryInfoList(QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files | QDir::NoSymLinks)) {
+    if ( aDir.exists() )
+    {
+        foreach ( const QFileInfo& entry, aDir.entryInfoList( QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files | QDir::NoSymLinks ) )
+        {
             QString path = entry.absoluteFilePath();
-            if (entry.isDir()) {
-                has_err = !removeDirectory(path) || has_err;
-            } else if (!QFile::remove(path)) {
+            if ( entry.isDir() )
+            {
+                has_err = !removeDirectory( path ) || has_err;
+            }
+            else if ( !QFile::remove( path ) )
+            {
                 has_err = true;
             }
         }
-        if (!aDir.rmdir(aDir.absolutePath())) {
+        if ( !aDir.rmdir( aDir.absolutePath() ) )
+        {
             has_err = true;
         }
     }
+
     return !has_err;
 }
 
@@ -665,11 +769,11 @@ crash()
 
 
 bool
-verifyFile( const QString &filePath, const QString &signature )
+verifyFile( const QString& filePath, const QString& signature )
 {
     QCA::Initializer init;
 
-    if( !QCA::isSupported( "sha1" ) )
+    if ( !QCA::isSupported( "sha1" ) )
     {
         qWarning() << "SHA1 not supported by QCA, aborting.";
         return false;
@@ -746,7 +850,7 @@ extractScriptPayload( const QString& filename, const QString& resolverId )
     QDir resolverDir = appDataDir();
     if ( !resolverDir.mkpath( QString( "atticaresolvers/%1" ).arg( resolverId ) ) )
     {
-        tLog() << "Failed to mkdir resolver save dir: " << TomahawkUtils::appDataDir().absoluteFilePath( QString( "atticaresolvers/%1" ).arg( resolverId ) );
+        tLog() << "Failed to mkdir resolver save dir:" << TomahawkUtils::appDataDir().absoluteFilePath( QString( "atticaresolvers/%1" ).arg( resolverId ) );
         return QString();
     }
     resolverDir.cd( QString( "atticaresolvers/%1" ).arg( resolverId ) );
@@ -762,7 +866,7 @@ extractScriptPayload( const QString& filename, const QString& resolverId )
 
 
 bool
-unzipFileInFolder( const QString &zipFileName, const QDir &folder )
+unzipFileInFolder( const QString& zipFileName, const QDir& folder )
 {
     Q_ASSERT( !zipFileName.isEmpty() );
     Q_ASSERT( folder.exists() );
@@ -776,7 +880,7 @@ unzipFileInFolder( const QString &zipFileName, const QDir &folder )
 
     if ( !zipFile.goToFirstFile() )
     {
-        tLog() << "Failed to go to first file in zip archive: " << zipFile.getZipError();
+        tLog() << "Failed to go to first file in zip archive:" << zipFile.getZipError();
         return false;
     }
 

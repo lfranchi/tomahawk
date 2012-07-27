@@ -30,16 +30,15 @@
 #include <QtGui/QSizeGrip>
 
 #include "AtticaManager.h"
+#include "AclRegistry.h"
 #include "TomahawkApp.h"
 #include "TomahawkSettings.h"
 #include "accounts/DelegateConfigWrapper.h"
-#include "MusicScanner.h"
 #include "Pipeline.h"
 #include "Resolver.h"
 #include "ExternalResolverGui.h"
 #include "utils/TomahawkUtilsGui.h"
 #include "utils/GuiHelpers.h"
-#include "ScanManager.h"
 #include "SettingsListDelegate.h"
 #include "accounts/AccountDelegate.h"
 #include "database/Database.h"
@@ -98,6 +97,8 @@ SettingsDialog::SettingsDialog( QWidget *parent )
     ui->enableProxyCheckBox->setChecked( useProxy );
     ui->proxyButton->setEnabled( useProxy );
 
+    ui->aclEntryClearButton->setEnabled( TomahawkSettings::instance()->aclEntries().size() > 0 );
+    connect( ui->aclEntryClearButton, SIGNAL( clicked( bool ) ), this, SLOT( aclEntryClearButtonClicked() ) );
 
     createIcons();
 #ifdef Q_WS_X11
@@ -493,6 +494,24 @@ SettingsDialog::installFromFile()
         AccountManager::instance()->addAccount( acct );
         TomahawkSettings::instance()->addAccount( acct->accountId() );
         AccountManager::instance()->enableAccount( acct );
+    }
+}
+
+
+void
+SettingsDialog::aclEntryClearButtonClicked()
+{
+    QMessageBox::StandardButton button = QMessageBox::question(
+                           ui->stackedWidget,
+                           tr( "Delete all Access Control entries?" ),
+                           tr( "Do you really want to delete all Access Control entries? You will be asked for a decision again for each peer that you connect to." ),
+                           QMessageBox::Ok | QMessageBox::Cancel,
+                           QMessageBox::Ok
+                         );
+    if ( button == QMessageBox::Ok )
+    {
+        ACLRegistry::instance()->wipeEntries();
+        ui->aclEntryClearButton->setEnabled( false );
     }
 }
 

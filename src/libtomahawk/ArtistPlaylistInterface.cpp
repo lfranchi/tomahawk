@@ -112,13 +112,17 @@ ArtistPlaylistInterface::tracks()
             connect( Tomahawk::InfoSystem::InfoSystem::instance(),
                     SIGNAL( info( Tomahawk::InfoSystem::InfoRequestData, QVariant ) ),
                     SLOT( infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData, QVariant ) ) );
+
+            connect( Tomahawk::InfoSystem::InfoSystem::instance(),
+                    SIGNAL( finished( QString ) ),
+                    SLOT( infoSystemFinished( QString ) ) );
         }
         else if ( m_mode == DatabaseMode && !m_databaseLoaded )
         {
             DatabaseCommand_AllTracks* cmd = new DatabaseCommand_AllTracks( m_collection );
             cmd->setArtist( m_artist );
             cmd->setSortOrder( DatabaseCommand_AllTracks::AlbumPosition );
-            
+
             connect( cmd, SIGNAL( tracks( QList<Tomahawk::query_ptr>, QVariant ) ),
                             SLOT( onTracksLoaded( QList<Tomahawk::query_ptr> ) ) );
 
@@ -176,9 +180,23 @@ ArtistPlaylistInterface::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData r
         }
     }
 
+    if ( !m_queries.isEmpty() )
+        infoSystemFinished( id() );
+}
+
+
+void
+ArtistPlaylistInterface::infoSystemFinished( const QString &infoId )
+{
+    if ( infoId != id() )
+        return;
+
     m_infoSystemLoaded = true;
+
     disconnect( Tomahawk::InfoSystem::InfoSystem::instance(), SIGNAL( info( Tomahawk::InfoSystem::InfoRequestData, QVariant ) ),
                 this, SLOT( infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData, QVariant ) ) );
+    disconnect( Tomahawk::InfoSystem::InfoSystem::instance(), SIGNAL( finished( QString ) ),
+                this, SLOT( infoSystemFinished( QString) ) );
 
     if ( m_queries.isEmpty() && m_mode == Mixed )
     {
@@ -186,7 +204,7 @@ ArtistPlaylistInterface::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData r
         cmd->setArtist( m_artist );
         //this takes discnumber into account as well
         cmd->setSortOrder( DatabaseCommand_AllTracks::AlbumPosition );
-        
+
         connect( cmd, SIGNAL( tracks( QList<Tomahawk::query_ptr>, QVariant ) ),
                         SLOT( onTracksLoaded( QList<Tomahawk::query_ptr> ) ) );
 
@@ -194,6 +212,7 @@ ArtistPlaylistInterface::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData r
     }
     else
     {
+        m_finished = true;
         emit tracksLoaded( m_mode, m_collection );
     }
 }
@@ -202,12 +221,14 @@ ArtistPlaylistInterface::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData r
 void
 ArtistPlaylistInterface::onTracksLoaded( const QList< query_ptr >& tracks )
 {
-    m_databaseLoaded = true;
-
     if ( m_collection.isNull() )
+    {
+        m_databaseLoaded = true;
         m_queries << filterTracks( tracks );
+    }
     else
         m_queries << tracks;
 
+    m_finished = true;
     emit tracksLoaded( m_mode, m_collection );
 }

@@ -31,8 +31,10 @@
 #include <QtGui/QPixmap>
 #include <QtGui/QPalette>
 #include <QtGui/QApplication>
+#include <QtGui/QScrollBar>
 #include <QtGui/QWidget>
 #include <QStyleOption>
+#include <QDesktopServices>
 
 #ifdef Q_WS_X11
     #include <QtGui/QX11Info>
@@ -42,6 +44,7 @@
 #ifdef Q_WS_WIN
     #include <windows.h>
     #include <windowsx.h>
+    #include <shellapi.h>
 #endif
 
 
@@ -133,7 +136,7 @@ drawShadowText( QPainter* painter, const QRect& rect, const QString& text, const
     painter->save();
 
     painter->drawText( rect, text, textOption );
-    
+
 /*    QFont font = painter->font();
     font.setPixelSize( font.pixelSize() + 2 );
     painter->setFont( font );
@@ -181,7 +184,7 @@ drawBackgroundAndNumbers( QPainter* painter, const QString& text, const QRect& f
     painter->setPen( origpen );
     painter->setPen( Qt::white );
     painter->drawText( figRect.adjusted( -5, 0, 6, 0 ), text, QTextOption( Qt::AlignCenter ) );
-    
+
     painter->restore();
 }
 
@@ -290,6 +293,17 @@ bringToFront()
 #endif
 }
 #endif
+
+
+void
+openUrl( const QUrl& url )
+{
+#ifdef Q_OS_WIN
+    ShellExecuteW( 0, 0, (LPCWSTR)url.toString().utf16(), 0, 0, SW_SHOWNORMAL );
+#else
+    QDesktopServices::openUrl( url );
+#endif
+}
 
 
 QPixmap
@@ -439,6 +453,79 @@ prepareStyleOption( QStyleOptionViewItemV4* option, const QModelIndex& index, Pl
 
         option->palette.setColor( QPalette::Text, textColor );
     }
+}
+
+
+void
+drawRoundedButton( QPainter* painter, const QRect& btnRect, const QColor& color, const QColor &gradient1bottom, const QColor& gradient2top, const QColor& gradient2bottom )
+{
+    QPainterPath btnPath;
+    const int radius = 3;
+    // draw top half gradient
+    const int btnCenter = btnRect.bottom() - ( btnRect.height() / 2 );
+    btnPath.moveTo( btnRect.left(), btnCenter );
+    btnPath.lineTo( btnRect.left(), btnRect.top() + radius );
+    btnPath.quadTo( QPoint( btnRect.topLeft() ), QPoint( btnRect.left() + radius, btnRect.top() ) );
+    btnPath.lineTo( btnRect.right() - radius, btnRect.top() );
+    btnPath.quadTo( QPoint( btnRect.topRight() ), QPoint( btnRect.right(), btnRect.top() + radius ) );
+    btnPath.lineTo( btnRect.right(),btnCenter );
+    btnPath.lineTo( btnRect.left(), btnCenter );
+
+    QLinearGradient g;
+    if ( gradient1bottom.isValid() )
+    {
+        g.setColorAt( 0, color );
+        g.setColorAt( 0.5, gradient1bottom );
+        painter->fillPath( btnPath, g );
+    }
+    else
+        painter->fillPath( btnPath, color );
+    //painter->setPen( bg.darker() );
+
+    //painter->drawPath( btnPath );
+
+    btnPath = QPainterPath();
+    btnPath.moveTo( btnRect.left(), btnCenter );
+    btnPath.lineTo( btnRect.left(), btnRect.bottom() - radius );
+    btnPath.quadTo( QPoint( btnRect.bottomLeft() ), QPoint( btnRect.left() + radius, btnRect.bottom() ) );
+    btnPath.lineTo( btnRect.right() - radius, btnRect.bottom() );
+    btnPath.quadTo( QPoint( btnRect.bottomRight() ), QPoint( btnRect.right(), btnRect.bottom() - radius ) );
+    btnPath.lineTo( btnRect.right(), btnCenter );
+    btnPath.lineTo( btnRect.left(), btnCenter );
+
+    if ( gradient2top.isValid() && gradient2bottom.isValid() )
+    {
+        g.setColorAt( 0, gradient2top );
+        g.setColorAt( 0.5, gradient2bottom );
+        painter->fillPath( btnPath, g );
+    }
+    else
+        painter->fillPath( btnPath, color );
+
+}
+
+
+void
+styleScrollBar( QScrollBar* scrollBar )
+{
+    scrollBar->setStyleSheet(
+        "QScrollBar:horizontal { background-color: transparent; }"
+        "QScrollBar::handle:horizontal { border-height: 9px; margin-bottom: 6px;"
+            "border-image: url(" RESPATH "images/scrollbar-horizontal-handle.png) 3 3 3 3 stretch stretch;"
+            "border-top: 3px transparent; border-bottom: 3px transparent; border-right: 3px transparent; border-left: 3px transparent; }"
+        "QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal { width: 0px; height: 0px; background: none; }"
+        "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0px; height: 0px; background: none; }"
+        "QScrollBar:left-arrow:horizontal, QScrollBar::right-arrow:horizontal {"
+            "border: 0px; width: 0px; height: 0px; background: none; background-color: transparent; }"
+
+        "QScrollBar:vertical { background-color: transparent; }"
+        "QScrollBar::handle:vertical { border-width: 9px; margin-right: 6px;"
+            "border-image: url(" RESPATH "images/scrollbar-vertical-handle.png) 3 3 3 3 stretch stretch;"
+            "border-top: 3px transparent; border-bottom: 3px transparent; border-right: 3px transparent; border-left: 3px transparent; }"
+        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { width: 0px; height: 0px; background: none; }"
+        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { width: 0px; height: 0px; background: none; }"
+        "QScrollBar:up-arrow:vertical, QScrollBar::down-arrow:vertical {"
+            "border: 0px; width: 0px; height: 0px; background: none; background-color: transparent; }" );
 }
 
 } // ns

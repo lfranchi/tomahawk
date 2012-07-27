@@ -34,10 +34,14 @@
 #include <QCoreApplication>
 #include <QBuffer>
 
-#include "utils/Logger.h"
-#include "utils/TomahawkUtilsGui.h"
 #include "utils/TomahawkCache.h"
 #include "database/DatabaseCommand_SocialAction.h"
+
+#ifndef ENABLE_HEADLESS
+    #include "utils/TomahawkUtilsGui.h"
+#endif
+
+#include "utils/Logger.h"
 
 using namespace Tomahawk;
 
@@ -63,7 +67,7 @@ Source::Source( int id, const QString& username )
 
     m_currentTrackTimer.setSingleShot( true );
     connect( &m_currentTrackTimer, SIGNAL( timeout() ), this, SLOT( trackTimerFired() ) );
-    
+
     if ( m_isLocal )
     {
         connect( Accounts::AccountManager::instance(), SIGNAL( connected( Tomahawk::Accounts::Account* ) ), SLOT( setOnline() ) );
@@ -247,7 +251,7 @@ Source::setOffline()
 void
 Source::setOnline()
 {
-    qDebug() << Q_FUNC_INFO << friendlyName();
+    tDebug( LOGVERBOSE ) << Q_FUNC_INFO << friendlyName();
     if ( m_online )
         return;
 
@@ -288,10 +292,8 @@ Source::scanningProgress( unsigned int files )
 
 
 void
-Source::scanningFinished( unsigned int files )
+Source::scanningFinished()
 {
-    Q_UNUSED( files );
-
     m_textStatus = QString();
 
     if ( m_updateIndexWhenSynced )
@@ -320,12 +322,12 @@ Source::onStateChanged( DBSyncConnection::State newstate, DBSyncConnection::Stat
         }
         case DBSyncConnection::FETCHING:
         {
-            msg = tr( "Fetching" );
+            msg = tr( "Syncing" );
             break;
         }
         case DBSyncConnection::PARSING:
         {
-            msg = tr( "Parsing" );
+            msg = tr( "Importing" );
             break;
         }
         case DBSyncConnection::SCANNING:
@@ -404,14 +406,18 @@ Source::trackTimerFired()
 }
 
 
+QString
+Source::lastCmdGuid() const
+{
+    QMutexLocker lock( &m_cmdMutex );
+    return m_lastCmdGuid;
+}
+
+
 void
 Source::addCommand( const QSharedPointer<DatabaseCommand>& command )
 {
-    if ( QThread::currentThread() != thread() )
-    {
-        QMetaObject::invokeMethod( this, "addCommand", Qt::QueuedConnection, Q_ARG( const QSharedPointer<DatabaseCommand>, command ) );
-        return;
-    }
+    QMutexLocker lock( &m_cmdMutex );
 
     m_cmds << command;
     if ( !command->singletonCmd() )
@@ -430,8 +436,15 @@ Source::executeCommands()
         return;
     }
 
-    if ( !m_cmds.isEmpty() )
+    bool commandsAvail = false;
     {
+        QMutexLocker lock( &m_cmdMutex );
+        commandsAvail = !m_cmds.isEmpty();
+    }
+
+    if ( commandsAvail )
+    {
+        QMutexLocker lock( &m_cmdMutex );
         QList< QSharedPointer<DatabaseCommand> > cmdGroup;
         QSharedPointer<DatabaseCommand> cmd = m_cmds.takeFirst();
         while ( cmd->groupable() )

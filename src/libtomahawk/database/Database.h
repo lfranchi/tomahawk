@@ -30,7 +30,9 @@
 #include "DllMacro.h"
 
 class DatabaseImpl;
+class DatabaseWorkerThread;
 class DatabaseWorker;
+class IdThreadWorker;
 
 /*
     This class is really a firewall/pimpl - the public functions of LibraryImpl
@@ -52,13 +54,10 @@ public:
     explicit Database( const QString& dbname, QObject* parent = 0 );
     ~Database();
 
-    QString dbid() const;
-
     void loadIndex();
-    bool indexReady() const { return m_indexReady; }
     bool isReady() const { return m_ready; }
 
-    DatabaseImpl* impl() const { return m_impl; }
+    DatabaseImpl* impl();
 
 signals:
     void indexReady(); // search index
@@ -76,11 +75,15 @@ private slots:
 
 private:
     bool m_ready;
+
     DatabaseImpl* m_impl;
-    DatabaseWorker* m_workerRW;
-    QList<DatabaseWorker*> m_workers;
-    bool m_indexReady;
+    QWeakPointer< DatabaseWorkerThread > m_workerRW;
+    QList< QWeakPointer< DatabaseWorkerThread > > m_workerThreads;
+    IdThreadWorker* m_idWorker;
     int m_maxConcurrentThreads;
+
+    QHash< QThread*, DatabaseImpl* > m_implHash;
+    QMutex m_mutex;
 
     static Database* s_instance;
 

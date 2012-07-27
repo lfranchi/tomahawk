@@ -60,7 +60,8 @@ ViewHeader::visibleSectionCount() const
 void
 ViewHeader::onSectionsChanged()
 {
-    TomahawkSettings::instance()->setPlaylistColumnSizes( m_guid, saveState() );
+    if ( !m_guid.isEmpty() )
+        TomahawkSettings::instance()->setPlaylistColumnSizes( m_guid, saveState() );
 }
 
 
@@ -70,7 +71,10 @@ ViewHeader::checkState()
     if ( !count() || m_init )
         return false;
 
-    QByteArray state = TomahawkSettings::instance()->playlistColumnSizes( m_guid );
+    QByteArray state;
+    if ( !m_guid.isEmpty() )
+        state = TomahawkSettings::instance()->playlistColumnSizes( m_guid );
+
     if ( !state.isEmpty() )
     {
         restoreState( state );
@@ -84,6 +88,8 @@ ViewHeader::checkState()
         {
             if ( isSectionHidden( i ) )
                 continue;
+            if ( i >= m_columnWeights.count() )
+                break;
 
             double nw = (double)m_parent->width() * m_columnWeights.at( i );
             resizeSection( i, qMax( minimumSectionSize(), int( nw - 0.5 ) ) );

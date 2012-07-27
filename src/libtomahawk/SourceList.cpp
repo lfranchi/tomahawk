@@ -19,6 +19,7 @@
 #include "SourceList.h"
 
 #include "database/Database.h"
+#include "database/DatabaseImpl.h"
 #include "database/DatabaseCommand_LoadAllSources.h"
 #include "network/RemoteCollection.h"
 #include "network/ControlConnection.h"
@@ -184,21 +185,25 @@ SourceList::get( int id ) const
 
 
 source_ptr
-SourceList::get( const QString& username, const QString& friendlyName )
+SourceList::get( const QString& username, const QString& friendlyName, bool autoCreate )
 {
     QMutexLocker lock( &m_mut );
 
     source_ptr source;
-    if ( Database::instance()->dbid() == username )
+    if ( Database::instance()->impl()->dbid() == username )
     {
         return m_local;
     }
 
     if ( !m_sources.contains( username ) )
     {
-        source = source_ptr( new Source( -1, username ) );
-        source->setFriendlyName( friendlyName );
-        add( source );
+        if ( autoCreate )
+        {
+            Q_ASSERT( !friendlyName.isEmpty() );
+            source = source_ptr( new Source( -1, username ) );
+            source->setFriendlyName( friendlyName );
+            add( source );
+        }
     }
     else
     {

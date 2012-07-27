@@ -1,32 +1,69 @@
-Version 0.5.0:
-    * Priortize resolution of a track on double-click
-    * New Tomahawk logo and icon
-    * Spotify Resolver shipped with Tomahawk and installable via new Preferences interface
-    * Sync select playlists (and updates) with Spotify
-    * Support .aiff (AIFF mimetype) files
-    * Cleaned up Diagnostics window
-    * Don't show non-resolved tracks as Recently Played
-    * Added "Stop playback after this track" context menu items
-    * Double-clicking on a playlist name (in the sidebar) will play the playlist
-    * You can now import your entire Last.fm playback history into Tomahawk
-    * Related Artists now sorted by relatedness
-    * Support for multimedia keys (Play, Pause, Next etc.) on Windows & Linux
-    * When listening privately scrobbling to Last.fm and Adium is now disabled
-    * Added a toolbar with page back / forward buttons and the global search
-    * New grid view with direct playback controls (Charts, Album Page, Artist Page, Track Page)
-    * New Releases (by Genre) pages added
-    * Add social sharing widget in Now Playing Controls
-    * Added a track page showing a song's lyrics and other similar tracks
-    * Selecting Track name in Now Playing now brings you to Track page
-    * Separate Loved Tracks and Recently Played views per source.
-    * Added animated spinner where needed
-    * Some new sidebar icons
-    * Support Transifex for localization and add translations for Arabic, French, Bulgarian, Catalan, Spanish (Castillian), and more.
-    * New Context Menu items (Love, Add to Queue, etc.)
-    * Fading album art
-    * New Account and Plug-in Preferences/Management Interface
-    * Fix XSPF auto-updating
+Version 0.6.0:
+    * Access Control queries now stay on the bottom of the job view,
+      removing the tendency to jump away from the mouse.
 
+Version 0.5.5:
+    * Changed the Spotify config dialog to indicate when the user
+      is logged in.
+    * Fixed bug where the wrong avatar could be shown for a user.
+    * Fixed shortcuts not working in the global search field on OS X.
+    * Fixed The Echo Nest stations.
+    * Code-signed executable on OS X for GateKeeper.
+    * Fixed logging in to Spotify when pressing return in the config dialog.
+    * Fixed queue not auto-collapsing when playing the last track.
+    * Fixed bug where album listings would fail to show up.
+    * Improved stability.
+    * Fixed bug where it was not possible to drop a mixture of resolved
+      and unresolved tracks onto a playlist.
+
+Version 0.5.4:
+    * Improved stability.
+    * Added support for Spotify album lookups.
+    * Fixed not always updating the database index after scanning.
+    * Fixed connection issue between Tomahawk peers.
+
+Version 0.5.3:
+    * Fixed broken artist names when importing Last.fm playback history.
+    * Fixed crash when filtering collections.
+
+Version 0.5.2:
+    * Fixed a crash when invalid results are coming back from a resolver or
+      are found in a playlist.
+
+Version 0.5.1:
+    * Fixed a few issues with automatic downloading and launching
+      of the Spotify account.
+    * Show an error message when not able to resolve a requested song.
+    * Fixed a few crash and freeze issues.
+    * Better detection of local networks for the Local Network connector.
+    * Don't prompt for access permission for your own accounts.
+    * (OS X) Fixed not being able to connect to Last.fm.
+
+Version 0.5.0:
+    * SOCKS5 proxy support improvements for resolvers and more.
+    * Initial Access Control support, allowing users to define who is able to
+      access and stream from their collection.
+    * Priortize resolution of a track on double-click.
+    * Spotify Resolver can now be easily installed on-demand from the settings.
+    * You can now sync selected playlists (and updates) with Spotify.
+    * Support .aiff (AIFF mimetype) files.
+    * Cleaned up Diagnostics window.
+    * You can tell Tomahawk to stop playback after a certain track finished.
+    * Double-clicking a playlist name (in the sidebar) will start the playlist.
+    * You can now import your entire Last.fm playback history into Tomahawk.
+    * Fixed sorting of related artists.
+    * Support for multimedia keys (Play, Pause, Next etc.) on Windows & Linux.
+    * When listening privately scrobbling to Last.fm and Adium is now disabled.
+    * Added a toolbar with page back / forward buttons and the global search.
+    * New grid-like view with direct playback controls.
+    * You can now browse new releases (by genre).
+    * Added social sharing widget, which allows you to tweet about a song.
+    * Added a track page showing a song's similar tracks and statistics.
+    * Separate Loved Tracks and Recently Played views per source.
+    * Combine an artist's albums into a single aggregated view.
+    * Added translations for Arabic, French, Bulgarian, Spanish and more.
+    * Fixed XSPF auto-updating.
+    * New Tomahawk logo and icon.
 
 Version 0.4.2:
     * Fix ZeroConf protocol showing IP addresses instead of host names.
@@ -56,7 +93,7 @@ Version 0.4.0:
     * Fixed bug where filter text would be one step behind filter value.
     * Fixed bug where resolvers would enable themselves after auto-updating.
     * Fixed occasional crash when dropping tracks onto New Station item.
-    * Added jump-to-current-track support for search results page. 
+    * Added jump-to-current-track support for search results page.
     * Fixed non-resolving tracks when dragging from album view.
     * Fixed fetching album covers for albums with special characters.
     * Show errors and continue gracefully when resolved audio is not available.
@@ -81,7 +118,7 @@ Version 0.4.0:
     * Fixed out of sync Show/Hide menu items on OS X when hidden with cmd-h.
     * Fixed /Volumes directory not showing up on OS X.
     * Fixed startup crash on OS X.
- 
+
 Version 0.3.3:
     * Automatically load Super Collection tracks when no official release
       information is available.
@@ -93,7 +130,7 @@ Version 0.3.3:
     * Fixed dupe menu entry appearing on OS X.
     * Fixed invisible sidebar items on Linux.
 
-Version 0.3.2: 
+Version 0.3.2:
     * Improved syncing process, it's faster and more reliable now.
     * Fixed UPnP issues.
     * Fixed not updating collections and views after a collection changes.
@@ -147,7 +184,7 @@ Version 0.3.0:
     * Added YouTube resolver.
     * Fixed bug where going offline then online would not re-connect to many
       peers.
-    * Added support for auto-updating live XSPF playlists. 
+    * Added support for auto-updating live XSPF playlists.
     * Don't show an age of 41 years for tracks that have no age information.
     * Show config UI for resolvers that have them as soon as you add them.
     * Add support for Echo Nest Personal Catalogs and User Radio. Synchronize

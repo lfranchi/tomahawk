@@ -41,6 +41,7 @@
 
 class PlayableModel;
 class TreeModel;
+class MetaAlbumInfoInterface;
 
 namespace Ui
 {
@@ -55,6 +56,8 @@ public:
     AlbumInfoWidget( const Tomahawk::album_ptr& album, QWidget* parent = 0 );
     ~AlbumInfoWidget();
 
+    Tomahawk::album_ptr album() const { return m_album; }
+
     virtual QWidget* widget() { return this; }
     virtual Tomahawk::playlistinterface_ptr playlistInterface() const;
 
@@ -66,10 +69,9 @@ public:
     virtual QPixmap pixmap() const { if ( m_pixmap.isNull() ) return Tomahawk::ViewPage::pixmap(); else return m_pixmap; }
 
     virtual bool isTemporaryPage() const { return true; }
-    virtual bool showStatsBar() const { return false; }
-
-    virtual bool jumpToCurrentTrack() { return false; }
     virtual bool isBeingPlayed() const;
+
+    virtual bool jumpToCurrentTrack();
 
 public slots:
     /** \brief Loads information for a given album.
@@ -95,9 +97,6 @@ private slots:
     void gotAlbums( const QList<Tomahawk::album_ptr>& albums );
     void onAlbumCoverUpdated();
 
-    void onLoadingStarted();
-    void onLoadingFinished();
-
 private:
     Ui::AlbumInfoWidget* ui;
 
@@ -106,10 +105,14 @@ private:
     PlayableModel* m_albumsModel;
     TreeModel* m_tracksModel;
 
+    Tomahawk::playlistinterface_ptr m_playlistInterface;
+
     QString m_title;
     QString m_description;
     QString m_longDescription;
     QPixmap m_pixmap;
+
+    friend class MetaAlbumInfoInterface;
 };
 
 #endif // ALBUMINFOWIDGET_H

@@ -33,7 +33,7 @@
 #include "HeadlessCheck.h"
 #include "DllMacro.h"
 
-class AclJobItem;
+#define ACLUSERVERSION 1
 
 class DLLEXPORT ACLRegistry : public QObject
 {
@@ -42,6 +42,7 @@ class DLLEXPORT ACLRegistry : public QObject
 public:
 
     static ACLRegistry* instance();
+    static void setInstance( ACLRegistry* instance );
 
     enum ACL {
         NotFound = 0,
@@ -52,25 +53,41 @@ public:
 
     struct User {
         QString uuid;
+        QString friendlyName;
         QStringList knownDbids;
         QStringList knownAccountIds;
-        ACL acl;
+        ACLRegistry::ACL acl;
 
         User()
             : uuid( QUuid::createUuid().toString() )
+            , friendlyName()
+            , knownDbids()
+            , knownAccountIds()
             , acl( ACLRegistry::NotFound )
             {}
 
-        User( QString p_uuid, QStringList p_knownDbids, QStringList p_knownAccountIds, ACL p_acl )
+        ~User()
+            {}
+
+        User( QString p_uuid, QString p_friendlyName, QStringList p_knownDbids, QStringList p_knownAccountIds, ACLRegistry::ACL p_acl )
             : uuid( p_uuid )
+            , friendlyName( p_friendlyName )
             , knownDbids( p_knownDbids )
             , knownAccountIds( p_knownAccountIds )
             , acl( p_acl )
             {}
+
+        User( const User &other )
+            : uuid( other.uuid )
+            , friendlyName( other.friendlyName )
+            , knownDbids( other.knownDbids )
+            , knownAccountIds( other.knownAccountIds )
+            , acl( other.acl )
+            {}
     };
 
     ACLRegistry( QObject *parent = 0 );
-    ~ACLRegistry();
+    virtual ~ACLRegistry();
 
 signals:
     void aclResult( QString nodeid, QString username, ACLRegistry::ACL peerStatus );
@@ -84,32 +101,21 @@ public slots:
      * @param username If not empty, will store the given username along with the new ACL value. Defaults to QString().
      * @return ACLRegistry::ACL
      **/
-    ACLRegistry::ACL isAuthorizedUser( const QString &dbid, const QString &username, ACLRegistry::ACL globalType = ACLRegistry::NotFound, bool skipEmission = false );
+    virtual ACLRegistry::ACL isAuthorizedUser( const QString &dbid, const QString &username, ACLRegistry::ACL globalType = ACLRegistry::NotFound, bool skipEmission = false ) = 0;
+    virtual void wipeEntries();
 
-    #ifndef ENABLE_HEADLESS
-    void getUserDecision( ACLRegistry::User user, const QString &username );
-    #endif
-
-private slots:
-    void userDecision( ACLRegistry::User user );
-    void queueNextJob();
-
-private:
+protected:
     /**
      * @brief Saves the cache.
      *
      * @return void
      **/
-    void save();
-
-    void load();
+    virtual void save();
+    virtual void load();
 
     QList< ACLRegistry::User > m_cache;
 
     static ACLRegistry* s_instance;
-
-    QQueue< AclJobItem* > m_jobQueue;
-    int m_jobCount;
 };
 
 Q_DECLARE_METATYPE( ACLRegistry::ACL );

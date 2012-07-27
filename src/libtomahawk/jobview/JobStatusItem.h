@@ -44,6 +44,7 @@ public:
     virtual ~JobStatusItem();
 
     virtual QString type() const = 0;
+    virtual int weight() const { return 0; }
 
     /// Please cache this.
     virtual QPixmap icon() const = 0;
@@ -64,12 +65,16 @@ public:
     virtual void createDelegate( QObject* parent );
     virtual QStyledItemDelegate* customDelegate() const;
 
+    qint64 age() const { return m_createdOn; }
 signals:
     /// Ask for an update
     void statusChanged();
 
     /// Job is finished, will be deleted by the model
     void finished();
+
+private:
+    qint64 m_createdOn;
 };
 
 Q_DECLARE_METATYPE( JobStatusItem* );

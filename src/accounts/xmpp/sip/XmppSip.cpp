@@ -114,7 +114,6 @@ XmppSipPlugin::XmppSipPlugin( XmppAccount *account )
 
     // general client setup
     m_client = new Jreen::Client( jid, m_currentPassword );
-    m_client->setProxyFactory( TomahawkUtils::proxyFactory( true ) );
     setupClientHelper();
 
     m_client->registerPayload( new TomahawkXmppMessageFactory );
@@ -429,32 +428,17 @@ XmppSipPlugin::errorMessage( Jreen::Client::DisconnectReason reason )
 
 
 void
-XmppSipPlugin::sendMsg( const QString& to, const QString& msg )
+XmppSipPlugin::sendMsg( const QString& to, const SipInfo& info )
 {
-    qDebug() << Q_FUNC_INFO << to << msg;
+    qDebug() << Q_FUNC_INFO << to << info;
 
     if ( !m_client )
         return;
 
-    /*******************************************************
-     * Obsolete this by a SipMessage class
-     */
-    QJson::Parser parser;
-    bool ok;
-    QVariant v = parser.parse( msg.toAscii(), &ok );
-    if ( !ok || v.type() != QVariant::Map )
-    {
-        qDebug() << "Invalid JSON in Xmpp msg";
-        return;
-    }
-
-    QVariantMap m = v.toMap();
-    /*******************************************************/
-
     TomahawkXmppMessage *sipMessage;
-    if ( m["visible"].toBool() )
+    if ( info.isVisible() )
     {
-        sipMessage = new TomahawkXmppMessage( m["ip"].toString(), m["port"].toInt(), m["uniqname"].toString(), m["key"].toString() );
+        sipMessage = new TomahawkXmppMessage( info.host(), info.port(), info.uniqname(), info.key() );
     }
     else
         sipMessage = new TomahawkXmppMessage();
@@ -471,13 +455,6 @@ XmppSipPlugin::sendMsg( const QString& to, const QString& msg )
 void
 XmppSipPlugin::broadcastMsg( const QString& msg )
 {
-    if ( !m_client )
-        return;
-
-    foreach ( const Jreen::JID& jid, m_peers.keys() )
-    {
-        sendMsg( jid.full(), msg );
-    }
 }
 
 
@@ -627,6 +604,7 @@ XmppSipPlugin::configurationChanged()
 void
 XmppSipPlugin::setupClientHelper()
 {
+    m_client->setProxyFactory( TomahawkUtils::proxyFactory( true ) );
     Jreen::JID jid = Jreen::JID( m_currentUsername );
     m_client->setJID( jid );
     m_client->setPassword( m_currentPassword );
@@ -802,7 +780,7 @@ XmppSipPlugin::onSubscriptionReceived( const Jreen::RosterItem::Ptr& item, const
     QMessageBox *confirmBox = new QMessageBox(
                                 QMessageBox::Question,
                                 tr( "Authorize User" ),
-                                QString( tr( "Do you want to grant <b>%1</b> access to your Collection?" ) ).arg( presence.from().bare() ),
+                                QString( tr( "Do you want to add <b>%1</b> to your friend list?" ) ).arg( presence.from().bare() ),
                                 QMessageBox::Yes | QMessageBox::No,
                                 TomahawkUtils::tomahawkWindow()
                               );
@@ -917,9 +895,7 @@ XmppSipPlugin::onNewIq( const Jreen::IQ& iq )
             info.setVisible( sipMessage->visible() );
             if ( sipMessage->visible() )
             {
-                QHostInfo hi;
-                hi.setHostName( sipMessage->ip() );
-                info.setHost( hi );
+                info.setHost( sipMessage->ip() );
                 info.setPort( sipMessage->port() );
                 info.setUniqname( sipMessage->uniqname() );
                 info.setKey( sipMessage->key() );

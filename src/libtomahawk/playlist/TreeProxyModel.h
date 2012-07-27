@@ -42,10 +42,9 @@ public:
     virtual ~TreeProxyModel() {}
 
     virtual void setSourcePlayableModel( TreeModel* model );
-
-    virtual void newFilterFromPlaylistInterface( const QString& pattern );
-
     virtual Tomahawk::playlistinterface_ptr playlistInterface();
+
+    virtual void setFilter( const QString& pattern );
 
 signals:
 
@@ -65,7 +64,7 @@ private:
     void filterFinished();
     QString textForItem( PlayableItem* item ) const;
 
-    mutable QMap< QPersistentModelIndex, Tomahawk::result_ptr > m_cache;
+    mutable QMap< QPersistentModelIndex, Tomahawk::query_ptr > m_cache;
 
     QList<Tomahawk::artist_ptr> m_artistsFilter;
     QList<int> m_albumsFilter;

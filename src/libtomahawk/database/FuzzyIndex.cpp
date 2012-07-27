@@ -49,15 +49,24 @@ FuzzyIndex::FuzzyIndex( QObject* parent, bool wipe )
     QByteArray path = m_lucenePath.toUtf8();
     const char* cPath = path.constData();
 
+    bool failed = false;
     tDebug() << "Opening Lucene directory:" << path;
     try
     {
-        m_luceneDir = FSDirectory::getDirectory( cPath );
         m_analyzer = _CLNEW SimpleAnalyzer();
+        m_luceneDir = FSDirectory::getDirectory( cPath );
     }
     catch ( CLuceneError& error )
     {
         tDebug() << "Caught CLucene error:" << error.what();
+        failed = true;
+    }
+
+    if ( failed )
+    {
+        tDebug() << "Initializing RAM directory instead.";
+
+        m_luceneDir = _CLNEW RAMDirectory();
         wipe = true;
     }
 
@@ -83,7 +92,7 @@ FuzzyIndex::wipeIndex()
     endIndexing();
 
     QTimer::singleShot( 0, this, SLOT( updateIndex() ) );
-    
+
     return true; // FIXME
 }
 
@@ -189,8 +198,8 @@ FuzzyIndex::appendFields( const QMap< unsigned int, QMap< QString, QString > >& 
     catch( CLuceneError& error )
     {
         tDebug() << "Caught CLucene error:" << error.what();
-        
-        wipeIndex();
+
+        QTimer::singleShot( 0, this, SLOT( wipeIndex() ) );
     }
 }
 
@@ -282,9 +291,9 @@ FuzzyIndex::search( const Tomahawk::query_ptr& query )
     }
     catch( CLuceneError& error )
     {
-        tDebug() << "Caught CLucene error:" << error.what();
-        
-        wipeIndex();
+        tDebug() << "Caught CLucene error:" << error.what() << query->toString();
+
+        QTimer::singleShot( 0, this, SLOT( wipeIndex() ) );
     }
 
     return resultsmap;
@@ -338,8 +347,8 @@ FuzzyIndex::searchAlbum( const Tomahawk::query_ptr& query )
     catch( CLuceneError& error )
     {
         tDebug() << "Caught CLucene error:" << error.what();
-        
-        wipeIndex();
+
+        QTimer::singleShot( 0, this, SLOT( wipeIndex() ) );
     }
 
     return resultsmap;

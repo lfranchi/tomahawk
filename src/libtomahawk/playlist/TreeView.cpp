@@ -54,12 +54,12 @@ TreeView::TreeView( QWidget* parent )
     , m_loadingSpinner( new LoadingSpinner( this ) )
     , m_updateContextView( true )
     , m_contextMenu( new ContextMenu( this ) )
-    , m_showModes( true )
 {
     setFrameShape( QFrame::NoFrame );
     setAttribute( Qt::WA_MacShowFocusRect, 0 );
 
     setContentsMargins( 0, 0, 0, 0 );
+    setMouseTracking( true );
     setAlternatingRowColors( true );
     setDragEnabled( true );
     setDropIndicatorShown( false );
@@ -144,8 +144,8 @@ TreeView::setTreeModel( TreeModel* model )
 
     guid(); // this will set the guid on the header
 
-    m_header->setDefaultColumnWeights( model->columnWeights() );
-    if ( model->style() == PlayableModel::Large )
+    m_header->setDefaultColumnWeights( m_proxyModel->columnWeights() );
+    if ( m_proxyModel->style() == PlayableProxyModel::Large )
     {
         setHeaderHidden( true );
         setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
@@ -157,7 +157,7 @@ TreeView::setTreeModel( TreeModel* model )
     }
 
     emit modelChanged();
-    
+
 /*    setColumnHidden( PlayableModel::Score, true ); // Hide score column per default
     setColumnHidden( PlayableModel::Origin, true ); // Hide origin column per default
     setColumnHidden( PlayableModel::Composer, true ); //Hide composer column per default
@@ -292,9 +292,9 @@ TreeView::onFilterChangeFinished()
     if ( selectedIndexes().count() )
         scrollTo( selectedIndexes().at( 0 ), QAbstractItemView::PositionAtCenter );
 
-    if ( !proxyModel()->playlistInterface()->filter().isEmpty() && !proxyModel()->playlistInterface()->trackCount() && model()->trackCount() )
+    if ( !filter().isEmpty() && !proxyModel()->playlistInterface()->trackCount() && model()->trackCount() )
     {
-        m_overlay->setText( tr( "Sorry, your filter '%1' did not match any results." ).arg( proxyModel()->playlistInterface()->filter() ) );
+        m_overlay->setText( tr( "Sorry, your filter '%1' did not match any results." ).arg( filter() ) );
         m_overlay->show();
     }
     else
@@ -419,11 +419,101 @@ TreeView::onMenuTriggered( int action )
 bool
 TreeView::jumpToCurrentTrack()
 {
-    if ( !m_proxyModel )
+    if ( !m_proxyModel || !m_proxyModel->sourceModel() )
         return false;
 
     scrollTo( m_proxyModel->currentIndex(), QAbstractItemView::PositionAtCenter );
     return true;
+}
+
+
+void
+TreeView::updateHoverIndex( const QPoint& pos )
+{
+    QModelIndex idx = indexAt( pos );
+
+    if ( idx != m_hoveredIndex )
+    {
+        m_hoveredIndex = idx;
+        repaint();
+    }
+
+    if ( !m_model || m_proxyModel->style() != PlayableProxyModel::Collection )
+        return;
+
+    PlayableItem* item = proxyModel()->itemFromIndex( proxyModel()->mapToSource( idx ) );
+    if ( idx.column() == 0 && !item->query().isNull() )
+    {
+        if ( pos.x() > header()->sectionViewportPosition( idx.column() ) + header()->sectionSize( idx.column() ) - 16 &&
+             pos.x() < header()->sectionViewportPosition( idx.column() ) + header()->sectionSize( idx.column() ) )
+        {
+            setCursor( Qt::PointingHandCursor );
+            return;
+        }
+    }
+
+    if ( cursor().shape() != Qt::ArrowCursor )
+        setCursor( Qt::ArrowCursor );
+}
+
+
+void
+TreeView::wheelEvent( QWheelEvent* event )
+{
+    QTreeView::wheelEvent( event );
+
+    if ( m_hoveredIndex.isValid() )
+    {
+        m_hoveredIndex = QModelIndex();
+        repaint();
+    }
+}
+
+
+void
+TreeView::leaveEvent( QEvent* event )
+{
+    QTreeView::leaveEvent( event );
+    updateHoverIndex( QPoint( -1, -1 ) );
+}
+
+
+void
+TreeView::mouseMoveEvent( QMouseEvent* event )
+{
+    QTreeView::mouseMoveEvent( event );
+    updateHoverIndex( event->pos() );
+}
+
+
+void
+TreeView::mousePressEvent( QMouseEvent* event )
+{
+    QTreeView::mousePressEvent( event );
+
+    if ( !m_model || m_proxyModel->style() != PlayableProxyModel::Collection )
+        return;
+
+    QModelIndex idx = indexAt( event->pos() );
+    if ( event->pos().x() > header()->sectionViewportPosition( idx.column() ) + header()->sectionSize( idx.column() ) - 16 &&
+         event->pos().x() < header()->sectionViewportPosition( idx.column() ) + header()->sectionSize( idx.column() ) )
+    {
+        PlayableItem* item = proxyModel()->itemFromIndex( proxyModel()->mapToSource( idx ) );
+        if ( item->query().isNull() )
+            return;
+
+        switch ( idx.column() )
+        {
+            case 0:
+            {
+                ViewManager::instance()->show( item->query()->displayQuery() );
+                break;
+            }
+
+            default:
+                break;
+        }
+    }
 }
 
 
@@ -437,4 +527,13 @@ TreeView::guid() const
     }
 
     return m_guid;
+}
+
+
+bool
+TreeView::setFilter( const QString& filter )
+{
+    ViewPage::setFilter( filter );
+    m_proxyModel->setFilter( filter );
+    return true;
 }

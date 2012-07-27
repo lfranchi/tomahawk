@@ -25,8 +25,8 @@
 #include "utils/TomahawkUtils.h"
 #include "utils/Logger.h"
 #include "lastfm/ws.h"
-#include "lastfm/User"
-#include "lastfm/XmlQuery"
+#include "lastfm/User.h"
+#include "lastfm/XmlQuery.h"
 
 using namespace Tomahawk::Accounts;
 
@@ -134,34 +134,38 @@ LastFmConfig::loadHistory()
 void
 LastFmConfig::onHistoryLoaded()
 {
-    int total = 0;
+    uint total = 0;
     bool finished = false;
     QNetworkReply* reply = qobject_cast< QNetworkReply* >( sender() );
-    
+
     try
     {
-        lastfm::XmlQuery lfm = reply->readAll();
+        lastfm::XmlQuery lfm;
+        lfm.parse( reply->readAll() );
 
         foreach ( lastfm::XmlQuery e, lfm.children( "track" ) )
         {
-//            tDebug() << "Found:" << e["artist"].text() << e["name"].text() << e["date"].attribute( "uts" ).toUInt();
-            Tomahawk::query_ptr query = Query::get( e["artist"].text(), e["name"].text(), QString(), QString(), false );
+//            tDebug() << "Found:" << e.children( "artist" ).first()["name"].text() << e["name"].text() << e["date"].attribute( "uts" ).toUInt();
+            Tomahawk::query_ptr query = Query::get( e.children( "artist" ).first()["name"].text(), e["name"].text(), QString(), QString(), false );
+            if ( query.isNull() )
+                continue;
+
             m_lastTimeStamp = e["date"].attribute( "uts" ).toUInt();
-            
+
             DatabaseCommand_LogPlayback* cmd = new DatabaseCommand_LogPlayback( query, DatabaseCommand_LogPlayback::Finished, m_lastTimeStamp );
             Database::instance()->enqueue( QSharedPointer<DatabaseCommand>(cmd) );
         }
-        
+
         if ( !lfm.children( "recenttracks" ).isEmpty() )
         {
             lastfm::XmlQuery stats = lfm.children( "recenttracks" ).first();
-            
-            int page = stats.attribute( "page" ).toInt();
-            total = stats.attribute( "totalPages" ).toInt();
-            
+
+            uint page = stats.attribute( "page" ).toUInt();
+            total = stats.attribute( "totalPages" ).toUInt();
+
             m_ui->progressBar->setMaximum( total );
             m_ui->progressBar->setValue( page );
-            
+
             if ( page < total )
             {
                 m_page = page + 1;
@@ -175,10 +179,10 @@ LastFmConfig::onHistoryLoaded()
     }
     catch( lastfm::ws::ParseError e )
     {
-        tDebug() << "XmlQuery error:" << e.what();
+        tDebug() << "XmlQuery error:" << e.message();
         finished = true;
     }
-    
+
     if ( finished )
     {
         if ( m_page != total )
@@ -205,7 +209,8 @@ LastFmConfig::onLastFmFinished()
     }
     if( authJob->error() == QNetworkReply::NoError )
     {
-        lastfm::XmlQuery lfm = lastfm::XmlQuery( authJob->readAll() );
+        lastfm::XmlQuery lfm;
+        lfm.parse( authJob->readAll() );
 
         if( lfm.children( "error" ).size() > 0 )
         {

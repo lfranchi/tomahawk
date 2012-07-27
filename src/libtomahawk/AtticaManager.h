@@ -64,10 +64,9 @@ public:
         // internal
         bool pixmapDirty;
 
-        Resolver( const QString& v, const QString& path, int userR, ResolverState s, bool resolver )
-            : version( v ), scriptPath( path ), userRating( userR ), state( s ), pixmap( 0 ), binary( false ), pixmapDirty( false )
+        Resolver( const QString& v, const QString& path, int userR, ResolverState s, bool isBinary )
+            : version( v ), scriptPath( path ), userRating( userR ), state( s ), pixmap( 0 ), binary( isBinary ), pixmapDirty( false )
         {
-            Q_UNUSED( resolver );
         }
         Resolver() : userRating( -1 ), state( Uninstalled ), pixmap( 0 ), binary( false ), pixmapDirty( false ) {}
     };
@@ -133,7 +132,7 @@ private slots:
     void categoriesReturned( Attica::BaseJob* );
     void resolversList( Attica::BaseJob* );
     void binaryResolversList( Attica::BaseJob* );
-    void resolverDownloadFinished( Attica::BaseJob* );
+    void resolverDownloadFinished( QNetworkReply* );
     void payloadFetched();
 
     void loadPixmapsFromCache();
@@ -145,6 +144,7 @@ private slots:
 private:
     void doResolverRemove( const QString& id ) const;
     void doInstallResolver(  const Attica::Content& resolver, bool autoCreate, Tomahawk::Accounts::AtticaResolverAccount* handler );
+    QString hostname() const;
 
     Attica::ProviderManager m_manager;
 

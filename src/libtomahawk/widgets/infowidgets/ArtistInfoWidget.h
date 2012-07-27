@@ -46,7 +46,7 @@ namespace Ui
     class ArtistInfoWidget;
 }
 
-class MetaPlaylistInterface;
+class MetaArtistInfoInterface;
 
 class DLLEXPORT ArtistInfoWidget : public QWidget, public Tomahawk::ViewPage
 {
@@ -66,6 +66,8 @@ public:
      */
     void load( const Tomahawk::artist_ptr& artist );
 
+    Tomahawk::artist_ptr artist() const { return m_artist; }
+
     virtual QWidget* widget() { return this; }
     virtual Tomahawk::playlistinterface_ptr playlistInterface() const;
 
@@ -75,7 +77,7 @@ public:
     virtual QPixmap pixmap() const { if ( m_pixmap.isNull() ) return Tomahawk::ViewPage::pixmap(); else return m_pixmap; }
 
     virtual bool isTemporaryPage() const { return true; }
-    virtual bool showStatsBar() const { return false; }
+    virtual bool showInfoBar() const { return false; }
 
     virtual bool jumpToCurrentTrack();
     virtual bool isBeingPlayed() const;
@@ -96,9 +98,6 @@ private slots:
     void onTracksFound( const QList<Tomahawk::query_ptr>& queries, Tomahawk::ModelMode mode );
     void onSimilarArtistsLoaded();
 
-    void onLoadingStarted();
-    void onLoadingFinished();
-
 private:
     Ui::ArtistInfoWidget *ui;
 
@@ -114,7 +113,7 @@ private:
     QString m_longDescription;
     QPixmap m_pixmap;
 
-    friend class MetaPlaylistInterface;
+    friend class ::MetaArtistInfoInterface;
 };
 
 #endif // ARTISTINFOWIDGET_H

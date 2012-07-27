@@ -22,6 +22,7 @@
 #include "DllMacro.h"
 
 #include <QModelIndex>
+#include <QSortFilterProxyModel>
 #include <QQueue>
 
 class QStyledItemDelegate;
@@ -36,7 +37,9 @@ public:
         // DisplayRole is main col
         RightColumnRole = Qt::UserRole + 1,
         AllowMultiLineRole = Qt::UserRole + 2,
-        JobDataRole = Qt::UserRole + 3
+        JobDataRole = Qt::UserRole + 3,
+        SortRole = Qt::UserRole + 4,
+        AgeRole = Qt::UserRole + 5
     };
 
     explicit JobStatusModel( QObject* parent = 0 );
@@ -49,11 +52,12 @@ public:
 signals:
     void customDelegateJobInserted( int row, JobStatusItem* item );
     void customDelegateJobRemoved( int row );
+    void refreshDelegates();
 
 public slots:
     /// Takes ownership of job
     void addJob( JobStatusItem* item );
-    
+
 private slots:
     void itemUpdated();
     void itemFinished();
@@ -63,6 +67,35 @@ private:
     QHash< QString, QList< JobStatusItem* > > m_collapseCount;
     QHash< QString, QQueue< JobStatusItem* > > m_jobQueue;
     QHash< QString, int > m_jobTypeCount;
+};
+
+class DLLEXPORT JobStatusSortModel : public QSortFilterProxyModel
+{
+    Q_OBJECT
+
+public:
+    JobStatusSortModel( QObject* parent = 0 );
+    virtual ~JobStatusSortModel();
+
+    void setJobModel( JobStatusModel* model );
+
+signals:
+    void checkCount();
+    void customDelegateJobInserted( int row, JobStatusItem* item );
+    void customDelegateJobRemoved( int row );
+    void refreshDelegates();
+
+public slots:
+    void addJob( JobStatusItem* item );
+    void customDelegateJobInsertedSlot( int row, JobStatusItem* item);
+    void customDelegateJobRemovedSlot( int row );
+    void refreshDelegatesSlot();
+
+protected:
+    virtual bool lessThan( const QModelIndex & left, const QModelIndex & right ) const;
+
+private:
+    JobStatusModel* m_sourceModel;
 };
 
 #endif // JOBSTATUSMODEL_H

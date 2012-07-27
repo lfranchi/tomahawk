@@ -37,6 +37,7 @@
 class AlbumModel;
 class RecentlyPlayedModel;
 class OverlayWidget;
+class WelcomeWidgetInterface;
 
 namespace Ui
 {
@@ -73,7 +74,7 @@ public:
     PlaylistWidget( QWidget* parent = 0 );
 
     OverlayWidget* overlay() const { return m_overlay; }
-    
+
     virtual void setModel( QAbstractItemModel* model );
 
 signals:
@@ -98,11 +99,10 @@ public:
     virtual QString title() const { return tr( "Welcome to Tomahawk" ); }
     virtual QString description() const { return QString(); }
 
-    virtual bool showStatsBar() const { return false; }
     virtual bool showInfoBar() const { return false; }
+    virtual bool isBeingPlayed() const;
 
     virtual bool jumpToCurrentTrack();
-    virtual bool isBeingPlayed() const;
 
 protected:
     void changeEvent( QEvent* e );
@@ -126,6 +126,9 @@ private:
 
     RecentlyPlayedModel* m_tracksModel;
     AlbumModel* m_recentAlbumsModel;
+    Tomahawk::playlistinterface_ptr m_playlistInterface;
+
+    friend class ::WelcomeWidgetInterface;
 };
 
 #endif // WELCOMEWIDGET_H

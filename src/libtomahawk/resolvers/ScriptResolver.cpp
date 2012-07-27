@@ -76,7 +76,6 @@ ScriptResolver::~ScriptResolver()
     if ( !finished || m_proc.state() == QProcess::Running )
     {
         qDebug() << "External resolver didn't exit after waiting 2s for it to die, killing forcefully";
-        Q_ASSERT(false);
 #ifdef Q_OS_WIN
         m_proc.kill();
 #else
@@ -159,6 +158,7 @@ ScriptResolver::running() const
 {
     return !m_stopped;
 }
+
 
 void
 ScriptResolver::sendMessage( const QVariantMap& map )
@@ -255,7 +255,6 @@ ScriptResolver::handleMsg( const QByteArray& msg )
         setupConfWidget( m );
         return;
     }
-
     else if ( msgtype == "results" )
     {
         const QString qid = m.value( "qid" ).toString();
@@ -265,7 +264,9 @@ ScriptResolver::handleMsg( const QByteArray& msg )
         foreach( const QVariant& rv, reslist )
         {
             QVariantMap m = rv.toMap();
-            qDebug() << "Found result:" << m;
+            tDebug( LOGVERBOSE ) << "Found result:" << m;
+            if ( m.value( "artist" ).toString().trimmed().isEmpty() || m.value( "track" ).toString().trimmed().isEmpty() )
+                continue;
 
             Tomahawk::result_ptr rp = Tomahawk::Result::get( m.value( "url" ).toString() );
             Tomahawk::artist_ptr ap = Tomahawk::Artist::get( m.value( "artist" ).toString(), false );
@@ -333,6 +334,7 @@ ScriptResolver::cmdExited( int code, QProcess::ExitStatus status )
     }
 }
 
+
 void
 ScriptResolver::resolve( const Tomahawk::query_ptr& query )
 {
@@ -351,6 +353,9 @@ ScriptResolver::resolve( const Tomahawk::query_ptr& query )
         m.insert( "artist", query->artist() );
         m.insert( "track", query->track() );
         m.insert( "qid", query->id() );
+
+        if ( !query->resultHint().isEmpty() )
+            m.insert( "resultHint", query->resultHint() );
     }
 
     const QByteArray msg = m_serializer.serialize( QVariant( m ) );
@@ -370,6 +375,7 @@ ScriptResolver::doSetup( const QVariantMap& m )
 
     m_ready = true;
     m_configSent = false;
+    m_num_restarts = 0;
 
     if ( !m_stopped )
         Tomahawk::Pipeline::instance()->addResolver( this );
@@ -398,7 +404,8 @@ ScriptResolver::setupConfWidget( const QVariantMap& m )
 }
 
 
-void ScriptResolver::startProcess()
+void
+ScriptResolver::startProcess()
 {
     if ( !QFile::exists( filePath() ) )
         m_error = Tomahawk::ExternalResolver::FileNotFound;
@@ -407,10 +414,14 @@ void ScriptResolver::startProcess()
         m_error = Tomahawk::ExternalResolver::NoError;
     }
 
-    QFileInfo fi( filePath() );
+    const QFileInfo fi( filePath() );
 
     QString interpreter;
-    QString runPath = filePath();
+    // have to enclose in quotes if path contains spaces...
+    const QString runPath = QString( "\"%1\"" ).arg( filePath() );
+
+    QFile file( filePath() );
+    file.setPermissions( file.permissions() | QFile::ExeOwner | QFile::ExeGroup | QFile::ExeOther );
 
 #ifdef Q_OS_WIN
     if ( fi.suffix().toLower() != "exe" )
@@ -434,15 +445,17 @@ void ScriptResolver::startProcess()
             interpreter = QString( "\"%1\"" ).arg(QString::fromUtf16((const ushort *) path));
         }
     }
-    else
-    {
-        // have to enclose in quotes if path contains spaces on windows...
-        runPath = QString( "\"%1\"" ).arg( filePath() );
-    }
 #endif // Q_OS_WIN
 
-    if( interpreter.isEmpty() )
+    if ( interpreter.isEmpty() )
+    {
+#ifndef Q_OS_WIN
+        const QFileInfo info( filePath() );
+        m_proc.setWorkingDirectory( info.absolutePath() );
+        tLog() << "Setting working dir:" << info.absolutePath();
+#endif
         m_proc.start( runPath );
+    }
     else
         m_proc.start( interpreter, QStringList() << filePath() );
 

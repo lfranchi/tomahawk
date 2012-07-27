@@ -36,6 +36,7 @@ class DatabaseCommand_LogPlayback;
 class DatabaseCommand_SocialAction;
 class DatabaseCommand_UpdateSearchIndex;
 class DatabaseCommand_DeleteFiles;
+class MusicScanner;
 
 namespace Tomahawk
 {
@@ -50,6 +51,7 @@ friend class ::DatabaseCommand_LogPlayback;
 friend class ::DatabaseCommand_SocialAction;
 friend class ::DatabaseCommand_AddFiles;
 friend class ::DatabaseCommand_DeleteFiles;
+friend class ::MusicScanner;
 
 public:
     enum AvatarStyle { Original, FancyStyle };
@@ -78,7 +80,7 @@ public:
     void setControlConnection( ControlConnection* cc );
 
     void scanningProgress( unsigned int files );
-    void scanningFinished( unsigned int files );
+    void scanningFinished();
 
     unsigned int trackCount() const;
 
@@ -117,7 +119,7 @@ public slots:
 
 private slots:
     void dbLoaded( unsigned int id, const QString& fname );
-    QString lastCmdGuid() const { return m_lastCmdGuid; }
+    QString lastCmdGuid() const;
     void updateIndexWhenSynced();
 
     void setOffline();
@@ -138,7 +140,6 @@ private:
 
     QList< QSharedPointer<Collection> > m_collections;
     QVariantMap m_stats;
-    QString m_lastCmdGuid;
 
     bool m_isLocal;
     bool m_online;
@@ -157,6 +158,8 @@ private:
     ControlConnection* m_cc;
     QList< QSharedPointer<DatabaseCommand> > m_cmds;
     int m_commandCount;
+    QString m_lastCmdGuid;
+    mutable QMutex m_cmdMutex;
 
     mutable QPixmap* m_avatar;
     mutable QPixmap* m_fancyAvatar;

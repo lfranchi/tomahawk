@@ -32,6 +32,12 @@ class DLLEXPORT PlayableProxyModel : public QSortFilterProxyModel
 Q_OBJECT
 
 public:
+    enum PlayableItemStyle
+    { Detailed = 0, Short = 1, ShortWithAvatars = 2, Large = 3, Collection = 4 };
+
+    enum PlayableProxyModelRole
+    { StyleRole = Qt::UserRole + 1 };
+
     explicit PlayableProxyModel ( QObject* parent = 0 );
     virtual ~PlayableProxyModel() {}
 
@@ -41,21 +47,37 @@ public:
 
     virtual bool isLoading() const;
 
+    PlayableProxyModel::PlayableItemStyle style() const { return m_style; }
+    void setStyle( PlayableProxyModel::PlayableItemStyle style ) { m_style = style; }
+
     virtual QPersistentModelIndex currentIndex() const { return mapFromSource( m_model->currentItem() ); }
     virtual void setCurrentIndex( const QModelIndex& index ) { m_model->setCurrentItem( mapToSource( index ) ); }
 
-    virtual void remove( const QModelIndex& index );
-    virtual void remove( const QModelIndexList& indexes );
-    virtual void remove( const QList< QPersistentModelIndex >& indexes );
+    virtual void removeIndex( const QModelIndex& index );
+    virtual void removeIndexes( const QModelIndexList& indexes );
+    virtual void removeIndexes( const QList< QPersistentModelIndex >& indexes );
 
     virtual bool showOfflineResults() const { return m_showOfflineResults; }
-    virtual void setShowOfflineResults( bool b ) { m_showOfflineResults = b; }
+    virtual void setShowOfflineResults( bool b );
 
-    virtual void emitFilterChanged( const QString &pattern ) { emit filterChanged( pattern ); }
+    virtual bool hideDupeItems() const { return m_hideDupeItems; }
+    virtual void setHideDupeItems( bool b );
+
+    virtual int maxVisibleItems() const { return m_maxVisibleItems; }
+    virtual void setMaxVisibleItems( int items );
 
     virtual PlayableItem* itemFromIndex( const QModelIndex& index ) const { return sourceModel()->itemFromIndex( index ); }
 
     virtual Tomahawk::playlistinterface_ptr playlistInterface();
+
+    QList< double > columnWeights() const;
+
+    virtual int columnCount( const QModelIndex& parent = QModelIndex() ) const;
+    virtual QVariant data( const QModelIndex& index, int role = Qt::DisplayRole ) const;
+    virtual QVariant headerData( int section, Qt::Orientation orientation, int role ) const;
+
+    virtual void setFilter( const QString& pattern );
+    virtual void updateDetailedInfo( const QModelIndex& index );
 
 signals:
     void filterChanged( const QString& filter );
@@ -76,7 +98,13 @@ private:
     virtual bool lessThan( int column, const Tomahawk::query_ptr& left, const Tomahawk::query_ptr& right ) const;
 
     PlayableModel* m_model;
+
     bool m_showOfflineResults;
+    bool m_hideDupeItems;
+    int m_maxVisibleItems;
+
+    QHash< PlayableItemStyle, QList<PlayableModel::Columns> > m_headerStyle;
+    PlayableItemStyle m_style;
 };
 
 #endif // TRACKPROXYMODEL_H

@@ -64,7 +64,7 @@ namespace Tomahawk
 }
 
 #ifdef LIBLASTFM_FOUND
-#include <lastfm/NetworkAccessManager>
+#include <lastfm/NetworkAccessManager.h>
 #include "Scrobbler.h"
 #endif
 
@@ -98,6 +98,9 @@ public:
     virtual bool loadUrl( const QString& url );
 
     bool isTomahawkLoaded() const { return m_loaded; }
+
+    // reimplemented from QApplication/QCoreApplication
+    virtual bool notify( QObject* receiver, QEvent* e );
 
 signals:
     void tomahawkLoaded();

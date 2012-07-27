@@ -13,8 +13,6 @@ SET( QT_USE_QTNETWORK TRUE )
 SET( QT_USE_QTXML TRUE )
 SET( QT_USE_QTWEBKIT TRUE )
 
-add_definitions( -DQT_SHAREDPOINTER_TRACK_POINTERS )
-
 INCLUDE( ${QT_USE_FILE} )
 INCLUDE( AddAppIconMacro )
 
@@ -39,9 +37,8 @@ ENDIF()
 SET( tomahawkSources ${tomahawkSources}
      web/Api_v1.cpp
 
-     MusicScanner.cpp
+     AclRegistryImpl.cpp
      ShortcutHandler.cpp
-     ScanManager.cpp
      UbuntuUnityHack.cpp
      TomahawkApp.cpp
      main.cpp
@@ -64,6 +61,7 @@ SET( tomahawkSourcesGui ${tomahawkSourcesGui}
      sourcetree/items/PlaylistItems.cpp
      sourcetree/items/CategoryItems.cpp
      sourcetree/items/GenericPageItems.cpp
+     sourcetree/items/LovedTracksItem.cpp
      sourcetree/items/TemporaryPageItem.cpp
      sourcetree/items/GroupItem.cpp
      sourcetree/items/HistoryItem.cpp
@@ -96,7 +94,6 @@ SET( tomahawkUI ${tomahawkUI}
 INCLUDE_DIRECTORIES(
     .
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_BINARY_DIR}/thirdparty/liblastfm2/src
 
     audio
     database
@@ -116,8 +113,9 @@ INCLUDE_DIRECTORIES(
     ${PHONON_INCLUDES}
     ${QJSON_INCLUDE_DIR}
     ${LIBATTICA_INCLUDE_DIR}
-    ${LIBECHONEST_INCLUDE_DIR}
-    ${LIBECHONEST_INCLUDE_DIR}/..
+    ${ECHONEST_INCLUDE_DIR}
+    ${LIBLASTFM_INCLUDE_DIRS}
+    ${LIBLASTFM_INCLUDE_DIRS}/..
 )
 
 SET( OS_SPECIFIC_LINK_LIBRARIES "" )
@@ -130,6 +128,8 @@ IF( UNIX )
 ENDIF( UNIX )
 
 IF( APPLE )
+    SET( CMAKE_LINKER_FLAGS "-headerpad_max_install_names ${CMAKE_LINKER_FLAGS}" )
+
     INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/thirdparty/SPMediaKeyTap )
 
     SET( tomahawkSources ${tomahawkSources} mac/TomahawkApp_Mac.mm mac/MacShortcutHandler.cpp )
@@ -146,7 +146,9 @@ INCLUDE(GNUInstallDirs)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.h.in
                ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
+# translations
 include( ${CMAKE_SOURCE_DIR}/lang/translations.cmake )
+add_tomahawk_translations(ar bg ca de en es fr ja pl pt_BR ru sv tr zh_CN zh_TW)
 
 SET( final_src ${final_src} ${tomahawkMoc} ${tomahawkSources} ${trans_outfile})
 
@@ -181,13 +183,13 @@ MESSAGE( STATUS "OS_SPECIFIC_LINK_LIBRARIES: ${OS_SPECIFIC_LINK_LIBRARIES}" )
 
 SET(LINK_LIBRARIES  "")
 IF(LIBLASTFM_FOUND)
-    SET(LINK_LIBRARIES ${LINK_LIBRARIES} tomahawk_lastfm2 )
+    SET( LINK_LIBRARIES ${LINK_LIBRARIES} ${LIBLASTFM_LIBRARIES} )
 ENDIF(LIBLASTFM_FOUND)
 IF(QCA2_FOUND)
-    SET(LINK_LIBRARIES ${LINK_LIBRARIES} ${QCA2_LIBRARIES} )
+    SET( LINK_LIBRARIES ${LINK_LIBRARIES} ${QCA2_LIBRARIES} )
 ENDIF(QCA2_FOUND)
 IF(WITH_BREAKPAD)
-    SET(LINK_LIBRARIES ${LINK_LIBRARIES} tomahawk_breakpad)
+    SET( LINK_LIBRARIES ${LINK_LIBRARIES} tomahawk_breakpad )
 ENDIF()
 
 TARGET_LINK_LIBRARIES( tomahawk
@@ -197,7 +199,7 @@ TARGET_LINK_LIBRARIES( tomahawk
     ${OS_SPECIFIC_LINK_LIBRARIES}
     ${QT_LIBRARIES}
     ${MAC_EXTRA_LIBS}
-    ${LIBECHONEST_LIBRARY}
+    ${ECHONEST_LIBRARIES}
     ${QXTWEB_LIBRARIES}
     ${QJSON_LIBRARIES}
     ${TAGLIB_LIBRARIES}

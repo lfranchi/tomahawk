@@ -49,14 +49,16 @@ SourceInfoWidget::SourceInfoWidget( const Tomahawk::source_ptr& source, QWidget*
     ui->splitter->setStretchFactor( 0, 0 );
     ui->splitter->setStretchFactor( 1, 1 );
 
-    m_recentTracksModel = new RecentlyAddedModel( source, ui->recentCollectionView );
-    m_recentTracksModel->setStyle( PlayableModel::Short );
+    m_recentTracksModel = new RecentlyAddedModel( ui->recentCollectionView );
+    ui->recentCollectionView->proxyModel()->setStyle( PlayableProxyModel::Short );
     ui->recentCollectionView->setPlayableModel( m_recentTracksModel );
     ui->recentCollectionView->sortByColumn( PlayableModel::Age, Qt::DescendingOrder );
+    m_recentTracksModel->setSource( source );
 
-    m_historyModel = new RecentlyPlayedModel( source, ui->historyView );
-    m_historyModel->setStyle( PlayableModel::Short );
+    m_historyModel = new RecentlyPlayedModel( ui->historyView );
+    ui->historyView->proxyModel()->setStyle( PlayableProxyModel::Short );
     ui->historyView->setPlaylistModel( m_historyModel );
+    m_historyModel->setSource( source );
 
     m_recentAlbumModel = new AlbumModel( ui->recentAlbumView );
     ui->recentAlbumView->setPlayableModel( m_recentAlbumModel );

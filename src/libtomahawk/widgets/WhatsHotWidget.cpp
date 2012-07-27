@@ -130,6 +130,9 @@ WhatsHotWidget::isBeingPlayed() const
     if ( AudioEngine::instance()->currentTrackPlaylist() == ui->tracksViewLeft->playlistInterface() )
         return true;
 
+    if ( ui->albumsView->isBeingPlayed() )
+        return true;
+
     return false;
 }
 
@@ -137,10 +140,13 @@ WhatsHotWidget::isBeingPlayed() const
 bool
 WhatsHotWidget::jumpToCurrentTrack()
 {
-    if ( ui->artistsViewLeft->jumpToCurrentTrack() )
+    if ( ui->artistsViewLeft->model() && ui->artistsViewLeft->jumpToCurrentTrack() )
         return true;
 
-    if ( ui->tracksViewLeft->jumpToCurrentTrack() )
+    if ( ui->tracksViewLeft->model() && ui->tracksViewLeft->jumpToCurrentTrack() )
+        return true;
+
+    if ( ui->albumsView->model() && ui->albumsView->jumpToCurrentTrack() )
         return true;
 
     return false;
@@ -262,7 +268,7 @@ WhatsHotWidget::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData requestDat
 
                 TreeModel* artistsModel = new TreeModel( ui->artistsViewLeft );
                 artistsModel->setMode( InfoSystemMode );
-                artistsModel->setStyle( PlayableModel::Collection );
+                artistsModel->startLoading();
 
                 m_artistModels[ chartId ] = artistsModel;
 
@@ -277,6 +283,7 @@ WhatsHotWidget::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData requestDat
                 connect( loader, SIGNAL( albums( Tomahawk::ChartDataLoader*, QList< Tomahawk::album_ptr > ) ), this, SLOT( chartAlbumsLoaded( Tomahawk::ChartDataLoader*, QList< Tomahawk::album_ptr > ) ) );
 
                 PlayableModel* albumModel = new PlayableModel( ui->albumsView );
+                albumModel->startLoading();
 
                 m_albumModels[ chartId ] = albumModel;
 
@@ -291,7 +298,7 @@ WhatsHotWidget::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData requestDat
                 connect( loader, SIGNAL( tracks( Tomahawk::ChartDataLoader*, QList< Tomahawk::query_ptr > ) ), this, SLOT( chartTracksLoaded( Tomahawk::ChartDataLoader*, QList< Tomahawk::query_ptr > ) ) );
 
                 PlaylistModel* trackModel = new PlaylistModel( ui->tracksViewLeft );
-                trackModel->setStyle( PlayableModel::Large );
+                trackModel->startLoading();
 
                 m_trackModels[ chartId ] = trackModel;
 
@@ -460,6 +467,7 @@ WhatsHotWidget::setLeftViewAlbums( PlayableModel* model )
 void
 WhatsHotWidget::setLeftViewArtists( TreeModel* model )
 {
+    ui->artistsViewLeft->proxyModel()->setStyle( PlayableProxyModel::Collection );
     ui->artistsViewLeft->setTreeModel( model );
     ui->artistsViewLeft->proxyModel()->sort( -1 ); // disable sorting, must be called after artistsViewLeft->setTreeModel
     ui->stackLeft->setCurrentIndex( 1 );
@@ -469,6 +477,7 @@ WhatsHotWidget::setLeftViewArtists( TreeModel* model )
 void
 WhatsHotWidget::setLeftViewTracks( PlaylistModel* model )
 {
+    ui->tracksViewLeft->proxyModel()->setStyle( PlayableProxyModel::Large );
     ui->tracksViewLeft->setPlaylistModel( model );
     ui->tracksViewLeft->proxyModel()->sort( -1 );
     ui->stackLeft->setCurrentIndex( 0 );
@@ -486,6 +495,7 @@ WhatsHotWidget::chartArtistsLoaded( ChartDataLoader* loader, const QList< artist
         foreach( const artist_ptr& artist, artists )
         {
             m_artistModels[ chartId ]->addArtists( artist );
+            m_artistModels[ chartId ]->finishLoading();
         }
     }
 
@@ -497,14 +507,14 @@ WhatsHotWidget::chartArtistsLoaded( ChartDataLoader* loader, const QList< artist
 void
 WhatsHotWidget::chartTracksLoaded( ChartDataLoader* loader, const QList< query_ptr >& tracks )
 {
-
     QString chartId = loader->property( "chartid" ).toString();
     Q_ASSERT( m_trackModels.contains( chartId ) );
 
     if ( m_trackModels.contains( chartId ) )
     {
         Pipeline::instance()->resolve( tracks );
-        m_trackModels[ chartId ]->append( tracks );
+        m_trackModels[ chartId ]->appendQueries( tracks );
+        m_trackModels[ chartId ]->finishLoading();
     }
 
     m_workers.remove( loader );
@@ -519,7 +529,10 @@ WhatsHotWidget::chartAlbumsLoaded( ChartDataLoader* loader, const QList< album_p
     Q_ASSERT( m_albumModels.contains( chartId ) );
 
     if ( m_albumModels.contains( chartId ) )
-        m_albumModels[ chartId ]->append( albums );
+    {
+        m_albumModels[ chartId ]->appendAlbums( albums );
+        m_albumModels[ chartId ]->finishLoading();
+    }
 
     m_workers.remove( loader );
     loader->deleteLater();

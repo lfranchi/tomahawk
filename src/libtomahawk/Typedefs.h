@@ -98,11 +98,15 @@ namespace Tomahawk
     typedef QMultiHash< QString, SerializedUpdater > SerializedUpdaters;
     typedef QList< SerializedUpdater > SerializedUpdaterList;
 
+    // Yes/no questions with an associated enum value
+    typedef QPair< QString, int > PlaylistDeleteQuestion;
+    typedef QList< PlaylistDeleteQuestion > PlaylistDeleteQuestions;
 
-    namespace InfoSystem {
-
-
-        enum InfoType { // as items are saved in cache, mark them here to not change them
+    namespace InfoSystem
+    {
+        enum InfoType
+        {
+            // as items are saved in cache, mark them here to not change them
             InfoNoInfo = 0, //WARNING: *ALWAYS* keep this first!
             InfoTrackID = 1,
             InfoTrackArtist = 2,

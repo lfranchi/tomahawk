@@ -47,12 +47,13 @@ QueueView::QueueView( AnimatedSplitter* parent )
     ui->queue->setSizePolicy( QSizePolicy::Preferred, QSizePolicy::Ignored );
 
     PlaylistModel* queueModel = new PlaylistModel( this );
-    queueModel->setStyle( PlaylistModel::Short );
+    ui->queue->proxyModel()->setStyle( PlayableProxyModel::Short );
     queueModel->finishLoading();
     ui->queue->setPlaylistModel( queueModel );
     queueModel->setReadOnly( false );
 
-    ui->queue->setEmptyTip( tr( "The queue is currently empty. Drop something to enqueue it!" ) );
+//    ui->queue->setEmptyTip( tr( "The queue is currently empty. Drop something to enqueue it!" ) );
+    ui->queue->setEmptyTip( QString() );
 
     connect( queueModel, SIGNAL( trackCountChanged( unsigned int ) ), SLOT( updateLabel() ) );
     connect( ui->toggleButton, SIGNAL( clicked() ), SLOT( show() ) );

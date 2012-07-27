@@ -31,8 +31,9 @@
 #include <QtCore/QFileInfo>
 #include <QTranslator>
 
-#include "Artist.h"
+#include "AclRegistryImpl.h"
 #include "Album.h"
+#include "Artist.h"
 #include "Collection.h"
 #include "infosystem/InfoSystem.h"
 #include "accounts/AccountManager.h"
@@ -50,11 +51,10 @@
 #include "web/Api_v1.h"
 #include "SourceList.h"
 #include "ShortcutHandler.h"
-#include "ScanManager.h"
+#include "libtomahawk/filemetadata/ScanManager.h"
 #include "TomahawkSettings.h"
 #include "GlobalActionManager.h"
 #include "database/LocalCollection.h"
-#include "MusicScanner.h"
 #include "Pipeline.h"
 #include "DropJob.h"
 #include "EchonestCatalogSynchronizer.h"
@@ -121,6 +121,9 @@ using namespace Tomahawk;
 
 TomahawkApp::TomahawkApp( int& argc, char *argv[] )
     : TOMAHAWK_APPLICATION( argc, argv )
+#ifndef ENABLE_HEADLESS
+    , m_mainwindow( 0 )
+#endif
     , m_headless( false )
     , m_loaded( false )
 {
@@ -141,15 +144,29 @@ TomahawkApp::installTranslator()
     if ( locale == "C" )
         locale = "en";
 
+    // Tomahawk translations
     QTranslator* translator = new QTranslator( this );
     if ( translator->load( QString( ":/lang/tomahawk_" ) + locale ) )
     {
-        tDebug() << "Using system locale:" << locale;
+        tDebug() << "Translation: Tomahawk: Using system locale:" << locale;
     }
     else
     {
-        tDebug() << "Using default locale, system locale one not found:" << locale;
+        tDebug() << "Translation: Tomahawk: Using default locale, system locale one not found:" << locale;
         translator->load( QString( ":/lang/tomahawk_en" ) );
+    }
+
+    TOMAHAWK_APPLICATION::installTranslator( translator );
+
+    // Qt translations
+    translator = new QTranslator( this );
+    if ( translator->load( QString( ":/lang/qt_" ) + locale ) )
+    {
+        tDebug() << "Translation: Qt: Using system locale:" << locale;
+    }
+    else
+    {
+        tDebug() << "Translation: Qt: Using default locale, system locale one not found:" << locale;
     }
 
     TOMAHAWK_APPLICATION::installTranslator( translator );
@@ -174,7 +191,6 @@ TomahawkApp::init()
 #ifdef ENABLE_HEADLESS
     m_headless = true;
 #else
-    m_mainwindow = 0;
     m_headless = arguments().contains( "--headless" );
     setWindowIcon( QIcon( RESPATH "icons/tomahawk-icon-128x128.png" ) );
     setQuitOnLastWindowClosed( false );
@@ -185,17 +201,28 @@ TomahawkApp::init()
     TomahawkUtils::setHeaderHeight( fm.height() + 8 );
 #endif
 
+    TomahawkUtils::setHeadless( m_headless );
+
     TomahawkSettings* s = TomahawkSettings::instance();
+
+    new ACLRegistryImpl( this );
 
     tDebug( LOGINFO ) << "Setting NAM.";
     // Cause the creation of the nam, but don't need to address it directly, so prevent warning
     Q_UNUSED( TomahawkUtils::nam() );
 
     m_audioEngine = QWeakPointer<AudioEngine>( new AudioEngine );
-    m_scanManager = QWeakPointer<ScanManager>( new ScanManager( this ) );
 
     // init pipeline and resolver factories
     new Pipeline();
+
+    m_servent = QWeakPointer<Servent>( new Servent( this ) );
+    connect( m_servent.data(), SIGNAL( ready() ), SLOT( initSIP() ) );
+
+    tDebug() << "Init Database.";
+    initDatabase();
+
+    m_scanManager = QWeakPointer<ScanManager>( new ScanManager( this ) );
 
 #ifndef ENABLE_HEADLESS
     Pipeline::instance()->addExternalResolverFactory( boost::bind( &QtScriptResolver::factory, _1 ) );
@@ -204,12 +231,6 @@ TomahawkApp::init()
     new ActionCollection( this );
     connect( ActionCollection::instance()->getAction( "quit" ), SIGNAL( triggered() ), SLOT( quit() ), Qt::UniqueConnection );
 #endif
-
-    m_servent = QWeakPointer<Servent>( new Servent( this ) );
-    connect( m_servent.data(), SIGNAL( ready() ), SLOT( initSIP() ) );
-
-    tDebug() << "Init Database.";
-    initDatabase();
 
     QByteArray magic = QByteArray::fromBase64( enApiSecret );
     QByteArray wand = QByteArray::fromBase64( QCoreApplication::applicationName().toLatin1() );
@@ -300,7 +321,7 @@ TomahawkApp::init()
 
     if ( arguments().contains( "--filescan" ) )
     {
-        m_scanManager.data()->runScan( true );
+        m_scanManager.data()->runFullRescan();
     }
 
     // Set up echonest catalog synchronizer
@@ -344,10 +365,14 @@ TomahawkApp::~TomahawkApp()
     if ( !m_connector.isNull() )
         delete m_connector.data();
 
-    Pipeline::instance()->stop();
+    if ( Pipeline::instance() )
+        Pipeline::instance()->stop();
 
     if ( !m_servent.isNull() )
         delete m_servent.data();
+
+    delete dynamic_cast< ACLRegistryImpl* >( ACLRegistry::instance() );
+
     if ( !m_scanManager.isNull() )
         delete m_scanManager.data();
 
@@ -355,11 +380,10 @@ TomahawkApp::~TomahawkApp()
         delete m_audioEngine.data();
 
     delete Tomahawk::Accounts::AccountManager::instance();
-    delete TomahawkUtils::Cache::instance();
 
 #ifndef ENABLE_HEADLESS
-    delete m_mainwindow;
     delete AtticaManager::instance();
+    delete m_mainwindow;
 #endif
 
     if ( !m_database.isNull() )
@@ -369,6 +393,8 @@ TomahawkApp::~TomahawkApp()
 
     if ( !m_infoSystem.isNull() )
         delete m_infoSystem.data();
+
+    delete TomahawkUtils::Cache::instance();
 
     tLog() << "Finished shutdown.";
 }
@@ -689,6 +715,27 @@ TomahawkApp::loadUrl( const QString& url )
         }
     }
 #endif
+    return false;
+}
+
+
+bool
+TomahawkApp::notify( QObject *receiver, QEvent *e )
+{
+    try
+    {
+        return TOMAHAWK_APPLICATION::notify( receiver, e );
+    }
+    catch ( const std::exception& e )
+    {
+        qWarning( "TomahawkApp::notify caught a std exception in a Qt event handler: " );
+        qFatal( e.what() );
+    }
+    catch ( ... )
+    {
+        qFatal( "TomahawkApp::notify caught a non-std-exception from a Qt event handler. Aborting." );
+    }
+
     return false;
 }
 

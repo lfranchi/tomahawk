@@ -34,6 +34,7 @@
 #include "GridItemDelegate.h"
 #include "AlbumModel.h"
 #include "PlayableModel.h"
+#include "PlayableProxyModelPlaylistInterface.h"
 #include "ContextMenu.h"
 #include "ViewManager.h"
 #include "utils/Logger.h"
@@ -44,6 +45,32 @@
 
 using namespace Tomahawk;
 
+class GridPlaylistInterface : public PlayableProxyModelPlaylistInterface {
+    Q_OBJECT
+public:
+    explicit GridPlaylistInterface( PlayableProxyModel* proxy, GridView* view ) : PlayableProxyModelPlaylistInterface( proxy ), m_view( view ) {}
+
+    virtual bool hasChildInterface( playlistinterface_ptr playlistInterface )
+    {
+        if ( m_view.isNull() || !m_view.data()->m_playing.isValid() )
+        {
+            return false;
+        }
+
+        PlayableItem* item = m_view.data()->model()->itemFromIndex( m_view.data()->proxyModel()->mapToSource( m_view.data()->m_playing ) );
+        if ( item )
+        {
+            if ( !item->album().isNull() )
+                return item->album()->playlistInterface( Tomahawk::Mixed ) == playlistInterface;
+            else if ( !item->artist().isNull() )
+                return item->artist()->playlistInterface( Tomahawk::Mixed ) == playlistInterface;
+        }
+
+        return false;
+    }
+private:
+    QWeakPointer<GridView> m_view;
+};
 
 GridView::GridView( QWidget* parent )
     : QListView( parent )
@@ -74,16 +101,15 @@ GridView::GridView( QWidget* parent )
     setStyleSheet( "QListView { background-color: #323435; }" );
 
     setAutoFitItems( true );
+    setAutoResize( false );
     setProxyModel( new PlayableProxyModel( this ) );
 
-/*    m_overlay->setText( tr( "After you have scanned your music collection you will find your latest album additions right here." ) );
-    m_overlay->setText( tr( "This collection doesn't have any recent albums." ) );*/
+    m_playlistInterface = playlistinterface_ptr( new GridPlaylistInterface( m_proxyModel, this ) );
 
     connect( this, SIGNAL( doubleClicked( QModelIndex ) ), SLOT( onItemActivated( QModelIndex ) ) );
     connect( this, SIGNAL( customContextMenuRequested( QPoint ) ), SLOT( onCustomContextMenu( QPoint ) ) );
-    connect( this, SIGNAL( customContextMenuRequested( QPoint ) ), SLOT( onCustomContextMenu( QPoint ) ) );
+
     connect( proxyModel(), SIGNAL( modelReset() ), SLOT( layoutItems() ) );
-//    connect( m_contextMenu, SIGNAL( triggered( int ) ), SLOT( onMenuTriggered( int ) ) );
 }
 
 
@@ -96,9 +122,18 @@ GridView::~GridView()
 void
 GridView::setProxyModel( PlayableProxyModel* model )
 {
+    if ( m_proxyModel )
+    {
+        disconnect( m_proxyModel, SIGNAL( filterChanged( QString ) ), this, SLOT( onFilterChanged( QString ) ) );
+    }
+
     m_proxyModel = model;
+    connect( m_proxyModel, SIGNAL( filterChanged( QString ) ), SLOT( onFilterChanged( QString ) ) );
+
     m_delegate = new GridItemDelegate( this, m_proxyModel );
     connect( m_delegate, SIGNAL( updateIndex( QModelIndex ) ), this, SLOT( update( QModelIndex ) ) );
+    connect( m_delegate, SIGNAL( startedPlaying( QPersistentModelIndex ) ), this, SLOT( onDelegatePlaying( QPersistentModelIndex ) ) );
+    connect( m_delegate, SIGNAL( stoppedPlaying( QPersistentModelIndex ) ), this, SLOT( onDelegateStopped( QPersistentModelIndex ) ) );
     setItemDelegate( m_delegate );
 
     QListView::setModel( m_proxyModel );
@@ -117,6 +152,12 @@ GridView::setModel( QAbstractItemModel* model )
 void
 GridView::setPlayableModel( PlayableModel* model )
 {
+    if ( m_model )
+    {
+        disconnect( model, SIGNAL( rowsInserted( QModelIndex, int, int ) ), this, SLOT( verifySize() ) );
+        disconnect( model, SIGNAL( rowsRemoved( QModelIndex, int, int ) ), this, SLOT( verifySize() ) );
+    }
+
     m_inited = false;
     m_model = model;
 
@@ -126,7 +167,8 @@ GridView::setPlayableModel( PlayableModel* model )
         m_proxyModel->sort( 0 );
     }
 
-    connect( m_proxyModel, SIGNAL( filterChanged( QString ) ), SLOT( onFilterChanged( QString ) ) );
+    connect( model, SIGNAL( rowsInserted( QModelIndex, int, int ) ), SLOT( verifySize() ) );
+    connect( model, SIGNAL( rowsRemoved( QModelIndex, int, int ) ), SLOT( verifySize() ) );
 
     emit modelChanged();
 }
@@ -194,6 +236,51 @@ GridView::resizeEvent( QResizeEvent* event )
 {
     QListView::resizeEvent( event );
     layoutItems();
+
+    emit resized();
+}
+
+
+void
+GridView::verifySize()
+{
+    if ( !autoResize() || !m_model )
+        return;
+
+#ifdef Q_WS_X11
+//    int scrollbar = verticalScrollBar()->isVisible() ? verticalScrollBar()->width() + 16 : 0;
+    int scrollbar = 0; verticalScrollBar()->rect().width();
+#else
+    int scrollbar = verticalScrollBar()->rect().width();
+#endif
+
+    const int rectWidth = contentsRect().width() - scrollbar - 3;
+    const int itemWidth = 160;
+    const int itemsPerRow = qMax( 1, qFloor( rectWidth / itemWidth ) );
+
+    const int overlapRows = m_model->rowCount( QModelIndex() ) % itemsPerRow;
+    const int rows = floor( (double)m_model->rowCount( QModelIndex() ) / (double)itemsPerRow );
+    const int newHeight = rows * m_delegate->itemSize().height();
+
+    if ( newHeight > 0 )
+        setFixedHeight( newHeight );
+
+    m_proxyModel->setMaxVisibleItems( m_model->rowCount( QModelIndex() ) - overlapRows );
+}
+
+
+void
+GridView::onDelegatePlaying( const QPersistentModelIndex& index )
+{
+    m_playing = index;
+}
+
+
+void
+GridView::onDelegateStopped( const QPersistentModelIndex& index )
+{
+    if ( m_playing == index )
+        m_playing = QPersistentModelIndex();
 }
 
 
@@ -208,19 +295,17 @@ GridView::layoutItems()
 #else
         int scrollbar = verticalScrollBar()->rect().width();
 #endif
-        int rectWidth = contentsRect().width() - scrollbar - 3;
-        int itemWidth = 160;
-//        QSize itemSize = m_proxyModel->data( QModelIndex(), Qt::SizeHintRole ).toSize();
 
-        int itemsPerRow = qMax( 1, qFloor( rectWidth / itemWidth ) );
-//        int rightSpacing = rectWidth - ( itemsPerRow * ( itemSize.width() + 16 ) );
-//        int newSpacing = 16 + floor( rightSpacing / ( itemsPerRow + 1 ) );
+        const int rectWidth = contentsRect().width() - scrollbar - 3;
+        const int itemWidth = 160;
+        const int itemsPerRow = qMax( 1, qFloor( rectWidth / itemWidth ) );
 
-        int remSpace = rectWidth - ( itemsPerRow * itemWidth );
-        int extraSpace = remSpace / itemsPerRow;
-        int newItemWidth = itemWidth + extraSpace;
-        
-        m_model->setItemSize( QSize( newItemWidth, newItemWidth ) );
+        const int remSpace = rectWidth - ( itemsPerRow * itemWidth );
+        const int extraSpace = remSpace / itemsPerRow;
+        const int newItemWidth = itemWidth + extraSpace;
+
+        m_delegate->setItemSize( QSize( newItemWidth, newItemWidth ) );
+        verifySize();
 
         if ( !m_inited )
         {
@@ -308,3 +393,25 @@ GridView::onCustomContextMenu( const QPoint& pos )
 
     m_contextMenu->exec( viewport()->mapToGlobal( pos ) );
 }
+
+
+bool
+GridView::setFilter( const QString& filter )
+{
+    ViewPage::setFilter( filter );
+    m_proxyModel->setFilter( filter );
+    return true;
+}
+
+bool
+GridView::jumpToCurrentTrack()
+{
+    if ( !m_playing.isValid() )
+        return false;
+
+    scrollTo( m_playing, QListView::PositionAtCenter );
+
+    return true;
+}
+
+#include "GridView.moc"

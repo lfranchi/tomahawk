@@ -67,8 +67,8 @@ PlaylistItemDelegate::sizeHint( const QStyleOptionViewItem& option, const QModel
 
     if ( index.isValid() )
     {
-        int style = index.data( PlayableModel::StyleRole ).toInt();
-        if ( style == PlayableModel::Short || style == PlayableModel::ShortWithAvatars )
+        int style = index.data( PlayableProxyModel::StyleRole ).toInt();
+        if ( style == PlayableProxyModel::Short || style == PlayableProxyModel::ShortWithAvatars )
         {
             int rowHeight = option.fontMetrics.height() + 8;
             size.setHeight( rowHeight * 2 );
@@ -101,17 +101,17 @@ PlaylistItemDelegate::prepareStyleOption( QStyleOptionViewItemV4* option, const 
 void
 PlaylistItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const
 {
-    int style = index.data( PlayableModel::StyleRole ).toInt();
+    int style = index.data( PlayableProxyModel::StyleRole ).toInt();
     switch ( style )
     {
-        case PlayableModel::Detailed:
+        case PlayableProxyModel::Detailed:
             paintDetailed( painter, option, index );
             break;
 
-        case PlayableModel::Short:
+        case PlayableProxyModel::Short:
             paintShort( painter, option, index );
             break;
-        case PlayableModel::ShortWithAvatars:
+        case PlayableProxyModel::ShortWithAvatars:
             paintShort( painter, option, index, true );
             break;
     }
@@ -201,7 +201,11 @@ PlaylistItemDelegate::paintShort( QPainter* painter, const QStyleOptionViewItem&
         painter->drawText( r.adjusted( 0, 1, 0, 0 ), text, m_topOption );
 
         painter->setFont( opt.font );
-        painter->setPen( Qt::gray );
+        if ( option.state & QStyle::State_Selected )
+            painter->setPen( option.palette.color( QPalette::HighlightedText ) );
+        else
+            painter->setPen( Qt::gray );
+
         text = painter->fontMetrics().elidedText( lowerText, Qt::ElideRight, r.width() );
         painter->drawText( r.adjusted( 0, 1, 0, 0 ), text, m_bottomOption );
     }
@@ -223,7 +227,7 @@ PlaylistItemDelegate::paintDetailed( QPainter* painter, const QStyleOptionViewIt
     opt.text.clear();
     qApp->style()->drawControl( QStyle::CE_ItemViewItem, &opt, painter );
 
-    if ( m_view->hoveredIndex().row() == index.row() && m_view->hoveredIndex().column() == index.column() &&
+    if ( m_view->hoveredIndex().row() == index.row() && m_view->hoveredIndex().column() == index.column() && !index.data().toString().isEmpty() &&
        ( index.column() == PlayableModel::Artist || index.column() == PlayableModel::Album || index.column() == PlayableModel::Track ) )
     {
         opt.rect.setWidth( opt.rect.width() - 16 );

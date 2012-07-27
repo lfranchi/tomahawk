@@ -24,7 +24,7 @@
 #include <QSqlDriver>
 #include <QSqlQuery>
 
-#define TOMAHAWK_QUERY_ANALYZE 1
+//#define TOMAHAWK_QUERY_ANALYZE 1
 
 class TomahawkSqlQuery : public QSqlQuery
 {
@@ -33,19 +33,21 @@ public:
     TomahawkSqlQuery();
     TomahawkSqlQuery( const QSqlDatabase& db );
 
-    static QString escape( const QString& identifier, QSqlDriver::IdentifierType type = QSqlDriver::FieldName );
+    static QString escape( QString identifier );
 
+    bool prepare( const QString& query );
     bool exec( const QString& query );
     bool exec();
-    
+
     bool commitTransaction();
 
 private:
     bool isBusyError( const QSqlError& error ) const;
 
     void showError();
-    
+
     QSqlDatabase m_db;
+    QString m_query;
 };
 
 #endif // TOMAHAWKSQLQUERY_H

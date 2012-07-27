@@ -70,13 +70,11 @@ public:
     virtual QString description() const { return m_model->description(); }
     virtual QPixmap pixmap() const { return m_model->icon(); }
 
-    virtual bool showStatsBar() const { return false; }
     virtual bool showFilter() const { return true; }
-
-    virtual void setShowModes( bool b ) { m_showModes = b; }
-    virtual bool showModes() const { return m_showModes; }
-
+    virtual bool setFilter( const QString& filter );
     virtual bool jumpToCurrentTrack();
+
+    QModelIndex hoveredIndex() const { return m_hoveredIndex; }
 
     bool updatesContextView() const { return m_updateContextView; }
     void setUpdatesContextView( bool b ) { m_updateContextView = b; }
@@ -92,6 +90,10 @@ protected:
     virtual void resizeEvent( QResizeEvent* event );
 
     virtual void keyPressEvent( QKeyEvent* event );
+    void wheelEvent( QWheelEvent* event );
+    void mouseMoveEvent( QMouseEvent* event );
+    void mousePressEvent( QMouseEvent* event );
+    void leaveEvent( QEvent* event );
 
 protected slots:
     virtual void currentChanged( const QModelIndex& current, const QModelIndex& previous );
@@ -106,6 +108,8 @@ private slots:
     void onMenuTriggered( int action );
 
 private:
+    void updateHoverIndex( const QPoint& pos );
+
     ViewHeader* m_header;
     OverlayWidget* m_overlay;
     TreeModel* m_model;
@@ -114,11 +118,11 @@ private:
 
     bool m_updateContextView;
 
+    QModelIndex m_hoveredIndex;
     QModelIndex m_contextMenuIndex;
     Tomahawk::ContextMenu* m_contextMenu;
 
     QString m_emptyTip;
-    bool m_showModes;
     QTimer m_timer;
     mutable QString m_guid;
 };

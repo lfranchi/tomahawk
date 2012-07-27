@@ -25,12 +25,23 @@
 #include "database/DatabaseImpl.h"
 #include "database/DatabaseCommand_AllAlbums.h"
 #include "database/DatabaseCommand_TrackStats.h"
+#include "database/IdThreadWorker.h"
 #include "Source.h"
 
 #include "utils/Logger.h"
 
+#include <QReadWriteLock>
+
+#define ID_THREAD_DEBUG 0
+
 using namespace Tomahawk;
 
+QHash< QString, artist_ptr > Artist::s_artistsByName = QHash< QString, artist_ptr >();
+QHash< unsigned int, artist_ptr > Artist::s_artistsById = QHash< unsigned int, artist_ptr >();
+
+static QMutex s_nameCacheMutex;
+static QMutex s_idCacheMutex;
+static QReadWriteLock s_idMutex;
 
 Artist::~Artist()
 {
@@ -45,34 +56,43 @@ Artist::~Artist()
 artist_ptr
 Artist::get( const QString& name, bool autoCreate )
 {
+    if ( name.isEmpty() )
+        return artist_ptr();
+
+    QMutexLocker lock( &s_nameCacheMutex );
+    if ( s_artistsByName.contains( name ) )
+        return s_artistsByName.value( name );
+
     if ( !Database::instance() || !Database::instance()->impl() )
         return artist_ptr();
 
-    int artid = Database::instance()->impl()->artistId( name, autoCreate );
-    if ( artid < 1 && autoCreate )
-        return artist_ptr();
+#if ID_THREAD_DEBUG
+        qDebug() << "Creating artist:" << name;
+#endif
+    artist_ptr artist = artist_ptr( new Artist( name ), &QObject::deleteLater );
+    artist->setWeakRef( artist.toWeakRef() );
+    artist->loadId( autoCreate );
 
-    return Artist::get( artid, name );
+    s_artistsByName[ name ] = artist;
+
+    return artist;
 }
 
 
 artist_ptr
 Artist::get( unsigned int id, const QString& name )
 {
-    static QHash< unsigned int, artist_ptr > s_artists;
-    static QMutex s_mutex;
-
-    QMutexLocker lock( &s_mutex );
-    if ( s_artists.contains( id ) )
+    QMutexLocker lock( &s_idCacheMutex );
+    if ( s_artistsById.contains( id ) )
     {
-        return s_artists.value( id );
+        return s_artistsById.value( id );
     }
 
     artist_ptr a = artist_ptr( new Artist( id, name ), &QObject::deleteLater );
     a->setWeakRef( a.toWeakRef() );
 
     if ( id > 0 )
-        s_artists.insert( id, a );
+        s_artistsById.insert( id, a );
 
     return a;
 }
@@ -80,7 +100,26 @@ Artist::get( unsigned int id, const QString& name )
 
 Artist::Artist( unsigned int id, const QString& name )
     : QObject()
+    , m_waitingForFuture( false )
     , m_id( id )
+    , m_name( name )
+    , m_coverLoaded( false )
+    , m_coverLoading( false )
+    , m_simArtistsLoaded( false )
+    , m_biographyLoaded( false )
+    , m_infoJobs( 0 )
+#ifndef ENABLE_HEADLESS
+    , m_cover( 0 )
+#endif
+{
+    m_sortname = DatabaseImpl::sortname( name, true );
+}
+
+
+Artist::Artist( const QString& name )
+    : QObject()
+    , m_waitingForFuture( true )
+    , m_id( 0 )
     , m_name( name )
     , m_coverLoaded( false )
     , m_coverLoading( false )
@@ -189,6 +228,59 @@ Artist::similarArtists() const
     }
 
     return m_similarArtists;
+}
+
+
+void
+Artist::loadId( bool autoCreate )
+{
+    Q_ASSERT( m_waitingForFuture );
+
+    IdThreadWorker::getArtistId( m_ownRef.toStrongRef(), autoCreate );
+}
+
+
+void
+Artist::setIdFuture( QFuture<unsigned int> future )
+{
+    m_idFuture = future;
+}
+
+
+unsigned int
+Artist::id() const
+{
+    s_idMutex.lockForRead();
+    const bool waiting = m_waitingForFuture;
+    unsigned int finalid = m_id;
+    s_idMutex.unlock();
+
+    if ( waiting )
+    {
+
+#if ID_THREAD_DEBUG
+        qDebug() << Q_FUNC_INFO << "Asked for artist ID and NOT loaded yet" << m_name << m_idFuture.isFinished();
+#endif
+        m_idFuture.waitForFinished();
+#if ID_THREAD_DEBUG
+        qDebug() << "DONE WAITING:" << m_idFuture.resultCount() << m_idFuture.isResultReadyAt(0) << m_idFuture.isCanceled() << m_idFuture.isFinished() << m_idFuture.isPaused() << m_idFuture.isRunning() << m_idFuture.isStarted();
+#endif
+        finalid = m_idFuture.result();
+
+#if ID_THREAD_DEBUG
+        qDebug() << Q_FUNC_INFO << "Got loaded artist:" << m_name << finalid;
+#endif
+        
+        s_idMutex.lockForWrite();
+        m_id = finalid;
+        m_waitingForFuture = false;
+
+        if ( m_id > 0 )
+            s_artistsById[ m_id ] = m_ownRef.toStrongRef();
+        s_idMutex.unlock();
+    }
+
+    return m_id;
 }
 
 
@@ -315,15 +407,20 @@ Artist::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData requestData, QVari
 
         case Tomahawk::InfoSystem::InfoArtistImages:
         {
-            if ( !output.isNull() && output.isValid() )
+            if ( output.isNull() )
+            {
+                m_coverLoaded = true;
+            }
+            else if ( output.isValid() )
             {
                 const QByteArray ba = returnedData["imgbytes"].toByteArray();
                 if ( ba.length() )
                 {
                     m_coverBuffer = ba;
-                    m_coverLoaded = true;
-                    emit coverChanged();
                 }
+
+                m_coverLoaded = true;
+                emit coverChanged();
             }
 
             break;
@@ -352,7 +449,7 @@ Artist::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData requestData, QVari
                 if ( source == "last.fm" )
                     m_biography = bmap[ source ].toHash()[ "text" ].toString();
             }
-            
+
             m_biographyLoaded = true;
             emit biographyLoaded();
 
@@ -381,6 +478,8 @@ Artist::infoSystemFinished( QString target )
         disconnect( Tomahawk::InfoSystem::InfoSystem::instance(), SIGNAL( finished( QString ) ),
                     this, SLOT( infoSystemFinished( QString ) ) );
     }
+
+    m_coverLoading = false;
 
     emit updated();
 }
@@ -456,7 +555,7 @@ Artist::playlistInterface( ModelMode mode, const Tomahawk::collection_ptr& colle
         pli = Tomahawk::playlistinterface_ptr( new Tomahawk::ArtistPlaylistInterface( this, mode, collection ) );
         connect( pli.data(), SIGNAL( tracksLoaded( Tomahawk::ModelMode, Tomahawk::collection_ptr ) ),
                                SLOT( onTracksLoaded( Tomahawk::ModelMode, Tomahawk::collection_ptr ) ) );
-        
+
         m_playlistInterface[ mode ][ collection ] = pli;
     }
 
@@ -476,6 +575,6 @@ Artist::infoid() const
 {
     if ( m_uuid.isEmpty() )
         m_uuid = uuid();
-    
+
     return m_uuid;
 }

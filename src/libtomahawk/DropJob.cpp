@@ -3,6 +3,7 @@
  *   Copyright 2011, Michael Zanetti <mzanetti@kde.org>
  *   Copyright 2011, Leo Franchi <lfranchi@kde.org>
  *   Copyright 2011-2012, Jeff Mitchell <jeff@tomahawk-player.org>
+ *   Copyright 2011-2012, Christian Muehlhaeuser <muesli@tomahawk-player.org>
  *
  *   Tomahawk is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -247,7 +248,7 @@ DropJob::tracksFromMimeData( const QMimeData* data, bool allowDuplicates, bool o
 
 
 void
-DropJob::parseMimeData( const QMimeData *data )
+DropJob::parseMimeData( const QMimeData* data )
 {
     QList< query_ptr > results;
 
@@ -349,7 +350,6 @@ DropJob::tracksFromResultList( const QMimeData* data )
             }
             else
             {
-                q->addResults( QList< result_ptr >() << *result );
                 queries << q;
             }
         }
@@ -410,29 +410,32 @@ DropJob::tracksFromArtistMetaData( const QMimeData *data )
 }
 
 
-QList< query_ptr >
+void
 DropJob::tracksFromMixedData( const QMimeData *data )
 {
-    QList< query_ptr > queries;
     QByteArray itemData = data->data( "application/tomahawk.mixed" );
     QDataStream stream( &itemData, QIODevice::ReadOnly );
-
     QString mimeType;
 
     while ( !stream.atEnd() )
     {
         stream >> mimeType;
-        qDebug() << "mimetype is" << mimeType;
 
         QByteArray singleData;
         QDataStream singleStream( &singleData, QIODevice::WriteOnly );
 
         QMimeData singleMimeData;
-        if ( mimeType == "application/tomahawk.query.list" || mimeType == "application/tomahawk.result.list" )
+        if ( mimeType == "application/tomahawk.query.list" ) 
         {
             qlonglong query;
             stream >> query;
             singleStream << query;
+        }
+        else if ( mimeType == "application/tomahawk.result.list" )
+        {
+            qlonglong result;
+            stream >> result;
+            singleStream << result;
         }
         else if ( mimeType == "application/tomahawk.metadata.album" )
         {
@@ -442,21 +445,17 @@ DropJob::tracksFromMixedData( const QMimeData *data )
             QString album;
             stream >> album;
             singleStream << album;
-            qDebug() << "got artist" << artist << "and album" << album;
         }
         else if ( mimeType == "application/tomahawk.metadata.artist" )
         {
             QString artist;
             stream >> artist;
             singleStream << artist;
-            qDebug() << "got artist" << artist;
         }
 
         singleMimeData.setData( mimeType, singleData );
         parseMimeData( &singleMimeData );
     }
-
-    return queries;
 }
 
 
@@ -706,8 +705,21 @@ DropJob::removeDuplicates()
     foreach ( const Tomahawk::query_ptr& item, m_resultList )
     {
         bool contains = false;
+        Q_ASSERT( !item.isNull() );
+        if ( item.isNull() )
+        {
+            m_resultList.removeOne( item );
+            continue;
+        }
+        
         foreach( const Tomahawk::query_ptr &tmpItem, list )
         {
+            if ( tmpItem.isNull() )
+            {
+                list.removeOne( tmpItem );
+                continue;
+            }
+            
             if ( item->album() == tmpItem->album()
                  && item->artist() == tmpItem->artist()
                  && item->track() == tmpItem->track() )
@@ -733,10 +745,18 @@ DropJob::removeRemoteSources()
     QList< Tomahawk::query_ptr > list;
     foreach ( const Tomahawk::query_ptr& item, m_resultList )
     {
+        Q_ASSERT( !item.isNull() );
+        if ( item.isNull() )
+        {
+            m_resultList.removeOne( item );
+            continue;
+        }
+        
         bool hasLocalSource = false;
         foreach ( const Tomahawk::result_ptr& result, item->results() )
         {
-            if ( !result->collection()->source().isNull() && result->collection()->source()->isLocal() )
+            if ( !result->collection().isNull() && !result->collection()->source().isNull() &&
+                 !result->collection()->source().isNull() && result->collection()->source()->isLocal() )
                 hasLocalSource = true;
         }
         if ( hasLocalSource )

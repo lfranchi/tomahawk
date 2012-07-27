@@ -176,6 +176,20 @@ QtScriptResolverHelper::addCustomUrlHandler( const QString& protocol, const QStr
 }
 
 
+QByteArray
+QtScriptResolverHelper::base64Encode( const QByteArray& input )
+{
+    return input.toBase64();
+}
+
+
+QByteArray
+QtScriptResolverHelper::base64Decode( const QByteArray& input )
+{
+    return QByteArray::fromBase64( input );
+}
+
+
 QSharedPointer< QIODevice >
 QtScriptResolverHelper::customIODeviceFactory( const Tomahawk::result_ptr& result )
 {
@@ -199,7 +213,7 @@ void
 ScriptEngine::javaScriptConsoleMessage( const QString& message, int lineNumber, const QString& sourceID )
 {
     tLog() << "JAVASCRIPT:" << m_scriptPath << message << lineNumber << sourceID;
-#ifdef DEBUG_BUILD
+#ifndef QT_NO_DEBUG
     QMessageBox::critical( 0, "Script Resolver Error", QString( "%1 %2 %3 %4" ).arg( m_scriptPath ).arg( message ).arg( lineNumber ).arg( sourceID ) );
 #endif
 }
@@ -231,7 +245,9 @@ QtScriptResolver::QtScriptResolver( const QString& scriptPath )
 
 QtScriptResolver::~QtScriptResolver()
 {
-    Tomahawk::Pipeline::instance()->removeResolver( this );
+    if ( !m_stopped )
+        stop();
+
     delete m_engine;
 }
 
@@ -392,6 +408,8 @@ QtScriptResolver::parseResultVariantList( const QVariantList& reslist )
     foreach( const QVariant& rv, reslist )
     {
         QVariantMap m = rv.toMap();
+        if ( m.value( "artist" ).toString().trimmed().isEmpty() || m.value( "track" ).toString().trimmed().isEmpty() )
+            continue;
 
         Tomahawk::result_ptr rp = Tomahawk::Result::get( m.value( "url" ).toString() );
         Tomahawk::artist_ptr ap = Tomahawk::Artist::get( m.value( "artist" ).toString(), false );

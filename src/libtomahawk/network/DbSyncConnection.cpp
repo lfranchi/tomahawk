@@ -45,6 +45,7 @@ using namespace Tomahawk;
 
 DBSyncConnection::DBSyncConnection( Servent* s, const source_ptr& src )
     : Connection( s )
+    , m_fetchCount( 0 )
     , m_source( src )
     , m_state( UNKNOWN )
 {
@@ -106,27 +107,24 @@ void
 DBSyncConnection::check()
 {
     qDebug() << Q_FUNC_INFO << this << m_source->id();
-    if ( m_state != UNKNOWN && m_state != SYNCED )
-    {
-        qDebug() << "Syncing in progress already.";
-        return;
-    }
+
     if ( m_state == SHUTDOWN )
     {
         qDebug() << "Aborting sync due to shutdown.";
+        return;
+    }
+    if ( m_state != UNKNOWN && m_state != SYNCED )
+    {
+        qDebug() << "Syncing in progress already.";
         return;
     }
 
     m_uscache.clear();
     changeState( CHECKING );
 
-    // load last-modified etc data for our collection and theirs from our DB:
-    DatabaseCommand_CollectionStats* cmd_us = new DatabaseCommand_CollectionStats( SourceList::instance()->getLocal() );
-    connect( cmd_us, SIGNAL( done( QVariantMap ) ), SLOT( gotUs( QVariantMap ) ) );
-    Database::instance()->enqueue( QSharedPointer<DatabaseCommand>(cmd_us) );
-
     if ( m_source->lastCmdGuid().isEmpty() )
     {
+        tDebug() << "Fetching lastCmdGuid from database!";
         DatabaseCommand_CollectionStats* cmd_them = new DatabaseCommand_CollectionStats( m_source );
         connect( cmd_them, SIGNAL( done( QVariantMap ) ), SLOT( gotThem( QVariantMap ) ) );
         Database::instance()->enqueue( QSharedPointer<DatabaseCommand>(cmd_them) );
@@ -135,17 +133,6 @@ DBSyncConnection::check()
     {
         fetchOpsData( m_source->lastCmdGuid() );
     }
-}
-
-
-/// Called once we've loaded our mtimes etc from the DB for our local
-/// collection - send them to the remote peer to compare.
-void
-DBSyncConnection::gotUs( const QVariantMap& m )
-{
-    Q_UNUSED( m )
-    if ( !m_uscache.empty() )
-        sendOps();
 }
 
 
@@ -225,6 +212,8 @@ DBSyncConnection::handleMsg( msg_ptr msg )
 
     if ( m.value( "method" ).toString() == "fetchops" )
     {
+        ++m_fetchCount;
+        tDebug() << "Fetching new dbops:" << m["lastop"].toString() << m_fetchCount;
         m_uscache = m;
         sendOps();
         return;
@@ -232,7 +221,7 @@ DBSyncConnection::handleMsg( msg_ptr msg )
 
     if ( m.value( "method" ).toString() == "trigger" )
     {
-        tLog( LOGVERBOSE ) << "Got trigger msg on dbsyncconnection, checking for new stuff.";
+        tLog() << "Got trigger msg on dbsyncconnection, checking for new stuff.";
         check();
         return;
     }
@@ -255,13 +244,15 @@ DBSyncConnection::lastOpApplied()
 void
 DBSyncConnection::sendOps()
 {
-    tLog( LOGVERBOSE ) << "Will send peer" << m_source->id() << "all ops since" << m_uscache.value( "lastop" ).toString();
+    tLog() << "Will send peer" << m_source->id() << "all ops since" << m_uscache.value( "lastop" ).toString();
 
     source_ptr src = SourceList::instance()->getLocal();
 
     DatabaseCommand_loadOps* cmd = new DatabaseCommand_loadOps( src, m_uscache.value( "lastop" ).toString() );
     connect( cmd, SIGNAL( done( QString, QString, QList< dbop_ptr > ) ),
                     SLOT( sendOpsData( QString, QString, QList< dbop_ptr > ) ) );
+
+    m_uscache.clear();
 
     Database::instance()->enqueue( QSharedPointer<DatabaseCommand>( cmd ) );
 }

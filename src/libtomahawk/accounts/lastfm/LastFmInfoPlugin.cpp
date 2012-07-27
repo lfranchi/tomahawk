@@ -34,7 +34,7 @@
 #include "TomahawkSettings.h"
 
 #include <lastfm/ws.h>
-#include <lastfm/XmlQuery>
+#include <lastfm/XmlQuery.h>
 
 #include <qjson/parser.h>
 
@@ -212,7 +212,7 @@ LastFmInfoPlugin::scrobble()
         return;
 
     tLog() << Q_FUNC_INFO << "Scrobbling now:" << m_track.toString();
-    
+
     // FIXME: workaround for the duration-less dilandau (and others) tracks
     if ( m_track.duration() == 0 )
         m_track.setDuration( 31 );
@@ -525,7 +525,7 @@ LastFmInfoPlugin::notInCacheSlot( QHash<QString, QString> criteria, Tomahawk::In
             imgurl.addEncodedQueryItem( "artist", QUrl::toPercentEncoding( artistName, "", "+" ) );
             imgurl.addEncodedQueryItem( "album", QUrl::toPercentEncoding( albumName, "", "+" ) );
             imgurl.addQueryItem( "autocorrect", QString::number( 1 ) );
-            imgurl.addQueryItem( "size", "largesquare" );
+            imgurl.addQueryItem( "size", "large" );
             imgurl.addQueryItem( "api_key", "7a90f6672a04b809ee309af169f34b8b" );
 
             QNetworkRequest req( imgurl );
@@ -596,10 +596,13 @@ LastFmInfoPlugin::similarArtistsReturned()
 
     emit info( requestData, returnedData );
 
-    Tomahawk::InfoSystem::InfoStringHash origData = requestData.input.value< Tomahawk::InfoSystem::InfoStringHash>();
-    Tomahawk::InfoSystem::InfoStringHash criteria;
-    criteria["artist"] = origData["artist"];
-    emit updateCache( criteria, 2419200000, requestData.type, returnedData );
+    if ( !sortedArtists.isEmpty() )
+    {
+        Tomahawk::InfoSystem::InfoStringHash origData = requestData.input.value< Tomahawk::InfoSystem::InfoStringHash>();
+        Tomahawk::InfoSystem::InfoStringHash criteria;
+        criteria["artist"] = origData["artist"];
+        emit updateCache( criteria, 2419200000, requestData.type, returnedData );
+    }
 }
 
 
@@ -638,15 +641,20 @@ LastFmInfoPlugin::similarTracksReturned()
     returnedData["artists"] = sortedArtists;
     returnedData["score"] = sortedScores;
 
+    qDebug() << "Returning data, tracks:" << sortedTracks << "artists:" << sortedArtists << "scors:" << sortedScores;
+
     Tomahawk::InfoSystem::InfoRequestData requestData = reply->property( "requestData" ).value< Tomahawk::InfoSystem::InfoRequestData >();
 
     emit info( requestData, returnedData );
 
-    Tomahawk::InfoSystem::InfoStringHash origData = requestData.input.value< Tomahawk::InfoSystem::InfoStringHash>();
-    Tomahawk::InfoSystem::InfoStringHash criteria;
-    criteria["artist"] = origData["artist"];
-    criteria["track"] = origData["track"];
-    emit updateCache( criteria, 2419200000, requestData.type, returnedData );
+    if ( !sortedTracks.isEmpty() )
+    {
+        Tomahawk::InfoSystem::InfoStringHash origData = requestData.input.value< Tomahawk::InfoSystem::InfoStringHash>();
+        Tomahawk::InfoSystem::InfoStringHash criteria;
+        criteria["artist"] = origData["artist"];
+        criteria["track"] = origData["track"];
+        emit updateCache( criteria, 2419200000, requestData.type, returnedData );
+    }
 }
 
 
@@ -871,7 +879,8 @@ LastFmInfoPlugin::onAuthenticated()
 
     if ( authJob->error() == QNetworkReply::NoError )
     {
-        lastfm::XmlQuery lfm = lastfm::XmlQuery( authJob->readAll() );
+        lastfm::XmlQuery lfm;
+        lfm.parse( authJob->readAll() );
 
         if ( lfm.children( "error" ).size() > 0 )
         {
@@ -933,7 +942,8 @@ LastFmInfoPlugin::parseTrackList( QNetworkReply* reply )
     QList<lastfm::Track> tracks;
     try
     {
-        lastfm::XmlQuery lfm = reply->readAll();
+        lastfm::XmlQuery lfm;
+        lfm.parse( reply->readAll() );
         foreach ( lastfm::XmlQuery xq, lfm.children( "track" ) )
         {
             tracks.append( lastfm::Track( xq ) );
@@ -941,7 +951,7 @@ LastFmInfoPlugin::parseTrackList( QNetworkReply* reply )
     }
     catch ( lastfm::ws::ParseError& e )
     {
-        qWarning() << e.what();
+        qWarning() << e.message();
     }
 
     return tracks;

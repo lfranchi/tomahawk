@@ -54,13 +54,10 @@ AudioControls::AudioControls( QWidget* parent )
     QFont font( ui->artistTrackLabel->font() );
     font.setPixelSize( 12 );
 
-#ifdef Q_WS_MAC
-    font.setPixelSize( font.pixelSize() - 2 );
-#endif
-
     ui->artistTrackLabel->setFont( font );
     ui->artistTrackLabel->setElideMode( Qt::ElideMiddle );
     ui->artistTrackLabel->setType( QueryLabel::ArtistAndTrack );
+    ui->artistTrackLabel->setJumpLinkVisible( true );
 
     ui->albumLabel->setFont( font );
     ui->albumLabel->setType( QueryLabel::Album );
@@ -88,6 +85,9 @@ AudioControls::AudioControls( QWidget* parent )
     ui->socialButton->setPixmap( RESPATH "images/share.png" );
     ui->loveButton->setPixmap( RESPATH "images/not-loved.png" );
     ui->loveButton->setCheckable( true );
+
+    ui->socialButton->setFixedSize( QSize( 20, 20 ) );
+    ui->loveButton->setFixedSize( QSize( 20, 20 ) );
 
 #ifdef Q_WS_MAC
     ui->ownerLabel->setForegroundRole( QPalette::Text );
@@ -352,7 +352,7 @@ AudioControls::onPlaybackStopped()
     ui->ownerLabel->setText( "" );
     ui->timeLabel->setText( "" );
     ui->timeLeftLabel->setText( "" );
-    ui->coverImage->setPixmap( QPixmap(), true );
+    ui->coverImage->setPixmap( QPixmap(), false );
     ui->seekSlider->setVisible( false );
     m_sliderTimeLine.stop();
     m_sliderTimeLine.setCurrentTime( 0 );
@@ -546,7 +546,6 @@ void
 AudioControls::onTrackClicked()
 {
     ViewManager::instance()->show( m_currentTrack->toQuery() );
-//    ViewManager::instance()->showCurrentTrack();
 }
 
 
@@ -589,7 +588,7 @@ AudioControls::droppedTracks( QList< query_ptr > tracks )
     {
         // queue and play the first no matter what
         GlobalActionManager::instance()->handlePlayTrack( tracks.first() );
-        ViewManager::instance()->queue()->model()->append( tracks );
+        ViewManager::instance()->queue()->model()->appendQueries( tracks );
     }
 }
 
@@ -597,10 +596,13 @@ AudioControls::droppedTracks( QList< query_ptr > tracks )
 void
 AudioControls::onSocialButtonClicked()
 {
-    SocialWidget* sw = new SocialWidget( m_parent );
-    sw->setPosition( QCursor::pos() );
-    sw->setQuery( m_currentTrack->toQuery() );
-    sw->show();
+    if ( !m_socialWidget.isNull() )
+        return;
+
+    m_socialWidget = new SocialWidget( m_parent );
+    m_socialWidget.data()->setPosition( m_socialWidget.data()->mapFromGlobal( QCursor::pos() ) );
+    m_socialWidget.data()->setQuery( m_currentTrack->toQuery() );
+    m_socialWidget.data()->show();
 }
 
 

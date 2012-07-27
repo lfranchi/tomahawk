@@ -31,13 +31,19 @@
 #include "audio/AudioEngine.h"
 #include "utils/XspfLoader.h"
 
-namespace Tomahawk {
-namespace Accounts {
-    class Account;
-}
+#ifdef Q_OS_WIN
+    #include <shobjidl.h>
+#endif
+
+namespace Tomahawk
+{
+    namespace Accounts
+    {
+        class Account;
+    }
 }
 
-class JobStatusModel;
+class JobStatusSortModel;
 class QSearchField;
 class SourceTreeView;
 class QAction;
@@ -75,6 +81,10 @@ protected:
     void hideEvent( QHideEvent* e );
     void keyPressEvent( QKeyEvent* e );
 
+#ifdef Q_OS_WIN
+    bool winEvent( MSG* message, long* result );
+#endif
+
 public slots:
     void createAutomaticPlaylist( QString );
     void createStation();
@@ -82,10 +92,11 @@ public slots:
     void loadSpiff();
     void showSettingsDialog();
     void showDiagnosticsDialog();
+    void legalInfo();
     void updateCollectionManually();
     void rescanCollectionManually();
-    void pluginMenuAdded(QMenu*);
-    void pluginMenuRemoved(QMenu*);
+    void pluginMenuAdded( QMenu* );
+    void pluginMenuRemoved( QMenu* );
     void showOfflineSources();
 
     void fullScreenEntered();
@@ -110,6 +121,7 @@ private slots:
     void onPlaybackLoading( const Tomahawk::result_ptr& result );
 
     void audioStarted();
+    void audioFinished();
     void audioPaused();
     void audioStopped();
 
@@ -131,6 +143,11 @@ private slots:
 
     void crashNow();
 
+#ifdef Q_OS_WIN
+    void audioStateChanged( AudioState newState, AudioState oldState );
+    void updateWindowsLoveButton();
+#endif
+
 private:
     void loadSettings();
     void saveSettings();
@@ -141,6 +158,14 @@ private:
     void setupSideBar();
     void setupUpdateCheck();
 
+#ifdef Q_OS_WIN
+    bool setupWindowsButtons();
+    const unsigned int m_buttonCreatedID;
+    ITaskbarList3 *m_taskbarList;
+    THUMBBUTTON m_thumbButtons[5];
+    enum TB_STATES{ TP_PREVIOUS = 0,TP_PLAY_PAUSE = 1,TP_NEXT = 2,TP_LOVE = 4 };
+#endif
+
     Ui::TomahawkWindow* ui;
     QSearchField* m_searchWidget;
     AudioControls* m_audioControls;
@@ -150,7 +175,7 @@ private:
     QPushButton* m_queueButton;
     QueueView* m_queueView;
     AnimatedSplitter* m_sidebar;
-    JobStatusModel* m_jobsModel;
+    JobStatusSortModel* m_jobsModel;
 
     QAction* m_backAction;
     QAction* m_forwardAction;

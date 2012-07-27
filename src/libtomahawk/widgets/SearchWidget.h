@@ -49,13 +49,12 @@ public:
 
     virtual QWidget* widget() { return this; }
     virtual Tomahawk::playlistinterface_ptr playlistInterface() const;
-    virtual bool isTemporaryPage() const { return true; }
 
     virtual QString title() const { return QString( tr( "Search: %1" ) ).arg( m_search ); }
     virtual QString description() const { return tr( "Results for '%1'" ).arg( m_search ); }
     virtual QPixmap pixmap() const { return QPixmap( RESPATH "images/search-icon.png" ); }
 
-    virtual bool showStatsBar() const { return false; }
+    virtual bool isTemporaryPage() const { return true; }
 
     virtual bool jumpToCurrentTrack();
 
@@ -73,6 +72,9 @@ private slots:
     void onQueryFinished();
 
 private:
+    void sortArtists();
+    void sortAlbums();
+
     Ui::SearchWidget *ui;
 
     QString m_search;
@@ -80,7 +82,10 @@ private:
     PlayableModel* m_artistsModel;
     PlayableModel* m_albumsModel;
     PlaylistModel* m_resultsModel;
+
     QList< Tomahawk::query_ptr > m_queries;
+    QList< Tomahawk::artist_ptr > m_artists;
+    QList< Tomahawk::album_ptr > m_albums;
 };
 
 #endif // NEWPLAYLISTWIDGET_H

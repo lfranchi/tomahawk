@@ -1,7 +1,7 @@
 /* === This file is part of Tomahawk Player - <http://tomahawk-player.org> ===
  *
  *   Copyright 2010-2011, Christian Muehlhaeuser <muesli@tomahawk-player.org>
- *   Copyright 2011, Leo Franchi <lfranchi@kde.org>
+ *   Copyright 2011-2012, Leo Franchi <lfranchi@kde.org>
  *   Copyright 2011, Michael Zanetti <mzanetti@kde.org>
  *   Copyright 2010-2012, Jeff Mitchell <jeff@tomahawk-player.org>
  *
@@ -128,12 +128,22 @@ SourceDelegate::paintDecorations( QPainter* painter, const QStyleOptionViewItem&
         type == SourcesModel::AutomaticPlaylist ||
         type == SourcesModel::Station ||
         type == SourcesModel::TemporaryPage ||
+        type == SourcesModel::LovedTracksPage ||
         type == SourcesModel::GenericPage );
     const bool playing = ( AudioEngine::instance()->isPlaying() || AudioEngine::instance()->isPaused() );
 
     if ( playable && playing && item->isBeingPlayed() )
     {
-        const int iconW = option.rect.height() - 4;
+        int iconW = option.rect.height() - 4;
+        if ( m_expandedMap.contains( index ) )
+        {
+            AnimationHelper* ah = m_expandedMap.value( index );
+            if ( ah->initialized() )
+            {
+                iconW = ah->originalSize().height() - 4;
+            }
+        }
+
         QRect iconRect = QRect( 4, option.rect.y() + 2, iconW, iconW );
         QPixmap speaker = option.state & QStyle::State_Selected ? m_nowPlayingSpeaker : m_nowPlayingSpeakerDark;
         speaker = speaker.scaledToHeight( iconW, Qt::SmoothTransformation );
@@ -180,7 +190,7 @@ SourceDelegate::paintCollection( QPainter* painter, const QStyleOptionViewItem& 
         painter->setPen( option.palette.color( QPalette::HighlightedText ) );
     }
 
-    QRect textRect = option.rect.adjusted( iconRect.width() + 8, 6, -figWidth - 24, 0 );
+    QRect textRect = option.rect.adjusted( iconRect.width() + 8, 6, -figWidth - 28, 0 );
     if ( status || colItem->source().isNull() )
         painter->setFont( bold );
     QString text = painter->fontMetrics().elidedText( name, Qt::ElideRight, textRect.width() );
@@ -241,7 +251,7 @@ SourceDelegate::paintCollection( QPainter* painter, const QStyleOptionViewItem& 
     }
 
     textRect.adjust( 0, 0, 0, 2 );
-    text = painter->fontMetrics().elidedText( desc, Qt::ElideRight, textRect.width() - 4 );
+    text = painter->fontMetrics().elidedText( desc, Qt::ElideRight, textRect.width() - 8 );
     QTextOption to( Qt::AlignVCenter );
     to.setWrapMode( QTextOption::NoWrap );
     painter->drawText( textRect, text, to );
@@ -516,8 +526,6 @@ SourceDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, co
         if ( !index.parent().parent().isValid() )
             o.rect.adjust( 7, 0, 0, 0 );
 
-        QStyledItemDelegate::paint( painter, o, index );
-
         if ( type == SourcesModel::TemporaryPage )
         {
             TemporaryPageItem* gpi = qobject_cast< TemporaryPageItem* >( item );
@@ -525,16 +533,40 @@ SourceDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, co
 
             if ( gpi && o3.state & QStyle::State_MouseOver )
             {
-                // draw close icon
                 int padding = 3;
                 m_iconHeight = ( o3.rect.height() - 2 * padding );
+
+                o.rect.adjust( 0, 0, -( padding + m_iconHeight ), 0 );
+                QStyledItemDelegate::paint( painter, o, index );
+
+                // draw close icon
                 QPixmap p( RESPATH "images/list-remove.png" );
                 p = p.scaledToHeight( m_iconHeight, Qt::SmoothTransformation );
 
                 QRect r( o3.rect.right() - padding - m_iconHeight, padding + o3.rect.y(), m_iconHeight, m_iconHeight );
                 painter->drawPixmap( r, p );
             }
+            else
+                QStyledItemDelegate::paint( painter, o, index );
         }
+        else if ( type == SourcesModel::StaticPlaylist )
+        {
+            QStyledItemDelegate::paint( painter, o, index );
+
+            PlaylistItem* plItem = qobject_cast< PlaylistItem* >( item );
+            if ( plItem->canSubscribe() && !plItem->subscribedIcon().isNull() )
+            {
+                const int padding = 2;
+                const int imgWidth = o.rect.height() - 2*padding;
+
+                const QPixmap icon = plItem->subscribedIcon().scaled( imgWidth, imgWidth, Qt::KeepAspectRatio, Qt::SmoothTransformation );
+
+                const QRect subRect( o.rect.right() - padding - imgWidth, o.rect.top() + padding, imgWidth, imgWidth );
+                painter->drawPixmap( subRect, icon );
+            }
+        }
+        else
+            QStyledItemDelegate::paint( painter, o, index );
     }
 
     paintDecorations( painter, o3, index );
@@ -623,10 +655,29 @@ SourceDelegate::editorEvent( QEvent* event, QAbstractItemModel* model, const QSt
                 }
             }
         }
+        else if ( event->type() == QEvent::MouseButtonRelease && type == SourcesModel::StaticPlaylist )
+        {
+            PlaylistItem* plItem = qobject_cast< PlaylistItem* >( index.data( SourcesModel::SourceTreeItemRole ).value< SourceTreeItem* >() );
+            Q_ASSERT( plItem );
+
+            QMouseEvent* mev = static_cast< QMouseEvent* >( event );
+            if ( plItem->canSubscribe() && !plItem->subscribedIcon().isNull() )
+            {
+                const int padding = 2;
+                const int imgWidth = option.rect.height() - 2*padding;
+                const QRect subRect( option.rect.right() - padding - imgWidth, option.rect.top() + padding, imgWidth, imgWidth );
+
+                if ( subRect.contains( mev->pos() ) )
+                {
+                    // Toggle playlist subscription
+                    plItem->setSubscribed( !plItem->subscribed() );
+                }
+            }
+        }
     }
 
     // We emit our own clicked() signal instead of relying on QTreeView's, because that is fired whether or not a delegate accepts
-    // a mouse press event. Since we want to swallow click events when they are on headphones other action items, here wemake sure we only
+    // a mouse press event. Since we want to swallow click events when they are on headphones other action items, here we make sure we only
     // emit if we really want to
     if ( event->type() == QEvent::MouseButtonRelease )
     {

@@ -12,7 +12,7 @@ SET( TOMAHAWK_APPLICATION_NAME  "Tomahawk" )
 SET( TOMAHAWK_DESCRIPTION_SUMMARY "The social media player" )
 
 SET( TOMAHAWK_VERSION_MAJOR 0 )
-SET( TOMAHAWK_VERSION_MINOR 4 )
+SET( TOMAHAWK_VERSION_MINOR 5 )
 SET( TOMAHAWK_VERSION_PATCH 99 )
 
 #SET( TOMAHAWK_VERSION_RC 0 )
@@ -35,8 +35,11 @@ IF( CMAKE_SYSTEM_PROCESSOR MATCHES "arm" )
 ENDIF()
 
 # add definitions based on build options
-IF(WITH_BREAKPAD)
+IF( WITH_BREAKPAD )
     message(STATUS "Build with support for breakpad.")
+    IF( CMAKE_COMPILER_IS_GNUCXX )
+        ADD_DEFINITIONS( -DSTDC_HEADERS -std=gnu++98 )
+    ENDIF()
 ENDIF()
 
 # generate version string
@@ -69,7 +72,7 @@ SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}" )
 SET( CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}" )
 
 # make predefined install dirs available everywhere
-INCLUDE(GNUInstallDirs)
+INCLUDE( GNUInstallDirs )
 
 # installer creation
 INCLUDE( TomahawkCPack.cmake )
@@ -101,8 +104,8 @@ if(PHONON_FOUND)
     message(STATUS "Phonon found; ensure that phonon-vlc is at least 0.4")
 endif()
 
-macro_optional_find_package(LibEchonest 1.1.10)
-macro_log_feature(LIBECHONEST_FOUND "Echonest" "Qt library for communicating with The Echo Nest" "http://projects.kde.org/libechonest" TRUE "" "libechonest 1.1.10 is needed for dynamic playlists and the infosystem")
+macro_optional_find_package(Echonest 2.0.0)
+macro_log_feature(ECHONEST_FOUND "Echonest" "Qt library for communicating with The Echo Nest" "http://projects.kde.org/libechonest" TRUE "" "libechonest 2.0.0 is needed for dynamic playlists and the infosystem")
 
 macro_optional_find_package(CLucene 0.9.23)
 macro_log_feature(CLucene_FOUND "CLucene" "The open-source, C++ search engine" "http://clucene.sf.net" TRUE "" "CLucene is used for indexing the collection")
@@ -115,13 +118,13 @@ macro_log_feature(TAGLIB_FOUND "TagLib" "Audio Meta-Data Library" "http://develo
 include( CheckTagLibFileName )
 check_taglib_filename( COMPLEX_TAGLIB_FILENAME )
 
-macro_optional_find_package(Boost)
+macro_optional_find_package( Boost )
 macro_log_feature(Boost_FOUND "Boost" "Provides free peer-reviewed portable C++ source libraries" "http://www.boost.org" TRUE "" "") #FIXME: give useful explaination
 
 macro_optional_find_package(QCA2)
 macro_log_feature(QCA2_FOUND "QCA2" "Provides encryption and signing functions required for Grooveshark resolver" "http://delta.affinix.com/qca/" FALSE "" "")
 
-macro_optional_find_package(LibAttica)
+macro_optional_find_package(LibAttica 0.4.0)
 macro_log_feature(LIBATTICA_FOUND "libattica" "Provides support for automatic fetching and managing of resolvers from the tomahawk website" "https://projects.kde.org/projects/kdesupport/attica" TRUE "" "")
 
 macro_optional_find_package(QuaZip)
@@ -133,11 +136,8 @@ macro_log_feature(JREEN_FOUND "Jreen" "Qt XMPP Library" "http://qutim.org/jreen 
 macro_optional_find_package(QTweetLib)
 macro_log_feature(QTWEETLIB_FOUND "QTweetLib" "Qt Twitter Library" "https://github.com/minimoog/QTweetLib" FALSE "" "QTweetLib is needed for the Twitter SIP plugin.\n")
 
-# required
-#While we distribute our own liblastfm2, don't need to look for it
-#macro_optional_find_package(LibLastFm 0.3.3)
-#macro_log_feature(LIBLASTFM_FOUND "LastFm" "Qt library for the Last.fm webservices" "https://github.com/mxcl/liblastfm" FALSE "" "liblastfm is needed for scrobbling tracks to Last.fm and fetching cover artwork")
-set(LIBLASTFM_FOUND true)
+macro_optional_find_package(LibLastFm 1.0.0)
+macro_log_feature(LIBLASTFM_FOUND "liblastfm" "Qt library for the Last.fm webservices" "https://github.com/eartle/liblastfm" TRUE "" "liblastfm is needed for scrobbling tracks to Last.fm and fetching cover artwork")
 
 #### submodules start
 # automatically init submodules here, don't delete this code we may add submodules again
@@ -171,8 +171,8 @@ macro_log_feature(QTKEYCHAIN_FOUND "QtKeychain" "Provides support for secure pas
 endif()
 
 # we need pthreads too
-#macro_optional_find_package(Threads)
-#macro_log_feature(THREADS_FOUND "Threads" "Threading Library" "" TRUE "" "Platform specific library for threading")
+macro_optional_find_package(Threads)
+macro_log_feature(THREADS_FOUND "Threads" "Threading Library" "" TRUE "" "Platform specific library for threading")
 
 macro_optional_find_package(KDE4)
 macro_optional_find_package(KDE4Installed)

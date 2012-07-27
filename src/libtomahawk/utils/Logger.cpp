@@ -30,7 +30,6 @@
 
 #include "utils/TomahawkUtils.h"
 
-#define LOGFILE TomahawkUtils::appLogDir().filePath( "Tomahawk.log" ).toLocal8Bit()
 #define LOGFILE_SIZE 1024 * 256
 
 #define RELEASE_LEVEL_THRESHOLD 0
@@ -38,8 +37,10 @@
 #define LOG_SQL_QUERIES 1
 
 using namespace std;
+
 ofstream logfile;
 static int s_threshold = -1;
+QMutex s_mutex;
 
 namespace Logger
 {
@@ -66,7 +67,7 @@ log( const char *msg, unsigned int debugLevel, bool toDisk = true )
     if ( debugLevel > DEBUG_LEVEL_THRESHOLD )
         toDisk = false;
     #endif
-        
+
     #ifdef LOG_SQL_QUERIES
     if ( debugLevel == LOGSQL )
         toDisk = true;
@@ -74,6 +75,8 @@ log( const char *msg, unsigned int debugLevel, bool toDisk = true )
 
     if ( toDisk || (int)debugLevel <= s_threshold )
     {
+        QMutexLocker lock( &s_mutex );
+
         #ifdef LOG_SQL_QUERIES
         if ( debugLevel == LOGSQL )
             logfile << "TSQLQUERY: ";
@@ -85,6 +88,8 @@ log( const char *msg, unsigned int debugLevel, bool toDisk = true )
 
     if ( debugLevel <= LOGEXTRA || (int)debugLevel <= s_threshold )
     {
+        QMutexLocker lock( &s_mutex );
+
         cout << msg << endl;
         cout.flush();
     }
@@ -92,7 +97,7 @@ log( const char *msg, unsigned int debugLevel, bool toDisk = true )
 
 
 void
-TomahawkLogHandler( QtMsgType type, const char *msg )
+TomahawkLogHandler( QtMsgType type, const char* msg )
 {
     static QMutex s_mutex;
 
@@ -118,30 +123,37 @@ TomahawkLogHandler( QtMsgType type, const char *msg )
 }
 
 
+QString
+logFile()
+{
+    return TomahawkUtils::appLogDir().filePath( "Tomahawk.log" );
+}
+
+
 void
 setupLogfile()
 {
-    if ( QFileInfo( LOGFILE ).size() > LOGFILE_SIZE )
+    if ( QFileInfo( logFile().toLocal8Bit() ).size() > LOGFILE_SIZE )
     {
         QByteArray lc;
         {
-            QFile f( LOGFILE );
+            QFile f( logFile().toLocal8Bit() );
             f.open( QIODevice::ReadOnly | QIODevice::Text );
             lc = f.readAll();
             f.close();
         }
 
-        QFile::remove( LOGFILE );
+        QFile::remove( logFile().toLocal8Bit() );
 
         {
-            QFile f( LOGFILE );
+            QFile f( logFile().toLocal8Bit() );
             f.open( QIODevice::WriteOnly | QIODevice::Text );
-            f.write( lc.right( LOGFILE_SIZE - (LOGFILE_SIZE / 4) ) );
+            f.write( lc.right( LOGFILE_SIZE - ( LOGFILE_SIZE / 4 ) ) );
             f.close();
         }
     }
 
-    logfile.open( LOGFILE, ios::app );
+    logfile.open( logFile().toLocal8Bit(), ios::app );
     qInstallMsgHandler( TomahawkLogHandler );
 }
 

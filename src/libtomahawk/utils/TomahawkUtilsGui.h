@@ -22,6 +22,8 @@
 
 #include <QSize>
 #include <QModelIndex>
+#include <QColor>
+#include <QRect>
 #include <QTextOption>
 
 #include "TomahawkUtils.h"
@@ -30,11 +32,11 @@
 class PlayableItem;
 class QStyleOptionViewItemV4;
 class QPainter;
-class QColor;
 class QPixmap;
 class QLayout;
 class QPalette;
 class QRect;
+class QScrollBar;
 
 namespace TomahawkUtils
 {
@@ -42,6 +44,8 @@ namespace TomahawkUtils
     DLLEXPORT QWidget* tomahawkWindow();
     /// Platform-specific bringing tomahawk mainwindow to front, b/c qt's activate() and such don't seem to work well enough for us
     DLLEXPORT void bringToFront();
+
+    DLLEXPORT void openUrl( const QUrl& url );
 
     DLLEXPORT QPixmap createAvatarFrame( const QPixmap &avatar );
 
@@ -60,6 +64,9 @@ namespace TomahawkUtils
 
     DLLEXPORT void prepareStyleOption( QStyleOptionViewItemV4* option, const QModelIndex& index, PlayableItem* item );
 
+    DLLEXPORT void drawRoundedButton( QPainter* painter, const QRect& btnRect, const QColor& color, const QColor &gradient1bottom = QColor(), const QColor& gradient2top = QColor(), const QColor& gradient2bottom = QColor() );
+
+    DLLEXPORT void styleScrollBar( QScrollBar* scrollBar );
 }
 
 #endif // TOMAHAWKUTILSGUI_H

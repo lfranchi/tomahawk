@@ -23,11 +23,15 @@
 #include "PlaylistView.h"
 #include "ViewManager.h"
 #include "Query.h"
+#include "Result.h"
+#include "Collection.h"
 #include "Source.h"
 #include "Artist.h"
 #include "Album.h"
+
 #include "utils/Logger.h"
 #include "audio/AudioEngine.h"
+#include "filemetadata/MetadataEditor.h"
 
 using namespace Tomahawk;
 
@@ -39,7 +43,7 @@ ContextMenu::ContextMenu( QWidget* parent )
     m_sigmap = new QSignalMapper( this );
     connect( m_sigmap, SIGNAL( mapped( int ) ), SLOT( onTriggered( int ) ) );
 
-    m_supportedActions = ActionPlay | ActionQueue | ActionCopyLink | ActionLove | ActionStopAfter | ActionPage;
+    m_supportedActions = ActionPlay | ActionQueue | ActionCopyLink | ActionLove | ActionStopAfter | ActionPage | ActionEditMetadata;
 }
 
 
@@ -85,9 +89,9 @@ ContextMenu::setQueries( const QList<Tomahawk::query_ptr>& queries )
     if ( m_supportedActions & ActionStopAfter && itemCount() == 1 )
     {
         if ( AudioEngine::instance()->stopAfterTrack() == queries.first() )
-            m_sigmap->setMapping( addAction( tr( "&Continue Playback after this Track" ) ), ActionStopAfter );
+            m_sigmap->setMapping( addAction( tr( "Continue Playback after this &Track" ) ), ActionStopAfter );
         else
-            m_sigmap->setMapping( addAction( tr( "&Stop Playback after this Track" ) ), ActionStopAfter );
+            m_sigmap->setMapping( addAction( tr( "Stop Playback after this &Track" ) ), ActionStopAfter );
     }
 
     addSeparator();
@@ -109,6 +113,19 @@ ContextMenu::setQueries( const QList<Tomahawk::query_ptr>& queries )
 
     addSeparator();
 
+    if ( m_supportedActions & ActionEditMetadata && itemCount() == 1 )
+    {
+        if ( m_queries.first()->results().isEmpty() )
+            return;
+
+        Tomahawk::result_ptr result = m_queries.first()->results().first();
+        if ( result->collection() && result->collection()->source() &&
+             result->collection()->source()->isLocal() )
+        {
+            m_sigmap->setMapping( addAction( tr( "Properties..." ) ), ActionEditMetadata );
+        }
+    }
+
     if ( m_supportedActions & ActionDelete )
         m_sigmap->setMapping( addAction( queries.count() > 1 ? tr( "&Delete Items" ) : tr( "&Delete Item" ) ), ActionDelete );
 
@@ -122,6 +139,9 @@ ContextMenu::setQueries( const QList<Tomahawk::query_ptr>& queries )
 void
 ContextMenu::setQuery( const Tomahawk::query_ptr& query )
 {
+    if ( query.isNull() )
+        return;
+
     QList<query_ptr> queries;
     queries << query;
     setQueries( queries );
@@ -151,8 +171,8 @@ ContextMenu::setAlbums( const QList<Tomahawk::album_ptr>& albums )
 
     addSeparator();
 
-/*    if ( m_supportedActions & ActionCopyLink && itemCount() == 1 )
-        m_sigmap->setMapping( addAction( tr( "Copy Album &Link" ) ), ActionCopyLink ); */
+    if ( m_supportedActions & ActionCopyLink && itemCount() == 1 )
+        m_sigmap->setMapping( addAction( tr( "Copy Album &Link" ) ), ActionCopyLink );
 
     foreach ( QAction* action, actions() )
     {
@@ -193,8 +213,8 @@ ContextMenu::setArtists( const QList<Tomahawk::artist_ptr>& artists )
 
     addSeparator();
 
-/*    if ( m_supportedActions & ActionCopyLink && itemCount() == 1 )
-        m_sigmap->setMapping( addAction( tr( "Copy Artist &Link" ) ), ActionCopyLink ); */
+    if ( m_supportedActions & ActionCopyLink && itemCount() == 1 )
+        m_sigmap->setMapping( addAction( tr( "Copy Artist &Link" ) ), ActionCopyLink );
 
     foreach ( QAction* action, actions() )
     {
@@ -224,7 +244,7 @@ ContextMenu::onTriggered( int action )
         case ActionCopyLink:
             copyLink();
             break;
-            
+
         case ActionPage:
             openPage();
             break;
@@ -240,6 +260,13 @@ ContextMenu::onTriggered( int action )
                 AudioEngine::instance()->setStopAfterTrack( m_queries.first() );
             break;
 
+        case ActionEditMetadata:
+            if ( !m_queries.first()->results().isEmpty() ) {
+                MetadataEditor* d = new MetadataEditor( m_queries.first()->results().first(), this );
+                d->show();
+            }
+            break;
+
         default:
             emit triggered( action );
     }
@@ -252,15 +279,15 @@ ContextMenu::addToQueue()
 {
     foreach ( const query_ptr& query, m_queries )
     {
-        ViewManager::instance()->queue()->model()->append( query );
+        ViewManager::instance()->queue()->model()->appendQuery( query );
     }
     foreach ( const artist_ptr& artist, m_artists )
     {
-        ViewManager::instance()->queue()->model()->append( artist );
+        ViewManager::instance()->queue()->model()->appendArtist( artist );
     }
     foreach ( const album_ptr& album, m_albums )
     {
-        ViewManager::instance()->queue()->model()->append( album );
+        ViewManager::instance()->queue()->model()->appendAlbum( album );
     }
 
     ViewManager::instance()->showQueue();
@@ -273,6 +300,14 @@ ContextMenu::copyLink()
     if ( m_queries.count() )
     {
         GlobalActionManager::instance()->copyToClipboard( m_queries.first() );
+    }
+    else if ( m_albums.count() )
+    {
+        GlobalActionManager::instance()->copyOpenLink( m_albums.first() );
+    }
+    else if ( m_artists.count() )
+    {
+        GlobalActionManager::instance()->copyOpenLink( m_artists.first() );
     }
 }
 
@@ -298,12 +333,15 @@ ContextMenu::openPage()
 void
 ContextMenu::onSocialActionsLoaded()
 {
-    if ( m_queries.first()->loved() )
+    if ( m_queries.isEmpty() || m_queries.first().isNull() )
+        return;
+
+    if ( m_loveAction && m_queries.first()->loved() )
     {
         m_loveAction->setText( tr( "Un-&Love" ) );
         m_loveAction->setIcon( QIcon( RESPATH "images/not-loved.png" ) );
     }
-    else
+    else if ( m_loveAction )
     {
         m_loveAction->setText( tr( "&Love" ) );
         m_loveAction->setIcon( QIcon( RESPATH "images/loved.png" ) );

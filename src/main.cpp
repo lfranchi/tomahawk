@@ -22,6 +22,7 @@
 #include "thirdparty/kdsingleapplicationguard/kdsingleapplicationguard.h"
 #include "UbuntuUnityHack.h"
 #include "TomahawkSettings.h"
+#include "utils/TomahawkUtils.h"
 #include "config.h"
 #include "utils/Logger.h"
 
@@ -125,6 +126,10 @@ main( int argc, char *argv[] )
     // This must go before QApplication initialisation.
     Tomahawk::macMain();
 
+    // Fixes focus issue with NSSearchField, see QTBUG-11401
+    // code taken from clementine:main.cpp:336
+    QCoreApplication::setAttribute( Qt::AA_NativeWindows, true );
+
     // used for url handler
     AEEventHandlerUPP h = AEEventHandlerUPP( appleEventHandler );
     AEInstallEventHandler( 'GURL', 'GURL', h, 0, false );
@@ -145,12 +150,12 @@ main( int argc, char *argv[] )
 
 #ifndef ENABLE_HEADLESSs
 #ifdef WITH_BREAKPAD
-    new BreakPad( QDir::tempPath(), TomahawkSettings::instance()->crashReporterEnabled() );
+    new BreakPad( QDir::tempPath(), TomahawkSettings::instance()->crashReporterEnabled() && !TomahawkUtils::headless() );
 #endif
 #endif
 
     KDSingleApplicationGuard guard( KDSingleApplicationGuard::AutoKillOtherInstances );
-    QObject::connect( &guard, SIGNAL( instanceStarted( KDSingleApplicationGuard::Instance ) ), &a, SLOT( instanceStarted( KDSingleApplicationGuard::Instance )  ) );
+    QObject::connect( &guard, SIGNAL( instanceStarted( KDSingleApplicationGuard::Instance ) ), &a, SLOT( instanceStarted( KDSingleApplicationGuard::Instance ) ) );
 
     if ( guard.isPrimaryInstance() )
         a.init();
@@ -161,7 +166,10 @@ main( int argc, char *argv[] )
         a.loadUrl( arg );
     }
 
-    int returnCode = a.exec();
+    int returnCode = 0;
+    if ( guard.isPrimaryInstance() )
+        returnCode = a.exec();
+
 #ifdef Q_OS_WIN
     // clean up keyboard hook
     if ( hKeyboardHook )

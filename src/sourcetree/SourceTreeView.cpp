@@ -2,6 +2,7 @@
  *
  *   Copyright 2010-2011, Christian Muehlhaeuser <muesli@tomahawk-player.org>
  *   Copyright 2010-2012, Jeff Mitchell <jeff@tomahawk-player.org>
+ *   Copyright 2010-2012, Leo Franchi   <lfranchi@kde.org>
  *
  *   Tomahawk is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -50,6 +51,8 @@
 #include "LatchManager.h"
 #include "utils/TomahawkUtilsGui.h"
 #include "utils/Logger.h"
+#include "utils/Closure.h"
+#include "widgets/SourceTreePopupDialog.h"
 
 using namespace Tomahawk;
 
@@ -170,11 +173,11 @@ SourceTreeView::setupMenus()
         {
             if ( m_latchManager->isLatched( source ) )
             {
-                QAction *latchOffAction = ActionCollection::instance()->getAction( "latchOff" );
+                QAction* latchOffAction = ActionCollection::instance()->getAction( "latchOff" );
                 m_latchMenu.addAction( latchOffAction );
                 connect( latchOffAction, SIGNAL( triggered() ), SLOT( latchOff() ) );
                 m_latchMenu.addSeparator();
-                QAction *latchRealtimeAction = ActionCollection::instance()->getAction( "realtimeFollowingAlong" );
+                QAction* latchRealtimeAction = ActionCollection::instance()->getAction( "realtimeFollowingAlong" );
                 latchRealtimeAction->setChecked( source->playlistInterface()->latchMode() == Tomahawk::PlaylistModes::RealTime );
                 m_latchMenu.addAction( latchRealtimeAction );
                 connect( latchRealtimeAction, SIGNAL( toggled( bool ) ), SLOT( latchModeToggled( bool ) ) );
@@ -182,14 +185,21 @@ SourceTreeView::setupMenus()
         }
     }
 
-    QAction *loadPlaylistAction = ActionCollection::instance()->getAction( "loadPlaylist" );
+    QAction* loadPlaylistAction = ActionCollection::instance()->getAction( "loadPlaylist" );
     m_playlistMenu.addAction( loadPlaylistAction );
-    QAction *renamePlaylistAction = ActionCollection::instance()->getAction( "renamePlaylist" );
+    QAction* renamePlaylistAction = ActionCollection::instance()->getAction( "renamePlaylist" );
     m_playlistMenu.addAction( renamePlaylistAction );
     m_playlistMenu.addSeparator();
 
-    QAction *copyPlaylistAction = m_playlistMenu.addAction( tr( "&Copy Link" ) );
-    QAction *deletePlaylistAction = m_playlistMenu.addAction( tr( "&Delete %1" ).arg( SourcesModel::rowTypeToString( type ) ) );
+    QAction* copyPlaylistAction = m_playlistMenu.addAction( tr( "&Copy Link" ) );
+
+    if ( type == SourcesModel::StaticPlaylist )
+    {
+        QAction* exportPlaylist = m_playlistMenu.addAction( tr( "&Export Playlist") );
+        connect( exportPlaylist, SIGNAL( triggered() ), this, SLOT( exportPlaylist() ) );
+    }
+
+    QAction* deletePlaylistAction = m_playlistMenu.addAction( tr( "&Delete %1" ).arg( SourcesModel::rowTypeToString( type ) ) );
 
     QString addToText;
     if ( type == SourcesModel::StaticPlaylist )
@@ -199,7 +209,7 @@ SourceTreeView::setupMenus()
     else if ( type == SourcesModel::Station )
         addToText = tr( "Add to my Stations" );
 
-    QAction *addToLocalAction = m_roPlaylistMenu.addAction( addToText );
+    QAction* addToLocalAction = m_roPlaylistMenu.addAction( addToText );
 
     m_roPlaylistMenu.addAction( copyPlaylistAction );
     deletePlaylistAction->setEnabled( !readonly );
@@ -225,9 +235,6 @@ SourceTreeView::setupMenus()
             m_playlistMenu.addAction( action );
         }
     }
-
-   if ( type == SourcesModel::StaticPlaylist )
-       copyPlaylistAction->setText( tr( "&Export Playlist" ) );
 
     connect( loadPlaylistAction,   SIGNAL( triggered() ), SLOT( loadPlaylist() ) );
     connect( renamePlaylistAction, SIGNAL( triggered() ), SLOT( renamePlaylist() ) );
@@ -357,25 +364,59 @@ SourceTreeView::deletePlaylist( const QModelIndex& idxIn )
             Q_ASSERT( false );
     }
 
-    QMessageBox askDelete( QMessageBox::Question, tr( "Delete %1?", "playlist/station/..." ).arg( typeDesc ),
-                           tr( "Would you like to delete the %1 <b>\"%2\"</b>?", "e.g. Would you like to delete the playlist named Foobar?" )
-                             .arg( typeDesc ).arg( idx.data().toString() ),
-                           QMessageBox::Yes | QMessageBox::No, this );
+    PlaylistItem* item = itemFromIndex< PlaylistItem >( idx );
+    playlist_ptr playlist = item->playlist();
 
-    int r = askDelete.exec();
-    if ( r != QMessageBox::Yes )
+    const QPoint rightCenter = viewport()->mapToGlobal( visualRect( idx ).topRight() + QPoint( 0, visualRect( idx ).height() / 2 ) );
+    if ( playlist->hasCustomDeleter() )
+    {
+        playlist->customDelete( rightCenter );
+    }
+    else
+    {
+        if ( m_popupDialog.isNull() )
+        {
+            m_popupDialog = QWeakPointer< SourceTreePopupDialog >( new SourceTreePopupDialog() );
+            connect( m_popupDialog.data(), SIGNAL( result( bool ) ), this, SLOT( onDeletePlaylistResult( bool ) ) );
+        }
+
+        m_popupDialog.data()->setMainText( tr( "Would you like to delete the %1 <b>\"%2\"</b>?", "e.g. Would you like to delete the playlist named Foobar?" )
+                                .arg( typeDesc ).arg( idx.data().toString() ) );
+        m_popupDialog.data()->setOkButtonText( tr( "Delete" ) );
+        m_popupDialog.data()->setProperty( "idx", QVariant::fromValue< QModelIndex >( idx ) );
+
+        m_popupDialog.data()->move( rightCenter.x() - m_popupDialog.data()->offset(), rightCenter.y() - m_popupDialog.data()->sizeHint().height() / 2. );
+        m_popupDialog.data()->show();
+    }
+
+}
+
+
+void
+SourceTreeView::onDeletePlaylistResult( bool result )
+{
+    Q_ASSERT( !m_popupDialog.isNull() );
+
+    const QModelIndex idx = m_popupDialog.data()->property( "idx" ).value< QModelIndex >();
+    Q_ASSERT( idx.isValid() );
+
+    if ( !result )
         return;
+
+    SourcesModel::RowType type = ( SourcesModel::RowType )model()->data( idx, SourcesModel::SourceTreeItemTypeRole ).toInt();
 
     if ( type == SourcesModel::StaticPlaylist )
     {
         PlaylistItem* item = itemFromIndex< PlaylistItem >( idx );
         playlist_ptr playlist = item->playlist();
+        qDebug() << "Doing delete of playlist:" << playlist->title();
         Playlist::remove( playlist );
     }
     else if ( type == SourcesModel::AutomaticPlaylist || type == SourcesModel::Station )
     {
         DynamicPlaylistItem* item = itemFromIndex< DynamicPlaylistItem >( idx );
         dynplaylist_ptr playlist = item->dynPlaylist();
+        qDebug() << "Doing delete of playlist:" << playlist->title();
         DynamicPlaylist::remove( playlist );
     }
 }
@@ -397,21 +438,37 @@ SourceTreeView::copyPlaylistLink()
     }
     else if ( type == SourcesModel::StaticPlaylist )
     {
-        // Disable toma.hk playlist mode until ready
-        // GlobalActionManager::instance()->getShortLink( playlist );
+       const PlaylistItem* item = itemFromIndex< PlaylistItem >( m_contextMenuIndex );
+       const playlist_ptr playlist = item->playlist();
 
-       PlaylistItem* item = itemFromIndex< PlaylistItem >( m_contextMenuIndex );
-       playlist_ptr playlist = item->playlist();
+       GlobalActionManager::instance()->getShortLink( playlist );
+    }
+}
 
-       QString suggestedFilename = TomahawkSettings::instance()->playlistDefaultPath() + "/" + playlist->title();
-       QString filename = QFileDialog::getSaveFileName( TomahawkUtils::tomahawkWindow(), tr( "Save XSPF" ),
-                                                        suggestedFilename, tr( "Playlists (*.xspf)" ) );
-       if ( !filename.isEmpty() )
-       {
-           QFileInfo playlistAbsoluteFilePath = filename;
-           TomahawkSettings::instance()->setPlaylistDefaultPath( playlistAbsoluteFilePath.absolutePath() );
-           GlobalActionManager::instance()->savePlaylistToFile( playlist, filename );
-       }
+
+void
+SourceTreeView::exportPlaylist()
+{
+    const QModelIndex idx = m_contextMenuIndex;
+    if ( !idx.isValid() )
+        return;
+
+    const SourcesModel::RowType type = ( SourcesModel::RowType )model()->data( m_contextMenuIndex, SourcesModel::SourceTreeItemTypeRole ).toInt();
+    Q_ASSERT( type == SourcesModel::StaticPlaylist );
+    if ( type != SourcesModel::StaticPlaylist )
+        return;
+
+    const PlaylistItem* item = itemFromIndex< PlaylistItem >( m_contextMenuIndex );
+    const playlist_ptr playlist = item->playlist();
+
+    const QString suggestedFilename = TomahawkSettings::instance()->playlistDefaultPath() + "/" + playlist->title();
+    const QString filename = QFileDialog::getSaveFileName( TomahawkUtils::tomahawkWindow(), tr( "Save XSPF" ),
+                                                     suggestedFilename, tr( "Playlists (*.xspf)" ) );
+    if ( !filename.isEmpty() )
+    {
+        const  QFileInfo playlistAbsoluteFilePath( filename );
+        TomahawkSettings::instance()->setPlaylistDefaultPath( playlistAbsoluteFilePath.absolutePath() );
+        GlobalActionManager::instance()->savePlaylistToFile( playlist, filename );
     }
 }
 
@@ -543,6 +600,8 @@ SourceTreeView::onCustomContextMenu( const QPoint& pos )
 
     setupMenus();
 
+    const QList< QAction* > customActions = model()->data( m_contextMenuIndex, SourcesModel::CustomActionRole ).value< QList< QAction* > >();
+
     if ( model()->data( m_contextMenuIndex, SourcesModel::SourceTreeItemTypeRole ) == SourcesModel::StaticPlaylist ||
          model()->data( m_contextMenuIndex, SourcesModel::SourceTreeItemTypeRole ) == SourcesModel::AutomaticPlaylist ||
          model()->data( m_contextMenuIndex, SourcesModel::SourceTreeItemTypeRole ) == SourcesModel::Station )
@@ -561,6 +620,12 @@ SourceTreeView::onCustomContextMenu( const QPoint& pos )
         else if ( !item->source().isNull() )
             m_privacyMenu.exec( mapToGlobal( pos ) );
     }
+    else if ( !customActions.isEmpty() )
+    {
+        QMenu customMenu;
+        customMenu.addActions( customActions );
+        customMenu.exec( mapToGlobal( pos ) );
+    }
 }
 
 
@@ -576,7 +641,6 @@ SourceTreeView::dragEnterEvent( QDragEnterEvent* event )
            m_dropRect = QRect();
            m_dropIndex = QPersistentModelIndex();
 
-           qDebug() << Q_FUNC_INFO << "Accepting Drag Event";
            event->setDropAction( Qt::CopyAction );
            event->acceptProposedAction();
      }
@@ -616,7 +680,7 @@ SourceTreeView::dragMoveEvent( QDragMoveEvent* event )
         setDirtyRegion( m_dropRect );
         const QPoint pos = event->pos();
         const QModelIndex index = indexAt( pos );
-        dataChanged(m_dropIndex, m_dropIndex);
+        dataChanged( m_dropIndex, m_dropIndex );
         m_dropIndex = QPersistentModelIndex( index );
 
         if ( index.isValid() )
@@ -625,12 +689,23 @@ SourceTreeView::dragMoveEvent( QDragMoveEvent* event )
             m_dropRect = rect;
 
             SourceTreeItem* item = itemFromIndex< SourceTreeItem >( index );
+
             if ( item->willAcceptDrag( event->mimeData() ) )
             {
-
                 accept = true;
-                m_delegate->hovered( index, event->mimeData() );
-                dataChanged(index, index);
+
+                switch ( model()->data( index, SourcesModel::SourceTreeItemTypeRole ).toInt() )
+                {
+                    case SourcesModel::StaticPlaylist:
+                    case SourcesModel::CategoryAdd:
+                        m_delegate->hovered( index, event->mimeData() );
+                        dataChanged( index, index );
+                        break;
+
+                    default:
+                        break;
+                }
+
             }
             else
                 m_delegate->hovered( QModelIndex(), 0 );
@@ -669,6 +744,7 @@ SourceTreeView::dropEvent( QDropEvent* event )
     const QModelIndex index = indexAt( pos );
 
     if ( model()->data( index, SourcesModel::SourceTreeItemTypeRole ).toInt() == SourcesModel::StaticPlaylist
+         || model()->data( index, SourcesModel::SourceTreeItemTypeRole ).toInt() == SourcesModel::LovedTracksPage
          || model()->data( index, SourcesModel::SourceTreeItemTypeRole ).toInt() == SourcesModel::CategoryAdd )
     {
         SourceTreeItem* item = itemFromIndex< SourceTreeItem >( index );
@@ -682,7 +758,7 @@ SourceTreeView::dropEvent( QDropEvent* event )
     if ( DropJob::isDropType( DropJob::Playlist, event->mimeData()  ) )
     {
         qDebug() << Q_FUNC_INFO << "Current Event";
-        DropJob *dropThis = new DropJob;
+        DropJob* dropThis = new DropJob;
         dropThis->setDropTypes( DropJob::Playlist );
         dropThis->setDropAction( DropJob::Create );
         dropThis->parseMimeData( event->mimeData() );
@@ -711,7 +787,7 @@ SourceTreeView::dropEvent( QDropEvent* event )
 
 
 void
-SourceTreeView::keyPressEvent( QKeyEvent *event )
+SourceTreeView::keyPressEvent( QKeyEvent* event )
 {
     if ( ( event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace ) && !selectionModel()->selectedIndexes().isEmpty() )
     {

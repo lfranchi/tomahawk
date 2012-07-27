@@ -42,10 +42,7 @@
 
 #define CURRENT_SCHEMA_VERSION 28
 
-
-DatabaseImpl::DatabaseImpl( const QString& dbname, Database* parent )
-    : QObject( (QObject*) parent )
-    , m_parent( parent )
+DatabaseImpl::DatabaseImpl( const QString& dbname )
 {
     QTime t;
     t.start();
@@ -67,6 +64,8 @@ DatabaseImpl::DatabaseImpl( const QString& dbname, Database* parent )
 
     tLog() << "Database ID:" << m_dbid;
     init();
+    query.exec( "PRAGMA auto_vacuum = FULL" );
+    query.exec( "PRAGMA synchronous = NORMAL" );
 
     tDebug( LOGVERBOSE ) << "Tweaked db pragmas:" << t.elapsed();
 
@@ -84,10 +83,9 @@ DatabaseImpl::DatabaseImpl( const QString& dbname, Database* parent )
 }
 
 
-DatabaseImpl::DatabaseImpl( Database* parent, const QString& dbname )
-    : QObject( (QObject*) QThread::currentThread() )
-    , m_parent( parent )
+DatabaseImpl::DatabaseImpl( const QString& dbname, bool internal )
 {
+    Q_UNUSED( internal );
     openDatabase( dbname, false );
     init();
 }
@@ -101,10 +99,7 @@ DatabaseImpl::init()
     TomahawkSqlQuery query = newquery();
 
      // make sqlite behave how we want:
-    query.exec( "PRAGMA auto_vacuum = FULL" );
-    query.exec( "PRAGMA synchronous  = ON" );
     query.exec( "PRAGMA foreign_keys = ON" );
-    //query.exec( "PRAGMA temp_store = MEMORY" );
 }
 
 
@@ -115,16 +110,32 @@ DatabaseImpl::~DatabaseImpl()
 /*
 #ifdef TOMAHAWK_QUERY_ANALYZE
     TomahawkSqlQuery q = newquery();
-    
+
     q.exec( "ANALYZE" );
     q.exec( "SELECT * FROM sqlite_stat1" );
     while ( q.next() )
     {
         tLog( LOGSQL ) << q.value( 0 ).toString() << q.value( 1 ).toString() << q.value( 2 ).toString();
     }
-    
+
 #endif
 */
+}
+
+
+TomahawkSqlQuery
+DatabaseImpl::newquery()
+{
+    QMutexLocker lock( &m_mutex );
+    return TomahawkSqlQuery( m_db );
+}
+
+
+QSqlDatabase&
+DatabaseImpl::database()
+{
+    QMutexLocker lock( &m_mutex );
+    return m_db;
 }
 
 
@@ -133,7 +144,7 @@ DatabaseImpl::clone() const
 {
     QMutexLocker lock( &m_mutex );
 
-    DatabaseImpl* impl = new DatabaseImpl( m_parent, m_db.databaseName() );
+    DatabaseImpl* impl = new DatabaseImpl( m_db.databaseName(), true );
     impl->setDatabaseID( m_dbid );
     impl->setFuzzyIndex( m_fuzzyIndex );
     return impl;
@@ -708,8 +719,12 @@ DatabaseImpl::resultFromHint( const Tomahawk::query_ptr& origquery )
 bool
 DatabaseImpl::openDatabase( const QString& dbname, bool checkSchema )
 {
-    const QStringList conns = QSqlDatabase::connectionNames();
-    const QString connName = QString( "tomahawk%1" ).arg( conns.count() ? QString::number( conns.count() ) : "" );
+    QString connName( "tomahawk" );
+    if ( !checkSchema )
+    {
+        // secondary connection, use a unique connection name
+        connName += "_" + uuid();
+    }
 
     bool schemaUpdated = false;
     int version = -1;
@@ -722,7 +737,7 @@ DatabaseImpl::openDatabase( const QString& dbname, bool checkSchema )
             tLog() << "Failed to open database" << dbname;
             throw "failed to open db"; // TODO
         }
-        
+
         if ( checkSchema )
         {
             QSqlQuery qry = QSqlQuery( db );
@@ -735,7 +750,7 @@ DatabaseImpl::openDatabase( const QString& dbname, bool checkSchema )
         }
         else
             version = CURRENT_SCHEMA_VERSION;
-            
+
         if ( version < 0 || version == CURRENT_SCHEMA_VERSION )
             m_db = db;
     }

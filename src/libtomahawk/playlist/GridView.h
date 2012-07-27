@@ -37,6 +37,7 @@ namespace Tomahawk
 class AnimatedSpinner;
 class GridItemDelegate;
 class PlayableModel;
+class GridPlaylistInterface;
 
 class DLLEXPORT GridView : public QListView, public Tomahawk::ViewPage
 {
@@ -50,9 +51,13 @@ public:
 
     PlayableModel* model() const { return m_model; }
     PlayableProxyModel* proxyModel() const { return m_proxyModel; }
+    GridItemDelegate* delegate() const { return m_delegate; }
 
     bool autoFitItems() const { return m_autoFitItems; }
     void setAutoFitItems( bool b ) { m_autoFitItems = b; }
+
+    bool autoResize() const { return m_autoResize; }
+    void setAutoResize( bool b ) { m_autoResize = b; }
 
     void setPlayableModel( PlayableModel* model );
     void setModel( QAbstractItemModel* model );
@@ -60,14 +65,15 @@ public:
     void setEmptyTip( const QString& tip );
 
     virtual QWidget* widget() { return this; }
-    virtual Tomahawk::playlistinterface_ptr playlistInterface() const { return proxyModel()->playlistInterface(); }
+    virtual Tomahawk::playlistinterface_ptr playlistInterface() const { return m_playlistInterface; }
 
     virtual QString title() const { return m_model->title(); }
     virtual QString description() const { return m_model->description(); }
 
-    virtual bool showModes() const { return true; }
+    virtual bool setFilter( const QString& filter );
+    virtual bool jumpToCurrentTrack();
 
-    virtual bool jumpToCurrentTrack() { return false; }
+    virtual bool isBeingPlayed() const { return m_playing.isValid(); }
 
 public slots:
     void onItemActivated( const QModelIndex& index );
@@ -75,6 +81,7 @@ public slots:
 signals:
     void modelChanged();
     void scrolledContents( int dx, int dy );
+    void resized();
 
 protected:
     virtual void startDrag( Qt::DropActions supportedActions );
@@ -90,7 +97,11 @@ private slots:
     void onFilterChanged( const QString& filter );
     void onCustomContextMenu( const QPoint& pos );
 
+    void onDelegatePlaying( const QPersistentModelIndex& idx );
+    void onDelegateStopped( const QPersistentModelIndex& idx );
+
     void layoutItems();
+    void verifySize();
 
 private:
     PlayableModel* m_model;
@@ -98,15 +109,21 @@ private:
     GridItemDelegate* m_delegate;
     AnimatedSpinner* m_loadingSpinner;
     OverlayWidget* m_overlay;
+    Tomahawk::playlistinterface_ptr m_playlistInterface;
 
     QModelIndex m_contextMenuIndex;
+    QPersistentModelIndex m_playing;
+
     Tomahawk::ContextMenu* m_contextMenu;
 
     QString m_emptyTip;
     bool m_inited;
     bool m_autoFitItems;
-    
+    bool m_autoResize;
+
     QRect m_paintRect;
+
+    friend class ::GridPlaylistInterface;
 };
 
 #endif // GRIDVIEW_H

@@ -203,8 +203,9 @@ static BOOL AuthorizationExecuteWithPrivilegesAndWait(AuthorizationRef authoriza
     NSDictionary* dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:success], TKInstallerResultKey, [info objectForKey:TKInstallerDelegateKey], TKInstallerDelegateKey, error, TKInstallerErrorKey, nil];
     [self notifyDelegate:dict];
 
-    [fromPath release];
-    [toPath release];
+    // TODO Do not release yet as seems to crash on some systems.
+//    [fromPath release];
+//    [toPath release];
 }
 
 

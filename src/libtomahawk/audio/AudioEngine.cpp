@@ -37,6 +37,9 @@
 #include "infosystem/InfoSystem.h"
 #include "Album.h"
 #include "Pipeline.h"
+#include "jobview/JobStatusView.h"
+#include "jobview/JobStatusModel.h"
+#include "jobview/ErrorStatusMessage.h"
 
 #include "utils/Logger.h"
 
@@ -94,12 +97,9 @@ AudioEngine::AudioEngine()
 AudioEngine::~AudioEngine()
 {
     tDebug() << Q_FUNC_INFO;
-    
+
     m_mediaObject->stop();
     TomahawkSettings::instance()->setVolume( volume() );
-
-    delete m_audioOutput;
-    delete m_mediaObject;
 }
 
 
@@ -342,6 +342,9 @@ AudioEngine::sendWaitingNotification() const
 void
 AudioEngine::sendNowPlayingNotification( const Tomahawk::InfoSystem::InfoType type )
 {
+    if ( m_currentTrack.isNull() )
+        return;
+
 #ifndef ENABLE_HEADLESS
     if ( m_currentTrack->toQuery()->coverLoaded() )
     {
@@ -601,8 +604,17 @@ AudioEngine::playItem( Tomahawk::playlistinterface_ptr playlist, const Tomahawk:
 {
     if ( query->resolvingFinished() )
     {
-        if ( query->numResults() )
+        if ( query->numResults() && query->results().first()->isOnline() )
+        {
             playItem( playlist, query->results().first() );
+            return;
+        }
+
+        JobStatusView::instance()->model()->addJob(
+            new ErrorStatusMessage( tr( "Sorry, Tomahawk couldn't find the track '%1' by %2" ).arg( query->track() ).arg( query->artist() ), 15 ) );
+
+        if ( isStopped() )
+            emit stopped(); // we do this so the original caller knows we couldn't find this track
     }
     else
     {
@@ -618,9 +630,18 @@ void
 AudioEngine::playItem( const Tomahawk::artist_ptr& artist )
 {
     playlistinterface_ptr pli = artist->playlistInterface( Mixed );
-    if ( pli->trackCount() )
+    if ( pli->isFinished() )
     {
-        playItem( pli, pli->tracks().first() );
+        if ( !pli->tracks().count() )
+        {
+            JobStatusView::instance()->model()->addJob(
+                new ErrorStatusMessage( tr( "Sorry, Tomahawk couldn't find the artist '%1'" ).arg( artist->name() ), 15 ) );
+
+            if ( isStopped() )
+                emit stopped(); // we do this so the original caller knows we couldn't find this track
+        }
+        else
+            playItem( pli, pli->tracks().first() );
     }
     else
     {
@@ -635,9 +656,18 @@ void
 AudioEngine::playItem( const Tomahawk::album_ptr& album )
 {
     playlistinterface_ptr pli = album->playlistInterface( Mixed );
-    if ( pli->trackCount() )
+    if ( pli->isFinished() )
     {
-        playItem( pli, pli->tracks().first() );
+        if ( !pli->tracks().count() )
+        {
+            JobStatusView::instance()->model()->addJob(
+                new ErrorStatusMessage( tr( "Sorry, Tomahawk couldn't find the album '%1' by %2" ).arg( album->name() ).arg( album->artist()->name() ), 15 ) );
+
+            if ( isStopped() )
+                emit stopped(); // we do this so the original caller knows we couldn't find this track
+        }
+        else
+            playItem( pli, pli->tracks().first() );
     }
     else
     {
@@ -731,7 +761,7 @@ AudioEngine::onStateChanged( Phonon::State newState, Phonon::State oldState )
             }
         }
     }
-    
+
     if ( newState == Phonon::PausedState || newState == Phonon::PlayingState || newState == Phonon::ErrorState )
     {
         tDebug() << "Phonon state now:" << newState;
@@ -857,13 +887,19 @@ AudioEngine::checkStateQueue()
                 m_mediaObject->play();
                 if ( paused )
                     setVolume( m_volume );
+
+                break;
             }
-            
+
             case Paused:
             {
                 m_volume = volume();
                 m_mediaObject->pause();
+                break;
             }
+
+            default:
+                break;
         }
     }
     else

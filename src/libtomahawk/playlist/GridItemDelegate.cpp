@@ -56,15 +56,23 @@ GridItemDelegate::GridItemDelegate( QAbstractItemView* parent, PlayableProxyMode
     if ( m_view && m_view->metaObject()->indexOfSignal( "modelChanged()" ) > -1 )
         connect( m_view, SIGNAL( modelChanged() ), this, SLOT( modelChanged() ) );
 
-    connect( m_view, SIGNAL( scrolledContents( int, int ) ), SLOT( onScrolled( int, int ) ) );
+    connect( proxy, SIGNAL( rowsAboutToBeInserted( QModelIndex, int, int ) ), SLOT( modelChanged() ) );
+    connect( proxy, SIGNAL( rowsAboutToBeRemoved( QModelIndex, int, int ) ), SLOT( modelChanged() ) );
+    connect( m_view, SIGNAL( scrolledContents( int, int ) ), SLOT( onViewChanged() ) );
+    connect( m_view, SIGNAL( resized() ), SLOT( onViewChanged() ) );
 }
 
 
 QSize
 GridItemDelegate::sizeHint( const QStyleOptionViewItem& option, const QModelIndex& index ) const
 {
-    QSize size = QStyledItemDelegate::sizeHint( option, index );
-    return size;
+    if ( m_itemSize.isNull() )
+    {
+        QSize size = QStyledItemDelegate::sizeHint( option, index );
+        return size;
+    }
+    else
+        return m_itemSize;
 }
 
 
@@ -116,8 +124,8 @@ GridItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, 
             m_covers.insert( index, QSharedPointer< Tomahawk::PixmapDelegateFader >( new Tomahawk::PixmapDelegateFader( item->query(), r.size(), TomahawkUtils::Grid ) ) );
         }
 
-        _detail::Closure* closure = NewClosure( m_covers[ index ], SIGNAL( repaintRequest() ), const_cast<GridItemDelegate*>(this), SLOT( doUpdateIndex( QPersistentModelIndex ) ), QPersistentModelIndex( index ) );
-        closure->setAutoDelete( false );
+        NewClosure( m_covers[ index ], SIGNAL( repaintRequest() ),
+                    const_cast<GridItemDelegate*>(this), SLOT( doUpdateIndex( QPersistentModelIndex ) ), QPersistentModelIndex( index ) )->setAutoDelete( false );
     }
 
     QSharedPointer< Tomahawk::PixmapDelegateFader > fader = m_covers[ index ];
@@ -237,14 +245,18 @@ GridItemDelegate::onPlayClicked( const QPersistentModelIndex& index )
     PlayableItem* item = m_model->sourceModel()->itemFromIndex( m_model->mapToSource( index ) );
     if ( item )
     {
-        _detail::Closure* closure;
+        NewClosure( AudioEngine::instance(), SIGNAL( loading( Tomahawk::result_ptr ) ),
+                    const_cast<GridItemDelegate*>(this), SLOT( onPlaybackStarted( QPersistentModelIndex ) ), QPersistentModelIndex( index ) );
 
-        closure = NewClosure( AudioEngine::instance(), SIGNAL( loading( Tomahawk::result_ptr ) ),
-                              const_cast<GridItemDelegate*>(this), SLOT( onPlaybackStarted( QPersistentModelIndex ) ), QPersistentModelIndex( index ) );
+        m_closures.remove( index );
 
-        closure = NewClosure( AudioEngine::instance(), SIGNAL( started( Tomahawk::result_ptr ) ),
-                              const_cast<GridItemDelegate*>(this), SLOT( onPlaylistChanged( QPersistentModelIndex ) ), QPersistentModelIndex( index ) );
-        closure->setAutoDelete( false );
+        m_closures.insertMulti( index, NewClosure( AudioEngine::instance(), SIGNAL( started( Tomahawk::result_ptr ) ),
+                                                   const_cast<GridItemDelegate*>(this), SLOT( onPlaylistChanged( QPersistentModelIndex ) ), QPersistentModelIndex( index ) ) );
+        m_closures.insertMulti( index, NewClosure( AudioEngine::instance(), SIGNAL( stopped() ),
+                                       const_cast<GridItemDelegate*>(this), SLOT( onPlaylistChanged( QPersistentModelIndex ) ), QPersistentModelIndex( index ) ) );
+
+        foreach ( _detail::Closure* closure, m_closures.values( index ) )
+            closure->setAutoDelete( false );
 
         connect( AudioEngine::instance(), SIGNAL( stopped() ), SLOT( onPlaybackFinished() ) );
 
@@ -359,7 +371,7 @@ GridItemDelegate::editorEvent( QEvent* event, QAbstractItemModel* model, const Q
 
     // reset mouse cursor. we switch to a pointing hand cursor when hovering an artist name
     m_view->setCursor( Qt::ArrowCursor );
-    
+
     if ( hoveringArtist )
     {
 
@@ -421,19 +433,22 @@ GridItemDelegate::doUpdateIndex( const QPersistentModelIndex& idx )
 
 
 void
-GridItemDelegate::onScrolled( int dx, int dy )
+GridItemDelegate::onViewChanged()
 {
-    foreach ( QWidget* widget, m_spinner.values() )
+    foreach ( const QPersistentModelIndex& index, m_spinner.keys() )
     {
-        widget->move( widget->pos() + QPoint( dx, dy ) );
+        QRect rect = m_view->visualRect( index );
+        m_spinner.value( index )->move( rect.center() - QPoint( 23, 23 ) );
     }
-    foreach ( ImageButton* button, m_playButton.values() )
+    foreach ( const QPersistentModelIndex& index, m_playButton.keys() )
     {
-        button->move( button->pos() + QPoint( dx, dy ) );
+        QRect rect = m_view->visualRect( index );
+        m_playButton.value( index )->move( rect.center() - QPoint( 23, 23 ) );
     }
-    foreach ( ImageButton* button, m_pauseButton.values() )
+    foreach ( const QPersistentModelIndex& index, m_pauseButton.keys() )
     {
-        button->move( button->pos() + QPoint( dx, dy ) );
+        QRect rect = m_view->visualRect( index );
+        m_pauseButton.value( index )->move( rect.center() - QPoint( 23, 23 ) );
     }
 }
 
@@ -444,6 +459,8 @@ GridItemDelegate::onPlaybackFinished()
     foreach ( ImageButton* button, m_pauseButton )
         button->deleteLater();
     m_pauseButton.clear();
+
+    emit stoppedPlaying( QModelIndex() );
 }
 
 
@@ -473,11 +490,21 @@ GridItemDelegate::onPlaylistChanged( const QPersistentModelIndex& index )
 
         if ( finished )
         {
+            foreach ( _detail::Closure* closure, m_closures.values( index ) )
+                closure->deleteLater();
+
             if ( m_pauseButton.contains( index ) )
             {
                 m_pauseButton[ index ]->deleteLater();
                 m_pauseButton.remove( index );
             }
+            if ( m_spinner.contains( index ) )
+            {
+                m_spinner[ index ]->deleteLater();
+                m_spinner.remove( index );
+            }
+
+            emit stoppedPlaying( index );
         }
     }
 }
@@ -509,6 +536,8 @@ GridItemDelegate::onPlaybackStarted( const QPersistentModelIndex& index )
     connect( button, SIGNAL( clicked( bool ) ), AudioEngine::instance(), SLOT( playPause() ) );
 
     m_pauseButton[ index ] = button;
+
+    emit startedPlaying( index );
 }
 
 

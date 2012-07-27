@@ -6,13 +6,16 @@ SET( QT_USE_QTNETWORK TRUE )
 SET( QT_USE_QTXML TRUE )
 SET( QT_USE_QTUITOOLS TRUE )
 
+IF( UNIX AND NOT APPLE )
+  SET( QT_USE_QTDBUS TRUE )
+ENDIF( UNIX AND NOT APPLE )
+
 include( ${QT_USE_FILE} )
 
 add_definitions( ${QT_DEFINITIONS} )
 add_definitions( -DQT_SHARED )
 add_definitions( -DDLLEXPORT_PRO )
 add_definitions( -DQT_SHAREDPOINTER_TRACK_POINTERS )
-
 
 set( libGuiSources
     ActionCollection.cpp
@@ -45,6 +48,8 @@ set( libGuiSources
 
     infobar/InfoBar.cpp
 
+    playlist/FlexibleHeader.cpp
+    playlist/FlexibleView.cpp
     playlist/TreeModel.cpp
     playlist/TreeProxyModel.cpp
     playlist/TreeProxyModelPlaylistInterface.cpp
@@ -62,8 +67,8 @@ set( libGuiSources
     playlist/GridItemDelegate.cpp
     playlist/GridView.cpp
     playlist/TreeView.cpp
-    playlist/CustomPlaylistView.cpp
     playlist/ViewHeader.cpp
+    playlist/LovedTracksModel.cpp
     playlist/RecentlyAddedModel.cpp
     playlist/RecentlyPlayedModel.cpp
     playlist/PlaylistLargeItemDelegate.cpp
@@ -83,12 +88,6 @@ set( libGuiSources
     playlist/dynamic/widgets/MiscControlWidgets.cpp
     playlist/dynamic/widgets/CollapsibleControls.cpp
     playlist/dynamic/widgets/DynamicSetupWidget.cpp
-
-    playlist/topbar/TopBar.cpp
-    playlist/topbar/ClearButton.cpp
-    playlist/topbar/SearchLineEdit.cpp
-    playlist/topbar/LineEdit.cpp
-    playlist/topbar/SearchButton.cpp
 
     ExternalResolverGui.cpp
     resolvers/ScriptResolver.cpp
@@ -115,6 +114,8 @@ set( libGuiSources
     utils/SharedTimeLine.cpp
 
     widgets/AnimatedCounterLabel.cpp
+    widgets/Breadcrumb.cpp
+    widgets/BreadcrumbButton.cpp
     widgets/CheckDirTree.cpp
     widgets/QueryLabel.cpp
     widgets/ImageButton.cpp
@@ -138,12 +139,15 @@ set( libGuiSources
     widgets/ToggleButton.cpp
     widgets/FadingPixmap.cpp
     widgets/SocialPlaylistWidget.cpp
+    widgets/SourceTreePopupDialog.cpp
     widgets/infowidgets/SourceInfoWidget.cpp
     widgets/infowidgets/ArtistInfoWidget.cpp
     widgets/infowidgets/AlbumInfoWidget.cpp
     widgets/infowidgets/TrackInfoWidget.cpp
-    widgets/Breadcrumb.cpp
-    widgets/BreadcrumbButton.cpp
+    widgets/searchlineedit/ClearButton.cpp
+    widgets/searchlineedit/LineEdit.cpp
+    widgets/searchlineedit/SearchButton.cpp
+    widgets/searchlineedit/SearchLineEdit.cpp
 )
 
 IF(QCA2_FOUND)
@@ -188,6 +192,7 @@ set( libSources
     accounts/spotify/SpotifyAccount.cpp
     accounts/spotify/SpotifyAccountConfig.cpp
     accounts/spotify/SpotifyPlaylistUpdater.cpp
+    accounts/spotify/SpotifyInfoPlugin.cpp
 
     accounts/lastfm/LastFmAccount.cpp
     accounts/lastfm/LastFmConfig.cpp
@@ -252,10 +257,22 @@ set( libSources
     database/DatabaseCommand_SetTrackAttributes.cpp
     database/Database.cpp
     database/TomahawkSqlQuery.cpp
+    database/IdThreadWorker.cpp
 
     infosystem/InfoSystem.cpp
     infosystem/InfoSystemCache.cpp
     infosystem/InfoSystemWorker.cpp
+
+    filemetadata/MusicScanner.cpp
+    filemetadata/ScanManager.cpp
+    filemetadata/taghandlers/tag.cpp
+    filemetadata/taghandlers/apetag.cpp
+    filemetadata/taghandlers/asftag.cpp
+    filemetadata/taghandlers/id3v1tag.cpp
+    filemetadata/taghandlers/id3v2tag.cpp
+    filemetadata/taghandlers/mp4tag.cpp
+    filemetadata/taghandlers/oggtag.cpp
+    filemetadata/MetadataEditor.cpp
 
     network/BufferIoDevice.cpp
     network/MsgProcessor.cpp
@@ -276,14 +293,6 @@ set( libSources
     playlist/dynamic/database/DatabaseGenerator.cpp
     playlist/dynamic/database/DatabaseControl.cpp
     playlist/dynamic/DynamicControl.cpp
-
-    taghandlers/tag.cpp
-    taghandlers/apetag.cpp
-    taghandlers/asftag.cpp
-    taghandlers/id3v1tag.cpp
-    taghandlers/id3v2tag.cpp
-    taghandlers/mp4tag.cpp
-    taghandlers/oggtag.cpp
 
     utils/TomahawkUtils.cpp
     utils/Logger.cpp
@@ -310,8 +319,9 @@ set( libUI ${libUI}
     widgets/infowidgets/ArtistInfoWidget.ui
     widgets/infowidgets/AlbumInfoWidget.ui
     widgets/infowidgets/TrackInfoWidget.ui
-    playlist/topbar/TopBar.ui
     playlist/QueueView.ui
+    playlist/PlaylistHeader.ui
+    filemetadata/MetadataEditor.ui
     context/ContextWidget.ui
     infobar/InfoBar.ui
     accounts/AccountFactoryWrapper.ui
@@ -323,13 +333,13 @@ include_directories( . ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/.
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${QT_INCLUDE_DIR}
     ${QJSON_INCLUDE_DIR}
-    ${LIBECHONEST_INCLUDE_DIR}
-    ${LIBECHONEST_INCLUDE_DIR}/..
+    ${ECHONEST_INCLUDE_DIR}
+    ${LIBLASTFM_INCLUDE_DIRS}
+    ${LIBLASTFM_INCLUDE_DIRS}/..
     ${CLUCENE_INCLUDE_DIRS}
     ${PHONON_INCLUDES}
     ${QTKEYCHAIN_INCLUDE_DIRS}
     ${QTKEYCHAIN_INCLUDE_DIRS}/..
-    ${CMAKE_BINARY_DIR}/thirdparty/liblastfm2/src
 
     playlist
 
@@ -377,10 +387,13 @@ IF( APPLE )
     FIND_LIBRARY( SCRIPTINGBRIDGE_LIBRARY ScriptingBridge )
     MARK_AS_ADVANCED( COREAUDIO_LIBRARY COREFOUNDATION_LIBRARY FOUNDATION_LIBRARY SCRIPTINGBRIDGE_LIBRARY )
 
+    SET( CMAKE_SHARED_LINKER_FLAGS "-headerpad_max_install_names ${CMAKE_SHARED_LINKER_FLAGS}" )
+
     SET( libSources ${libSources}
       utils/TomahawkUtils_Mac.mm
       mac/FileHelpers.mm
-      thirdparty/Qocoa/qsearchfield_mac.mm )
+      thirdparty/Qocoa/qsearchfield_mac.mm
+      widgets/SourceTreePopupDialog_mac.mm )
 
     SET_SOURCE_FILES_PROPERTIES(utils/TomahawkUtils_Mac.mm PROPERTIES COMPILE_FLAGS "-fvisibility=default")
 
@@ -400,7 +413,7 @@ ELSE( APPLE )
 ENDIF( APPLE )
 
 IF(LIBLASTFM_FOUND)
-    SET(LINK_LIBRARIES ${LINK_LIBRARIES} tomahawk_lastfm2 )
+    SET(LINK_LIBRARIES ${LINK_LIBRARIES} ${LIBLASTFM_LIBRARIES} )
 ENDIF(LIBLASTFM_FOUND)
 
 IF(BUILD_GUI)
@@ -422,6 +435,10 @@ IF(LIBATTICA_FOUND)
     SET( LINK_LIBRARIES ${LINK_LIBRARIES} ${LIBATTICA_LIBRARIES} ${QuaZip_LIBRARIES} )
 ENDIF(LIBATTICA_FOUND)
 
+IF( UNIX AND NOT APPLE )
+    SET( LINK_LIBRARIES ${LINK_LIBRARIES} ${QT_QTDBUS_LIBRARY} )
+ENDIF( UNIX AND NOT APPLE )
+
 TARGET_LINK_LIBRARIES( tomahawklib
     # Thirdparty shipped with tomahawk
     ${LIBPORTFWD_LIBRARIES}
@@ -431,11 +448,15 @@ TARGET_LINK_LIBRARIES( tomahawklib
     ${PHONON_LIBS}
     ${TAGLIB_LIBRARIES}
     ${CLUCENE_LIBRARIES}
-    ${LIBECHONEST_LIBRARY}
+    ${ECHONEST_LIBRARIES}
     ${QT_QTSQL_LIBRARY}
     ${QT_QTUITOOLS_LIBRARY}
     ${QT_QTGUI_LIBRARY}
+    ${QT_QTWEBKIT_LIBRARY}
     ${QT_QTSCRIPT_LIBRARY}
+    ${QT_QTNETWORK_LIBRARY}
+    ${QT_QTXML_LIBRARY}
+    ${QT_QTCORE_LIBRARY}
     ${OS_SPECIFIC_LINK_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${LINK_LIBRARIES}

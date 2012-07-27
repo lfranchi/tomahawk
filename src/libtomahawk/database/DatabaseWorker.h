@@ -34,12 +34,12 @@
 class Database;
 class DatabaseCommandLoggable;
 
-class DatabaseWorker : public QThread
+class DatabaseWorker : public QObject
 {
 Q_OBJECT
 
 public:
-    DatabaseWorker( Database*, bool mutates );
+    DatabaseWorker( Database* db, bool mutates );
     ~DatabaseWorker();
 
     bool busy() const { return m_outstanding > 0; }
@@ -49,9 +49,6 @@ public slots:
     void enqueue( const QSharedPointer<DatabaseCommand>& );
     void enqueue( const QList< QSharedPointer<DatabaseCommand> >& );
 
-protected:
-    void run();
-
 private slots:
     void doWork();
 
@@ -60,11 +57,29 @@ private:
 
     QMutex m_mut;
     Database* m_db;
-    DatabaseImpl* m_dbimpl;
     QList< QSharedPointer<DatabaseCommand> > m_commands;
     int m_outstanding;
 
     QJson::Serializer m_serializer;
+};
+
+class DatabaseWorkerThread : public QThread
+{
+Q_OBJECT
+
+public:
+    DatabaseWorkerThread( Database* db, bool mutates );
+    ~DatabaseWorkerThread();
+
+    QWeakPointer< DatabaseWorker > worker() const;
+    
+protected:
+    void run();
+
+private:
+    QWeakPointer< DatabaseWorker > m_worker;
+    Database* m_db;
+    bool m_mutates;
 };
 
 #endif // DATABASEWORKER_H

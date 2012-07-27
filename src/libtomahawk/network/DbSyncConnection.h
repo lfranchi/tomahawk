@@ -65,7 +65,6 @@ public slots:
     void trigger();
 
 private slots:
-    void gotUs( const QVariantMap& m );
     void gotThem( const QVariantMap& m );
 
     void fetchOpsData( const QString& sinceguid );
@@ -78,6 +77,7 @@ private:
     void synced();
     void changeState( State newstate );
 
+    int m_fetchCount;
     Tomahawk::source_ptr m_source;
     QVariantMap m_uscache;
 

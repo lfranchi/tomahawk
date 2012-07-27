@@ -92,6 +92,31 @@ AlbumPlaylistInterface::hasNextItem()
 }
 
 
+bool
+AlbumPlaylistInterface::hasPreviousItem()
+{
+    int p = m_currentTrack;
+    p--;
+    if ( p < 0 || p >= m_queries.count() )
+        return false;
+
+    return true;
+}
+
+
+bool
+AlbumPlaylistInterface::setCurrentTrack( unsigned int albumpos )
+{
+    albumpos--;
+    if ( albumpos >= m_queries.count() )
+        return false;
+
+    m_currentTrack = albumpos;
+    m_currentItem = m_queries.at( albumpos )->results().first();
+    return true;
+}
+
+
 QList< Tomahawk::query_ptr >
 AlbumPlaylistInterface::tracks()
 {
@@ -114,13 +139,17 @@ AlbumPlaylistInterface::tracks()
             connect( Tomahawk::InfoSystem::InfoSystem::instance(),
                     SIGNAL( info( Tomahawk::InfoSystem::InfoRequestData, QVariant ) ),
                     SLOT( infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData, QVariant ) ) );
+
+            connect( Tomahawk::InfoSystem::InfoSystem::instance(),
+                    SIGNAL( finished( QString ) ),
+                    SLOT( infoSystemFinished( QString ) ) );
         }
         else if ( m_mode == DatabaseMode && !m_databaseLoaded )
         {
             DatabaseCommand_AllTracks* cmd = new DatabaseCommand_AllTracks( m_collection );
             cmd->setAlbum( m_album );
             cmd->setSortOrder( DatabaseCommand_AllTracks::AlbumPosition );
-            
+
             connect( cmd, SIGNAL( tracks( QList<Tomahawk::query_ptr>, QVariant ) ),
                             SLOT( onTracksLoaded( QList<Tomahawk::query_ptr> ) ) );
 
@@ -178,9 +207,24 @@ AlbumPlaylistInterface::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData re
         }
     }
 
+    if ( !m_queries.isEmpty() )
+    {
+        infoSystemFinished( id() );
+    }
+}
+
+
+void
+AlbumPlaylistInterface::infoSystemFinished( const QString& infoId )
+{
+    if ( infoId != id() )
+        return;
+
     m_infoSystemLoaded = true;
     disconnect( Tomahawk::InfoSystem::InfoSystem::instance(), SIGNAL( info( Tomahawk::InfoSystem::InfoRequestData, QVariant ) ),
                 this, SLOT( infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData, QVariant ) ) );
+    disconnect( Tomahawk::InfoSystem::InfoSystem::instance(), SIGNAL( finished( QString ) ),
+                this, SLOT( infoSystemFinished( QString ) ) );
 
     if ( m_queries.isEmpty() && m_mode == Mixed )
     {
@@ -188,7 +232,7 @@ AlbumPlaylistInterface::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData re
         cmd->setAlbum( m_album );
         //this takes discnumber into account as well
         cmd->setSortOrder( DatabaseCommand_AllTracks::AlbumPosition );
-        
+
         connect( cmd, SIGNAL( tracks( QList<Tomahawk::query_ptr>, QVariant ) ),
                         SLOT( onTracksLoaded( QList<Tomahawk::query_ptr> ) ) );
 
@@ -196,6 +240,7 @@ AlbumPlaylistInterface::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData re
     }
     else
     {
+        m_finished = true;
         emit tracksLoaded( m_mode, m_collection );
     }
 }
@@ -204,12 +249,14 @@ AlbumPlaylistInterface::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData re
 void
 AlbumPlaylistInterface::onTracksLoaded( const QList< query_ptr >& tracks )
 {
-    m_databaseLoaded = true;
-
     if ( m_collection.isNull() )
+    {
+        m_databaseLoaded = true;
         m_queries << filterTracks( tracks );
+    }
     else
         m_queries << tracks;
 
+    m_finished = true;
     emit tracksLoaded( m_mode, m_collection );
 }

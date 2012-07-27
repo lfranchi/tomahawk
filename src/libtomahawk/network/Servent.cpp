@@ -34,6 +34,7 @@
 #include "Connection.h"
 #include "ControlConnection.h"
 #include "database/Database.h"
+#include "database/DatabaseImpl.h"
 #include "StreamConnection.h"
 #include "SourceList.h"
 
@@ -59,12 +60,10 @@ Servent::Servent( QObject* parent )
     , m_port( 0 )
     , m_externalPort( 0 )
     , m_ready( false )
-    , m_portfwd( 0 )
 {
     s_instance = this;
 
     m_lanHack = qApp->arguments().contains( "--lanhack" );
-    ACLRegistry::instance();
     setProxy( QNetworkProxy::NoProxy );
 
     {
@@ -89,8 +88,13 @@ Servent::Servent( QObject* parent )
 
 Servent::~Servent()
 {
-    delete ACLRegistry::instance();
-    delete m_portfwd;
+
+    if ( m_portfwd )
+    {
+        m_portfwd.data()->quit();
+        m_portfwd.data()->wait( 60000 );
+        delete m_portfwd.data();
+    }
 }
 
 
@@ -145,9 +149,11 @@ Servent::startListening( QHostAddress ha, bool upnp, int port )
             }
             // TODO check if we have a public/internet IP on this machine directly
             tLog() << "External address mode set to upnp...";
-            m_portfwd = new PortFwdThread( m_port );
-            connect( m_portfwd, SIGNAL( externalAddressDetected( QHostAddress, unsigned int ) ),
+            m_portfwd = QWeakPointer< PortFwdThread >( new PortFwdThread( m_port ) );
+            Q_ASSERT( m_portfwd );
+            connect( m_portfwd.data(), SIGNAL( externalAddressDetected( QHostAddress, unsigned int ) ),
                                   SLOT( setExternalAddress( QHostAddress, unsigned int ) ) );
+            m_portfwd.data()->start();
             break;
     }
 
@@ -227,6 +233,7 @@ Servent::setExternalAddress( QHostAddress ha, unsigned int port )
         return;
     }
 
+    tLog() << "UPnP setup successful";
     m_ready = true;
     emit ready();
 }
@@ -437,7 +444,7 @@ Servent::createParallelConnection( Connection* orig_conn, Connection* new_conn, 
         m.insert( "key", tmpkey );
         m.insert( "offer", key );
         m.insert( "port", externalPort() );
-        m.insert( "controlid", Database::instance()->dbid() );
+        m.insert( "controlid", Database::instance()->impl()->dbid() );
 
         QJson::Serializer ser;
         orig_conn->sendMsg( Msg::factory( ser.serialize(m), Msg::JSON ) );
@@ -527,13 +534,15 @@ Servent::connectToPeer( const QString& ha, int port, const QString &key, const Q
     m["conntype"]  = "accept-offer";
     m["key"]       = key;
     m["port"]      = externalPort();
-    m["nodeid"]    = Database::instance()->dbid();
+    m["nodeid"]    = Database::instance()->impl()->dbid();
 
     conn->setFirstMessage( m );
     if( name.length() )
         conn->setName( name );
     if( id.length() )
         conn->setId( id );
+
+    conn->setProperty( "nodeid", id );
 
     connectToPeer( ha, port, key, conn );
 }
@@ -561,7 +570,7 @@ Servent::connectToPeer( const QString& ha, int port, const QString &key, Connect
         m["conntype"]  = "accept-offer";
         m["key"]       = key;
         m["port"]      = externalPort();
-        m["controlid"] = Database::instance()->dbid();
+        m["controlid"] = Database::instance()->impl()->dbid();
         conn->setFirstMessage( m );
     }
 
@@ -600,7 +609,7 @@ Servent::reverseOfferRequest( ControlConnection* orig_conn, const QString& their
     m["conntype"]  = "push-offer";
     m["key"]       = theirkey;
     m["port"]      = externalPort();
-    m["controlid"] = Database::instance()->dbid();
+    m["controlid"] = Database::instance()->impl()->dbid();
     new_conn->setFirstMessage( m );
     createParallelConnection( orig_conn, new_conn, QString() );
 }
@@ -764,23 +773,26 @@ Servent::printCurrentTransfers()
 bool
 Servent::isIPWhitelisted( QHostAddress ip )
 {
-    typedef QPair<QHostAddress, int> range;
-    static QList<range> whitelist;
-    if( whitelist.isEmpty() )
+    tDebug( LOGVERBOSE ) << Q_FUNC_INFO << "Performing checks against ip" << ip.toString();
+    typedef QPair< QHostAddress, int > range;
+    QList< range > subnetEntries;
+    
+    QList< QNetworkInterface > networkInterfaces = QNetworkInterface::allInterfaces();
+    foreach( QNetworkInterface interface, networkInterfaces )
     {
-        whitelist << range( QHostAddress( "10.0.0.0" ), 8 )
-                  << range( QHostAddress( "172.16.0.0" ), 12 )
-                  << range( QHostAddress( "192.168.0.0" ), 16 )
-                  << range( QHostAddress( "169.254.0.0" ), 16 )
-                  << range( QHostAddress( "127.0.0.0" ), 24 );
-
-//        tDebug( LOGVERBOSE ) << "Loaded whitelist IP range:" << whitelist;
+        tDebug( LOGVERBOSE ) << Q_FUNC_INFO << "Checking interface" << interface.humanReadableName();
+        QList< QNetworkAddressEntry > addressEntries = interface.addressEntries();
+        foreach( QNetworkAddressEntry addressEntry, addressEntries )
+        {
+            tDebug( LOGVERBOSE ) << Q_FUNC_INFO << "Checking address entry with ip" << addressEntry.ip().toString() << "and prefix length" << addressEntry.prefixLength();
+            if ( ip.isInSubnet( addressEntry.ip(), addressEntry.prefixLength() ) )
+            {
+                tDebug( LOGVERBOSE ) << Q_FUNC_INFO << "success";
+                return true;
+            }
+        }
     }
-
-    foreach( const range& r, whitelist )
-        if( ip.isInSubnet( r ) )
-            return true;
-
+    tDebug( LOGVERBOSE ) << Q_FUNC_INFO << "failure";
     return false;
 }
 

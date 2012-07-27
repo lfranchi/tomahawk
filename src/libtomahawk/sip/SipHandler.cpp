@@ -32,6 +32,7 @@
 #include "FuncTimeout.h"
 
 #include "database/Database.h"
+#include "database/DatabaseImpl.h"
 #include "network/ControlConnection.h"
 #include "network/Servent.h"
 #include "SourceList.h"
@@ -117,50 +118,47 @@ SipHandler::hookUpPlugin( SipPlugin* sip )
 
 
 void
-SipHandler::onPeerOnline( const QString& jid )
+SipHandler::onPeerOnline( const QString& peerId )
 {
 //    qDebug() << Q_FUNC_INFO;
-    tDebug() << "SIP online:" << jid;
+    tDebug() << "SIP online:" << peerId;
 
     SipPlugin* sip = qobject_cast<SipPlugin*>(sender());
 
-    QVariantMap m;
+    SipInfo info;
     if( Servent::instance()->visibleExternally() )
     {
         QString key = uuid();
         ControlConnection* conn = new ControlConnection( Servent::instance(), QString() );
 
-        const QString& nodeid = Database::instance()->dbid();
-        conn->setName( jid.left( jid.indexOf( "/" ) ) );
+        const QString& nodeid = Database::instance()->impl()->dbid();
+        conn->setName( peerId.left( peerId.indexOf( "/" ) ) );
         conn->setId( nodeid );
 
         Servent::instance()->registerOffer( key, conn );
-        m["visible"] = true;
-        m["ip"] = Servent::instance()->externalAddress();
-        m["port"] = Servent::instance()->externalPort();
-        m["key"] = key;
-        m["uniqname"] = nodeid;
+        info.setVisible( true );
+        info.setHost( Servent::instance()->externalAddress() );
+        info.setPort( Servent::instance()->externalPort() );
+        info.setKey( key );
+        info.setUniqname( nodeid );
 
-        qDebug() << "Asking them to connect to us:" << m;
+        tDebug() << "Asking them to connect to us:" << info;
     }
     else
     {
-        m["visible"] = false;
-        qDebug() << "We are not visible externally:" << m;
+        info.setVisible( false );
+        tDebug() << "We are not visible externally:" << info;
     }
 
-    QJson::Serializer ser;
-    QByteArray ba = ser.serialize( m );
-
-    sip->sendMsg( jid, QString::fromAscii( ba ) );
+    sip->sendMsg( peerId, info );
 }
 
 
 void
-SipHandler::onPeerOffline( const QString& jid )
+SipHandler::onPeerOffline( const QString& peerId )
 {
 //    qDebug() << Q_FUNC_INFO;
-    qDebug() << "SIP offline:" << jid;
+    tDebug() << "SIP offline:" << peerId;
 }
 
 
@@ -168,6 +166,11 @@ void
 SipHandler::onSipInfo( const QString& peerId, const SipInfo& info )
 {
     tDebug() << Q_FUNC_INFO << "SIP Message:" << peerId << info;
+
+    QString barePeerId = peerId.left( peerId.indexOf( "/" ) );
+
+    //FIXME: We should probably be using barePeerId in the connectToPeer call below.
+    //But, verify this doesn't cause any problems (there is still a uniquename after all)
 
     /*
       If only one party is externally visible, connection is obvious
@@ -177,10 +180,11 @@ SipHandler::onSipInfo( const QString& peerId, const SipInfo& info )
     if ( info.isVisible() )
     {
         if( !Servent::instance()->visibleExternally() ||
-            Servent::instance()->externalAddress() <= info.host().hostName() )
+            Servent::instance()->externalAddress() < info.host() ||
+            ( Servent::instance()->externalAddress() == info.host() && Servent::instance()->externalPort() < info.port() ) )
         {
-            qDebug() << "Initiate connection to" << peerId;
-            Servent::instance()->connectToPeer( info.host().hostName(),
+            tDebug() << "Initiate connection to" << peerId << "at" << info.host();
+            Servent::instance()->connectToPeer( info.host(),
                                           info.port(),
                                           info.key(),
                                           peerId,
@@ -188,18 +192,18 @@ SipHandler::onSipInfo( const QString& peerId, const SipInfo& info )
         }
         else
         {
-            qDebug() << Q_FUNC_INFO << "They should be conecting to us...";
+            tDebug() << Q_FUNC_INFO << "They should be conecting to us...";
         }
     }
     else
     {
-        qDebug() << Q_FUNC_INFO << "They are not visible, doing nothing atm";
+        tDebug() << Q_FUNC_INFO << "They are not visible, doing nothing atm";
     }
 
     m_peersSipInfos.insert( peerId, info );
 }
 
-void SipHandler::onSoftwareVersion(const QString& peerId, const QString& versionString)
+void SipHandler::onSoftwareVersion( const QString& peerId, const QString& versionString )
 {
     m_peersSoftwareVersions.insert( peerId, versionString );
 }

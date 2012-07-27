@@ -21,6 +21,9 @@
 #include "TrackInfoWidget.h"
 #include "ui_TrackInfoWidget.h"
 
+#include <QScrollArea>
+#include <QScrollBar>
+
 #include "ViewManager.h"
 #include "SourceList.h"
 #include "playlist/PlayableModel.h"
@@ -36,24 +39,27 @@ TrackInfoWidget::TrackInfoWidget( const Tomahawk::query_ptr& query, QWidget* par
     : QWidget( parent )
     , ui( new Ui::TrackInfoWidget )
 {
-    ui->setupUi( this );
+    QWidget* widget = new QWidget;
+    ui->setupUi( widget );
 
     QPalette pal = palette();
-    pal.setColor( QPalette::Window, QColor( "#323435" ) );
+    pal.setColor( QPalette::Window, QColor( "#454e59" ) );
 
-    setPalette( pal );
-    setAutoFillBackground( true );
+    widget->setPalette( pal );
+    widget->setAutoFillBackground( true );
+    ui->rightBar->setPalette( pal );
+    ui->rightBar->setAutoFillBackground( true );
 
-    layout()->setSpacing( 0 );
-    ui->tracksWidget->setStyleSheet( "QWidget#tracksWidget { background-color: #323435; }" );
-//    ui->headerWidget->setStyleSheet( "QWidget#headerWidget { background-image: url(" RESPATH "images/playlist-header-tiled.png); }" );
-//    ui->headerWidget->setStyleSheet( "background-color: #323435;" );
-//    ui->tracksWidget->setStyleSheet( "background-color: #323435;" );
     ui->statsLabel->setStyleSheet( "QLabel { background-image:url(); border: 2px solid #dddddd; background-color: #faf9f9; border-radius: 4px; padding: 12px; }" );
     ui->lyricsView->setStyleSheet( "QTextBrowser#lyricsView { background-color: transparent; }" );
 
     ui->lyricsView->setFrameShape( QFrame::NoFrame );
     ui->lyricsView->setAttribute( Qt::WA_MacShowFocusRect, 0 );
+
+    ui->similarTracksView->setAutoResize( true );
+    ui->similarTracksView->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+//    TomahawkUtils::styleScrollBar( ui->similarTracksView->verticalScrollBar() );
+    TomahawkUtils::styleScrollBar( ui->lyricsView->verticalScrollBar() );
 
     QFont f = font();
     f.setBold( true );
@@ -64,8 +70,6 @@ TrackInfoWidget::TrackInfoWidget( const Tomahawk::query_ptr& query, QWidget* par
     f.setPixelSize( 14 );
     ui->artistLabel->setFont( f );
     ui->albumLabel->setFont( f );
-    ui->byLabel->setFont( f );
-    ui->fromLabel->setFont( f );
 
     f.setPixelSize( 12 );
     ui->statsLabel->setFont( f );
@@ -79,9 +83,8 @@ TrackInfoWidget::TrackInfoWidget( const Tomahawk::query_ptr& query, QWidget* par
     ui->trackLabel->setPalette( p );
     ui->artistLabel->setPalette( p );
     ui->albumLabel->setPalette( p );
-    ui->byLabel->setPalette( p );
-    ui->fromLabel->setPalette( p );
     ui->lyricsView->setPalette( p );
+    ui->label->setPalette( p );
 //    ui->similarTracksLabel->setPalette( p );
 
     ui->artistLabel->setType( QueryLabel::Artist );
@@ -93,9 +96,30 @@ TrackInfoWidget::TrackInfoWidget( const Tomahawk::query_ptr& query, QWidget* par
     ui->similarTracksView->setEmptyTip( tr( "Sorry, but we could not find similar tracks for this song!" ) );
 
     m_pixmap = TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultAlbumCover, TomahawkUtils::ScaledCover, QSize( 48, 48 ) );
+    ui->cover->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultTrackImage, TomahawkUtils::ScaledCover, QSize( ui->cover->sizeHint() ) ) );
+
+    QScrollArea* area = new QScrollArea();
+    area->setWidgetResizable( true );
+    area->setWidget( widget );
+    area->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOn );
+
+    area->setStyleSheet( "QScrollArea { background-color: #454e59 }" );
+    area->setFrameShape( QFrame::NoFrame );
+    area->setAttribute( Qt::WA_MacShowFocusRect, 0 );
+
+    QVBoxLayout* layout = new QVBoxLayout();
+    layout->addWidget( area );
+    setLayout( layout );
+    TomahawkUtils::unmarginLayout( layout );
+
+    ui->similarTracksView->setStyleSheet( "QListView { background-color: transparent; }" );
+    ui->frame->setStyleSheet( "QFrame#frame { background-color: transparent; }"
+                              "QFrame#frame { "
+                              "border-image: url(" RESPATH "images/scrollbar-vertical-handle.png) 3 3 3 3 stretch stretch;"
+                              "border-top: 3px transparent; border-bottom: 3px transparent; border-right: 3px transparent; border-left: 3px transparent; }" );
 
     load( query );
-    
+
     connect( ui->artistLabel, SIGNAL( clickedArtist() ), SLOT( onArtistClicked() ) );
     connect( ui->albumLabel,  SIGNAL( clickedAlbum() ),  SLOT( onAlbumClicked() ) );
 }
@@ -153,16 +177,17 @@ TrackInfoWidget::load( const query_ptr& query )
 
     m_artist->loadStats();
     m_query->loadStats();
-    m_query->lyrics();
+//    m_query->lyrics();
     onCoverUpdated();
 
     ui->trackLabel->setText( query->track() );
     ui->artistLabel->setQuery( query );
     ui->albumLabel->setQuery( query );
-    ui->fromLabel->setVisible( !query->album().isEmpty() );
+    ui->albumLabel->setVisible( !query->album().isEmpty() );
 
     m_relatedTracksModel->clear();
-    
+    m_relatedTracksModel->startLoading();
+
     if ( !m_query->similarTracks().isEmpty() )
         onSimilarTracksLoaded();
 }
@@ -219,7 +244,8 @@ TrackInfoWidget::onSimilarArtistsLoaded()
 void
 TrackInfoWidget::onSimilarTracksLoaded()
 {
-    m_relatedTracksModel->append( m_query->similarTracks() );
+    m_relatedTracksModel->appendQueries( m_query->similarTracks() );
+    m_relatedTracksModel->finishLoading();
 }
 
 
