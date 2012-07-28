@@ -159,16 +159,17 @@ SET( LIBPORTFWD_LIBRARY tomahawk_portfwd )
 SET( LIBPORTFWD_LIBRARIES ${LIBPORTFWD_LIBRARY} )
 ADD_SUBDIRECTORY( ${THIRDPARTY_DIR}/libportfwd )
 
-### qtkeychain
+## qtkeychain
+SET( QTKEYCHAIN_STATIC TRUE )
 SET( QTKEYCHAIN_INCLUDE_DIRS ${THIRDPARTY_DIR}/qtkeychain )
 SET( QTKEYCHAIN_LIBRARY qtkeychain )
 SET( QTKEYCHAIN_LIBRARIES ${QTKEYCHAIN_LIBRARY} )
 ADD_SUBDIRECTORY( ${THIRDPARTY_DIR}/qtkeychain/qtkeychain )
 
-if( NOT QTKEYCHAIN_INCLUDE_DIRS OR NOT QTKEYCHAIN_LIBRARIES )
-macro_optional_find_package(QtKeychain)
-macro_log_feature(QTKEYCHAIN_FOUND "QtKeychain" "Provides support for secure password storage" "https://github.com/frankosterfeld/qtkeychain" TRUE "" "")
-endif()
+# if( NOT QTKEYCHAIN_INCLUDE_DIRS OR NOT QTKEYCHAIN_LIBRARIES )
+# macro_optional_find_package(QtKeychain)
+# macro_log_feature(QTKEYCHAIN_FOUND "QtKeychain" "Provides support for secure password storage" "https://github.com/frankosterfeld/qtkeychain" TRUE "" "")
+# endif()
 
 # we need pthreads too
 macro_optional_find_package(Threads)
