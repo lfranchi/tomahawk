@@ -88,15 +88,19 @@ void ReadPasswordJobPrivate::kwalletOpenFinished( QDBusPendingCallWatcher* watch
     QSettings* actual = q->settings() ? q->settings() : local.get();
     WritePasswordJobPrivate::Mode mode;
 
+    const QString typeKey = QString( "%1/type" ).arg( key );
+    const QString dataKey = QString( "%1/data" ).arg( key );
     if ( reply.isError() ) {
         const QDBusError err = reply.error();
 
-        if ( q->insecureFallback() && actual->contains( key ) ) {
+        if ( q->insecureFallback() && actual->contains( dataKey ) ) {
 
-            mode = (WritePasswordJobPrivate::Mode)actual->value( QString( "%1/type" ).arg( key ) ).toInt();
-            data = actual->value( QString( "%1/data" ).arg( key ) ).toByteArray();
+            mode = (WritePasswordJobPrivate::Mode)actual->value( typeKey ).toInt();
+            data = actual->value( dataKey ).toByteArray();
 
             q->emitFinished();
+
+            return;
         } else {
             if ( err.type() == QDBusError::ServiceUnknown ) //KWalletd not running
                 q->emitFinishedWithError( NoBackendAvailable, tr("No keychain service available") );
@@ -107,17 +111,21 @@ void ReadPasswordJobPrivate::kwalletOpenFinished( QDBusPendingCallWatcher* watch
         }
     }
 
-    if ( actual->contains( key ) ) {
+    if ( actual->contains( dataKey ) ) {
         // We previously stored data in the insecure QSettings, but now have KWallet available.
         // Do the migration
 
-        data = actual->value( QString( "%1/data" ).arg( key ) ).toByteArray();
+        data = actual->value( dataKey ).toByteArray();
+        mode = (WritePasswordJobPrivate::Mode)actual->value( typeKey ).toInt();
         actual->remove( key );
 
         q->emitFinished();
 
-        WritePasswordJob* j = new WritePasswordJob( q->service(), this );
+
+        WritePasswordJob* j = new WritePasswordJob( q->service(), 0 );
+        j->setSettings( q->settings() );
         j->setKey( key );
+        j->setAutoDelete( true );
         if ( mode == WritePasswordJobPrivate::Binary )
             j->setBinaryData( data );
         else if ( mode == WritePasswordJobPrivate::Text )
@@ -194,7 +202,7 @@ void WritePasswordJobPrivate::kwalletOpenFinished( QDBusPendingCallWatcher* watc
     watcher->deleteLater();
     QDBusPendingReply<int> reply = *watcher;
 
-    std::auto_ptr<QSettings> local( !q->settings() ? new QSettings( q->service() ) : 0 );
+    std::auto_ptr<QSettings> local( !q->settings() ? new QSettings(  q->service() ) : 0 );
     QSettings* actual = q->settings() ? q->settings() : local.get();
 
     if ( reply.isError() ) {

@@ -85,13 +85,6 @@ public:
 
     QVariantHash configuration() const { QMutexLocker locker( &m_mutex ); return m_configuration; }
 
-    // Starts the asynchronous loading of the credentials.
-    // Will emit credentialsChanged() when they are successfully loaded
-    void loadCredentials() const;
-
-    // Asynchronously save credentials to storage
-    void saveCredentials( const QVariantHash& credentials );
-
     /**
      * Configuration widgets can have a "dataError( bool )" signal to enable/disable the OK button in their wrapper dialogs.
      */
@@ -138,6 +131,13 @@ public:
     virtual void removeFromConfig();
 
 public slots:
+    // Starts the asynchronous loading of the credentials.
+    // Will emit credentialsChanged() when they are successfully loaded
+    void loadCredentials() const;
+
+    // Asynchronously save credentials to storage
+    void saveCredentials( const QVariantHash& credentials );
+
     virtual void authenticate() = 0;
     virtual void deauthenticate() = 0;
 

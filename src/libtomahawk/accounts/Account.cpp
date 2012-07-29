@@ -23,6 +23,9 @@
 #include "utils/Logger.h"
 
 #include <qtkeychain/keychain.h>
+#include <QCoreApplication>
+#include <QMetaObject>
+#include <QThread>
 
 namespace Tomahawk
 {
@@ -203,6 +206,13 @@ Account::syncType()
 void
 Account::saveCredentials( const QVariantHash &creds )
 {
+    // Ensure we're on the main thread
+    if ( QThread::currentThread() != QCoreApplication::instance()->thread() )
+    {
+        QMetaObject::invokeMethod( this, "saveCredentials", Qt::QueuedConnection, Q_ARG( QVariantHash, creds ) );
+        return;
+    }
+
     QByteArray data;
     {
         QDataStream ds( &data, QIODevice::WriteOnly );
@@ -210,6 +220,7 @@ Account::saveCredentials( const QVariantHash &creds )
     }
 
     QKeychain::WritePasswordJob* j = new QKeychain::WritePasswordJob( QLatin1String( "tomahawkaccounts" ), this );
+    j->setSettings( TomahawkSettings::instance() );
     j->setKey( m_accountId );
     j->setAutoDelete( false );
     j->setBinaryData( data );
@@ -226,7 +237,15 @@ Account::saveCredentials( const QVariantHash &creds )
 void
 Account::loadCredentials() const
 {
+    // Ensure we're on the main thread
+    if ( QThread::currentThread() != QCoreApplication::instance()->thread() )
+    {
+        QMetaObject::invokeMethod( const_cast< Account* >(this), "loadCredentials", Qt::QueuedConnection );
+        return;
+    }
+
     QKeychain::ReadPasswordJob* j = new QKeychain::ReadPasswordJob( QLatin1String( "tomahawkaccounts" ), const_cast<Account*>( this ) );
+    j->setSettings( TomahawkSettings::instance() );
     j->setKey( m_accountId );
     j->setAutoDelete( false );
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
@@ -278,6 +297,7 @@ Account::removeFromConfig()
     s->remove( "accounts/" + m_accountId );
 
     QKeychain::DeletePasswordJob* j = new QKeychain::DeletePasswordJob( QLatin1String( "tomahawk" ), this );
+    j->setSettings( TomahawkSettings::instance() );
     j->setKey( m_accountId );
     j->setAutoDelete( false );
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
