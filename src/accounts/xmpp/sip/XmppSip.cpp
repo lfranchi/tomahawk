@@ -114,7 +114,6 @@ XmppSipPlugin::XmppSipPlugin( XmppAccount *account )
 
     // general client setup
     m_client = new Jreen::Client( jid, m_currentPassword );
-    setupClientHelper();
 
     m_client->registerPayload( new TomahawkXmppMessageFactory );
     m_currentResource = QString::fromAscii( "tomahawk%1" ).arg( QString::number( qrand() % 10000 ) );

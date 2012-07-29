@@ -34,7 +34,6 @@ SipPlugin::SipPlugin( Tomahawk::Accounts::Account *account, QObject* parent )
 {
     connect( this, SIGNAL( peerOnline( QString ) ), this, SLOT( onPeerOnline( QString ) ) );
     connect( this, SIGNAL( peerOffline( QString ) ), this, SLOT( onPeerOffline( QString ) ) );
-    connect( m_account, SIGNAL( credentialsChanged( ) ), this, SLOT( configurationChanged( ) ) );
 }
 
 
