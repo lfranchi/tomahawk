@@ -24,9 +24,11 @@
 #include "database/DatabaseCommand_LogPlayback.h"
 #include "utils/TomahawkUtils.h"
 #include "utils/Logger.h"
-#include "lastfm/ws.h"
-#include "lastfm/User.h"
-#include "lastfm/XmlQuery.h"
+#include "utils/Closure.h"
+
+#include <lastfm/ws.h>
+#include <lastfm/User.h>
+#include <lastfm/XmlQuery.h>
 
 using namespace Tomahawk::Accounts;
 
@@ -36,6 +38,7 @@ LastFmConfig::LastFmConfig( LastFmAccount* account )
     , m_account( account )
     , m_page( 1 )
     , m_lastTimeStamp( 0 )
+    , m_totalLovedPages( -1 )
 {
     m_ui = new Ui_LastFmConfig;
     m_ui->setupUi( this );
@@ -237,3 +240,71 @@ LastFmConfig::onLastFmFinished()
         }
     }
 }
+
+
+void
+LastFmConfig::syncLovedTracks()
+{
+    QNetworkReply* reply = lastfm::User( username() ).getLovedTracks( 1000 );
+
+    NewClosure( reply, SIGNAL( finished() ), this, SLOT( onLovedFinished( QNetworkReply* ) ), reply );
+}
+
+
+void
+LastFmConfig::onLovedFinished( QNetworkReply* reply )
+{
+    Q_ASSERT( reply );
+
+    try
+    {
+        lastfm::XmlQuery lfm;
+        lfm.parse( reply->readAll() );
+
+        if ( m_totalLovedPages < 0 )
+            m_totalLovedPages = lfm.attribute( "totalPages" ).toInt();
+
+        foreach ( lastfm::XmlQuery e, lfm.children( "track" ) )
+        {
+            tDebug() << "Found:" << e.children( "artist" ).first()["name"].text() << e["name"].text() << e["date"].attribute( "uts" ).toUInt();
+            Tomahawk::query_ptr query = Tomahawk::Query::get( e.children( "artist" ).first()["name"].text(), e["name"].text(), QString(), QString(), false );
+            if ( query.isNull() )
+                continue;
+
+            m_lastfmLoved.insert( query );
+        }
+
+
+        const int thisPage = lfm.attribute( "page" ).toInt();
+
+        if ( thisPage == m_totalLovedPages )
+        {
+        }
+
+        if ( !lfm.children( "recenttracks" ).isEmpty() )
+        {
+            lastfm::XmlQuery stats = lfm.children( "recenttracks" ).first();
+
+            uint page = stats.attribute( "page" ).toUInt();
+            total = stats.attribute( "totalPages" ).toUInt();
+
+            m_ui->progressBar->setMaximum( total );
+            m_ui->progressBar->setValue( page );
+
+            if ( page < total )
+            {
+                m_page = page + 1;
+                loadHistory();
+            }
+            else
+                finished = true;
+        }
+        else
+            finished = true;
+    }
+    catch( lastfm::ws::ParseError e )
+    {
+        tDebug() << "XmlQuery error:" << e.message();
+    }
+}
+

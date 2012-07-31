@@ -20,6 +20,7 @@
 #define LASTFMCONFIG_H
 
 #include <QWidget>
+#include <QSet>
 
 class Ui_LastFmConfig;
 
@@ -45,9 +46,12 @@ public slots:
 
 private slots:
     void enableButton();
-    
+
     void loadHistory();
     void onHistoryLoaded();
+
+    void syncLovedTracks();
+    void onLovedFinished( QNetworkReply* reply );
 
 signals:
     void sizeHintChanged();
@@ -55,9 +59,12 @@ signals:
 private:
     LastFmAccount* m_account;
     Ui_LastFmConfig* m_ui;
-    
+
     unsigned int m_page;
     unsigned int m_lastTimeStamp;
+
+    int m_totalLovedPages;
+    QSet< Tomahawk::query_ptr > m_lastfmLoved;
 };
 
 }

@@ -54,6 +54,7 @@ LastFmAccountFactory::icon() const
 
 LastFmAccount::LastFmAccount( const QString& accountId )
     : CustomAtticaAccount( accountId )
+    , m_lovedPageCount( 0 )
 {
     setAccountFriendlyName( "Last.Fm" );
     m_icon.load( RESPATH "images/lastfm-icon.png" );
