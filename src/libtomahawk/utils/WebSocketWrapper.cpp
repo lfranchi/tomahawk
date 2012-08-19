@@ -27,6 +27,37 @@
 using websocketpp::client;
 using websocketpp::client_tls;
 
+class WebSocketWrapperPrivate
+{
+public:
+    WebSocketWrapperPrivate(const QString& theUrl, WebSocketWrapper* qq) : q(qq), isTls(false), url( theUrl ) {}
+
+    void receivedMessage(const QString& msg) {
+        q->message(msg);
+    }
+
+    void onFail(const QString& reason) {
+        q->failed(reason);
+    }
+
+    void onClose(const QString& reason) {
+        q->closed(reason);
+    }
+
+    void onOpen() {
+        q->opened();
+    }
+
+    WebSocketWrapper* q;
+
+    client::handler::ptr handler;
+
+    client_tls::handler::ptr handler_tls;
+
+    bool isTls;
+    QString url;
+};
+
 template <typename endpoint_type>
 class ClientHandler : public endpoint_type::handler
 {
@@ -39,30 +70,36 @@ public:
 
     void on_fail(connection_ptr con)
     {
-        qDebug() << "Connection Failed";
+        const QString reason = QString::fromStdString(con->get_fail_reason());
+        pimpl->onFail(reason);
+        qDebug() << "Connection Failed: " << reason;
     }
 
     void on_open(connection_ptr con)
     {
         qDebug() << "Connection Opened";
+        pimpl->onOpen();
         m_con = con;
     }
 
     void on_close(connection_ptr con)
     {
+        const QString reason = QString::fromStdString(con->get_remote_close_reason());
+        pimpl->onClose(reason);
         qDebug() << "Connection Closed";
         m_con = connection_ptr();
     }
 
     boost::shared_ptr<boost::asio::ssl::context> on_tls_init() {
-        qDebug() << "Asked for ssl context?";
         boost::shared_ptr<boost::asio::ssl::context> context(new boost::asio::ssl::context(boost::asio::ssl::context::tlsv1));
+        context->set_options(boost::asio::ssl::context::default_workarounds);
         return context;
     }
 
     void on_message(connection_ptr con, message_ptr msg)
     {
         const QString payload = QString::fromStdString(msg->get_payload());
+        pimpl->receivedMessage(payload);
         qDebug() << "Got Message:" << payload;
     }
 
@@ -88,28 +125,17 @@ public:
 
         m_con->close(websocketpp::close::status::GOING_AWAY,"");
     }
+
+    websocketpp::session::state::value state() const {
+        if (!m_con) {
+            return websocketpp::session::state::CLOSED;
+        }
+
+        return m_con->get_state();
+    }
 private:
     WebSocketWrapperPrivate* pimpl;
     connection_ptr m_con;
-};
-
-class WebSocketWrapperPrivate
-{
-public:
-    WebSocketWrapperPrivate(const QString& theUrl, WebSocketWrapper* qq) : q(qq), isTls(false), running(false), url( theUrl ) {}
-
-    void receivedMessage(const QString& msg) {
-        q->message(msg);
-    }
-
-    WebSocketWrapper* q;
-
-    client::handler::ptr handler;
-
-    client_tls::handler::ptr handler_tls;
-
-    bool isTls, running;
-    QString url;
 };
 
 WebSocketWrapper::WebSocketWrapper(const QString& url, QObject* parent)
@@ -118,7 +144,13 @@ WebSocketWrapper::WebSocketWrapper(const QString& url, QObject* parent)
 {
 }
 
-WebSocketWrapper::~WebSocketWrapper() {}
+WebSocketWrapper::~WebSocketWrapper() {
+    // If the thread is still running, close the connection and wait for the run() function to exit
+    if (isRunning()) {
+        stop();
+        wait(10000);
+    }
+}
 
 
 void WebSocketWrapper::run()
@@ -146,8 +178,7 @@ void WebSocketWrapper::run()
             endpoint.connect(con);
 
             con->add_request_header("User-Agent","Tomahawk/0.2.0 TomahawkAccount/0.2.0");
-            pimpl->running = true;
-            endpoint.run(true);
+            endpoint.run(false);
         } else {
             pimpl->isTls = false;
             pimpl->handler = client::handler::ptr(new ClientHandler<client>(pimpl.data()));
@@ -163,11 +194,8 @@ void WebSocketWrapper::run()
             endpoint.connect(con);
 
             con->add_request_header("User-Agent","Tomahawk/0.2.0 TomahawkAccount/0.2.0");
-            pimpl->running = true;
-            endpoint.run(true);
+            endpoint.run(false);
         }
-
-        pimpl->running = false;
     } catch(websocketpp::exception& e) {
         qWarning() << "Caught exception trying to get connection to endpoint: " << pimpl->url << e.code() << e.what();
         return;
@@ -202,12 +230,11 @@ void WebSocketWrapper::send(const QString& msg)
 void
 WebSocketWrapper::stop()
 {
-
     Q_ASSERT(!pimpl.isNull());
     if (pimpl.isNull())
         return;
 
-    // NOTE endpoint::stop() is threadsafe
+    // NOTE connection::close() is threadsafe
     if (pimpl->isTls) {
         ClientHandler<client_tls>* client = dynamic_cast<ClientHandler<client_tls>*>(pimpl->handler_tls.get());
         if (!client)

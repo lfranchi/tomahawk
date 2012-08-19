@@ -26,6 +26,9 @@
  * A Qt wrapper around websocket++'s boost::asio-based websockets.
  *
  * One wrapper per connection. Pass in the desired endpoint in the constructor.
+ *
+ *
+ *
  */
 class WebSocketWrapperPrivate;
 class DLLEXPORT WebSocketWrapper : public QThread
@@ -36,12 +39,17 @@ public:
     virtual ~WebSocketWrapper();
 
     void send(const QString& msg);
-
-    void run();
-
     void stop();
+
 signals:
     void message(const QString& msg);
+
+    void opened();
+    void closed(const QString& reason);
+    void failed(const QString& reason);
+
+protected:
+    void run();
 
 private:
     Q_DISABLE_COPY(WebSocketWrapper)
