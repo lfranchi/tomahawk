@@ -113,6 +113,7 @@ set( libGuiSources
     utils/BinaryInstallerHelper.cpp
     utils/BinaryExtractWorker.cpp
     utils/SharedTimeLine.cpp
+    utils/WebSocketWrapper.cpp
 
     widgets/AnimatedCounterLabel.cpp
     widgets/Breadcrumb.cpp
@@ -339,6 +340,7 @@ include_directories( . ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/.
     ${LIBLASTFM_INCLUDE_DIRS}/..
     ${CLUCENE_INCLUDE_DIRS}
     ${PHONON_INCLUDES}
+    ${WEBSOCKETPP_INCLUDE_DIR}
 
     playlist
 
@@ -461,6 +463,9 @@ TARGET_LINK_LIBRARIES( tomahawklib
     ${OS_SPECIFIC_LINK_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${LINK_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${OPENSSL_LIBRARIES}
+    ${WEBSOCKETPP_LIBRARIES}
 )
 
 INSTALL( TARGETS tomahawklib

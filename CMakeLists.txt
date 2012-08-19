@@ -118,7 +118,7 @@ macro_log_feature(TAGLIB_FOUND "TagLib" "Audio Meta-Data Library" "http://develo
 include( CheckTagLibFileName )
 check_taglib_filename( COMPLEX_TAGLIB_FILENAME )
 
-macro_optional_find_package( Boost )
+macro_optional_find_package(Boost COMPONENTS system regex date_time random thread)
 macro_log_feature(Boost_FOUND "Boost" "Provides free peer-reviewed portable C++ source libraries" "http://www.boost.org" TRUE "" "") #FIXME: give useful explaination
 
 macro_optional_find_package(QCA2)
@@ -139,6 +139,9 @@ macro_log_feature(QTWEETLIB_FOUND "QTweetLib" "Qt Twitter Library" "https://gith
 macro_optional_find_package(LibLastFm 1.0.0)
 macro_log_feature(LIBLASTFM_FOUND "liblastfm" "Qt library for the Last.fm webservices" "https://github.com/eartle/liblastfm" TRUE "" "liblastfm is needed for scrobbling tracks to Last.fm and fetching cover artwork")
 
+macro_optional_find_package(OpenSSL)
+macro_log_feature(OPENSSL_FOUND "OpenSSL" "OpenSSL Crypto Library" "" TRUE "" "OpenSSL is required in order to enable wss:/ support.")
+
 #### submodules start
 # automatically init submodules here, don't delete this code we may add submodules again
 
@@ -158,6 +161,11 @@ SET( LIBPORTFWD_INCLUDE_DIR ${THIRDPARTY_DIR}/libportfwd/include )
 SET( LIBPORTFWD_LIBRARY tomahawk_portfwd )
 SET( LIBPORTFWD_LIBRARIES ${LIBPORTFWD_LIBRARY} )
 ADD_SUBDIRECTORY( ${THIRDPARTY_DIR}/libportfwd )
+
+SET( WEBSOCKETPP_INCLUDE_DIR ${CMAKE_BINARY_DIR}/thirdparty/websocketpp/src/include )
+SET( WEBSOCKETPP_LIBRARY websocketpp )
+SET( WEBSOCKETPP_LIBRARIES ${WEBSOCKETPP_LIBRARY} )
+ADD_SUBDIRECTORY( ${THIRDPARTY_DIR}/websocketpp/src )
 
 # we need pthreads too
 macro_optional_find_package(Threads)
