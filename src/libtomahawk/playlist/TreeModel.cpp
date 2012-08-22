@@ -288,10 +288,7 @@ TreeModel::addFilteredCollection( const collection_ptr& collection, unsigned int
 
     Database::instance()->enqueue( QSharedPointer<DatabaseCommand>( cmd ) );
 
-    if ( collection->source()->isLocal() )
-        setTitle( tr( "My Collection" ) );
-    else
-        setTitle( tr( "Collection of %1" ).arg( collection->source()->friendlyName() ) );
+    setTitle( collection->friendlyName() );
 }
 
 

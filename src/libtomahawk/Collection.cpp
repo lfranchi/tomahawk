@@ -56,6 +56,12 @@ Collection::name() const
 }
 
 
+QString
+Collection::friendlyName() const
+{
+    return m_friendlyName;
+}
+
 const
 source_ptr& Collection::source() const
 {

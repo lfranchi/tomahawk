@@ -50,6 +50,7 @@ public:
     virtual ~Collection();
 
     virtual QString name() const;
+    virtual QString friendlyName() const;
 
     virtual void loadPlaylists() { qDebug() << Q_FUNC_INFO; }
     virtual void loadAutoPlaylists() { qDebug() << Q_FUNC_INFO; }
@@ -102,7 +103,7 @@ public slots:
     void delTracks( const QList<unsigned int>& fileids );
 
 protected:
-    QString m_name;
+    QString m_name, m_friendlyName;
     unsigned int m_lastmodified; // unix time of last change to collection
 
 private slots:
