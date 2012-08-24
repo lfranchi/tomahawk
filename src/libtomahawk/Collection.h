@@ -46,11 +46,11 @@ class DLLEXPORT Collection : public QObject
 Q_OBJECT
 
 public:
-    Collection( const source_ptr& source, const QString& name, QObject* parent = 0 );
+    Collection( const source_ptr& source, const QString& name, const QString& friendlyName, QObject* parent = 0 );
     virtual ~Collection();
 
-    virtual QString name() const;
-    virtual QString friendlyName() const;
+    QString name() const;
+    QString friendlyName() const;
 
     virtual void loadPlaylists() { qDebug() << Q_FUNC_INFO; }
     virtual void loadAutoPlaylists() { qDebug() << Q_FUNC_INFO; }
@@ -103,13 +103,13 @@ public slots:
     void delTracks( const QList<unsigned int>& fileids );
 
 protected:
-    QString m_name, m_friendlyName;
     unsigned int m_lastmodified; // unix time of last change to collection
 
 private slots:
     void onSynced();
 
 private:
+    QString m_name, m_friendlyName;
     bool m_changed;
 
     source_ptr m_source;

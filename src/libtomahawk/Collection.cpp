@@ -30,10 +30,11 @@
 using namespace Tomahawk;
 
 
-Collection::Collection( const source_ptr& source, const QString& name, QObject* parent )
+Collection::Collection( const source_ptr& source, const QString& name, const QString& friendlyName, QObject* parent )
     : QObject( parent )
-    , m_name( name )
     , m_lastmodified( 0 )
+    , m_name( name )
+    , m_friendlyName( friendlyName )
     , m_changed( false )
     , m_source( source )
 {
@@ -61,6 +62,7 @@ Collection::friendlyName() const
 {
     return m_friendlyName;
 }
+
 
 const
 source_ptr& Collection::source() const

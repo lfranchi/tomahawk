@@ -33,8 +33,7 @@ using namespace Tomahawk;
 
 
 DatabaseCollection::DatabaseCollection( const source_ptr& src, QObject* parent )
-    : Collection( src, QString( "dbcollection:%1" ).arg( src->userName() ), parent )
-    , m_friendlyName( src->isLocal() ? tr( "My Collection" ) : tr( "Collection of %1" ).arg( src->friendlyName() ) )
+    : Collection( src, QString( "dbcollection:%1" ).arg( src->userName() ), src->isLocal() ? tr( "My Collection" ) : tr( "Collection of %1" ).arg( src->friendlyName() ), parent )
 {
 }
 

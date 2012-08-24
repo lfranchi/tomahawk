@@ -106,6 +106,9 @@ var TomahawkResolver = {
     search: function( qid, searchString )
     {
         return this.resolve( qid, "", "", searchString );
+    },
+    getArtists: function()
+    {
     }
 };
 
@@ -122,7 +125,8 @@ var TomahawkResolver = {
  *                name: "Demo Resolver",
  *                weigth: 95,
  *                timeout: 5,
- *                limit: 10
+ *                limit: 10,
+ *                has_collection: false
  };
  },
  resolve: function( qid, artist, album, track )
