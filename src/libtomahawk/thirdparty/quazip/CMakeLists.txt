@@ -1,8 +1,8 @@
 project (QuaZip)
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.9)
 
 set(qt_min_version "4.5.0")
-find_package(Qt4 REQUIRED)
+find_package(Qt5Core)
 set(QT_USE_QTGUI false)
 include(${QT_USE_FILE})
 

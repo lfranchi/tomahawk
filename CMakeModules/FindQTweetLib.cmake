@@ -8,7 +8,7 @@
 #
 
 # Dependencies
-find_package(Qt4 REQUIRED)
+#find_package(Qt4Core)
 
 # Include dir
 find_path(QTWEETLIB_INCLUDE_DIR

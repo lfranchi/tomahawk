@@ -8,9 +8,9 @@
 #
 
 # Dependencies
-if(NOT QT4_FOUND)
-    find_package(Qt4 REQUIRED)
-endif()
+#if(NOT QT4_FOUND)
+#    find_package(Qt4 REQUIRED)
+#endif()
 
 # Include dir
 find_path(LIBLASTFM_INCLUDE_DIR

@@ -13,3 +13,4 @@ ENDIF()
 
 set_target_properties(quazip PROPERTIES VERSION 1 SOVERSION 1.0.0)
 target_link_libraries(quazip ${QT_QTMAIN_LIBRARY} ${QT_QTCORE_LIBRARY} -lz)
+

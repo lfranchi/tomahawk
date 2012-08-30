@@ -1,7 +1,9 @@
 PROJECT( tomahawk )
-CMAKE_MINIMUM_REQUIRED( VERSION 2.8.6 )
+CMAKE_MINIMUM_REQUIRED( VERSION 2.8.9 )
 SET( CMAKE_MODULE_PATH  "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules" )
 CMAKE_POLICY(SET CMP0017 NEW)
+SET(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 
 ###
 ### Tomahawk application info
@@ -19,6 +21,7 @@ SET( TOMAHAWK_VERSION_PATCH 99 )
 
 # enforce proper symbol exporting on all platforms
 add_definitions( "-fvisibility=hidden" )
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # build options
 option(BUILD_GUI "Build Tomahawk with GUI" ON)
@@ -95,8 +98,9 @@ IF( BUILD_GUI AND UNIX AND NOT APPLE )
     FIND_PACKAGE( X11 )
 ENDIF()
 
-macro_optional_find_package(Qt4 4.7.0 COMPONENTS ${NEEDED_QT4_COMPONENTS} )
-macro_log_feature(QT4_FOUND "Qt" "A cross-platform application and UI framework" "http://qt.nokia.com" TRUE "" "If you see this, although libqt4-devel is installed, check whether the \n     qtwebkit-devel package and whatever contains QtUiTools is installed too")
+#macro_optional_find_package(Qt5 COMPONENTS ${NEEDED_QT4_COMPONENTS} )
+macro_optional_find_package(Qt5Widgets)
+#macro_log_feature(QT4_FOUND "Qt" "A cross-platform application and UI framework" "http://qt.nokia.com" TRUE "" "If you see this, although libqt4-devel is installed, check whether the \n     qtwebkit-devel package and whatever contains QtUiTools is installed too")
 
 macro_optional_find_package(Phonon 4.5.0)
 macro_log_feature(PHONON_FOUND "Phonon" "The Phonon multimedia library" "http://phonon.kde.org" TRUE "" "")

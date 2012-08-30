@@ -73,7 +73,7 @@ SET( tomahawkSourcesGui ${tomahawkSourcesGui}
      TomahawkWindow.cpp
      LoadXSPFDialog.cpp
      SocialWidget.cpp
-     
+
      widgets/ContainedMenuButton.cpp
      widgets/AccountListWidget.cpp
      widgets/AccountModelFactoryProxy.cpp
@@ -190,6 +190,8 @@ ENDIF( WIN32 )
 SET_TARGET_PROPERTIES(tomahawk PROPERTIES AUTOMOC TRUE)
 
 MESSAGE( STATUS "OS_SPECIFIC_LINK_LIBRARIES: ${OS_SPECIFIC_LINK_LIBRARIES}" )
+
+qt5_use_modules(tomahawk Core Widgets Xml Network)
 
 SET(LINK_LIBRARIES  "")
 IF(LIBLASTFM_FOUND)
