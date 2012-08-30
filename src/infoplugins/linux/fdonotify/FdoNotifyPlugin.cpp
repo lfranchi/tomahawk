@@ -43,7 +43,7 @@
 
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusMessage>
-#include <QtGui/QImage>
+#include <QImage>
 #include <QtPlugin>
 
 #include "utils/Logger.h"

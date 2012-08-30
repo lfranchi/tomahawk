@@ -19,7 +19,7 @@
 #ifndef CHARTSPLUGIN_DATA_P_H
 #define CHARTSPLUGIN_DATA_P_H
 
-#include <QtCore/qchar.h>
+#include <qchar.h>
 #include <QLocale>
 
 namespace Tomahawk {

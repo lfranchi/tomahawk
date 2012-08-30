@@ -23,8 +23,8 @@
 #include <result.h>
 #include <infosystem/InfoSystem.h>
 
-#include <QtCore/QObject>
-#include <QtCore/qsharedpointer.h>
+#include <QObject>
+#include <qsharedpointer.h>
 #include <QTimer>
 
 #include <gloox/messagehandler.h>

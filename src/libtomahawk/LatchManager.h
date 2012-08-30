@@ -23,7 +23,7 @@
 #include "DllMacro.h"
 #include "Source.h"
 
-#include <QtCore/QObject>
+#include <QObject>
 
 class QState;
 class QStateMachine;

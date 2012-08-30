@@ -32,7 +32,6 @@
 #include <QMap>
 #include <QUuid>
 #include <QMacNativeWidget>
-#include <QPointer>
 
 struct ItemData {
     QPixmap icon;
@@ -111,7 +110,7 @@ public:
             //Each toolbar item is 32x32; we expand by one toolbar item width repeatedly until they all fit
             windowFrame.origin.x -= TOOLBAR_ITEM_WIDTH / 2;
             windowFrame.size.width += TOOLBAR_ITEM_WIDTH / 2;
-            
+
             [prefsWindow setFrame:windowFrame display:NO];
             [prefsWindow setMinSize: windowFrame.size];
         }
@@ -135,7 +134,7 @@ public:
         Q_ASSERT(newPage);
         if (!newPage)
             return;
-        
+
         const NSRect oldFrame = [[prefsWindow contentView] frame];
 
         // Clear first responder on window and set a temporary NSView on the window
@@ -349,7 +348,7 @@ QToolbarTabDialog::QToolbarTabDialog() :
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     pimpl->panes = [[NSMutableDictionary alloc] init];
-    
+
     static const int defaultWidth = 350;
     static const int defaultHeight = 200;
     pimpl->prefsWindow = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, defaultWidth, defaultHeight)
@@ -359,7 +358,7 @@ QToolbarTabDialog::QToolbarTabDialog() :
 
     [pimpl->prefsWindow setReleasedWhenClosed:NO];
     [pimpl->prefsWindow setTitle:@"Preferences"];
-    
+
     // identifier is some app-unique string, since all toolbars in an app share state. make this unique to this app's preferences window
     pimpl->toolBar = [[NSToolbar alloc] initWithIdentifier:[NSString stringWithFormat:@"%@.prefspanel.toolbar", fromQString(QCoreApplication::instance()->applicationName())]];
     [pimpl->toolBar setAllowsUserCustomization: NO];
@@ -404,7 +403,7 @@ void QToolbarTabDialog::addTab(QWidget* page, const QPixmap& icon, const QString
     [nativeView setAutoresizesSubviews:YES];
 
     pimpl->minimumWidth = qMax(pimpl->minimumWidth, page->sizeHint().width());
-    
+
     nativeWidget->show();
 
     ItemData data;

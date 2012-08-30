@@ -86,7 +86,7 @@ DBSyncConnection::changeState( State newstate )
 void
 DBSyncConnection::setup()
 {
-    setId( QString( "DBSyncConnection/%1" ).arg( socket()->peerAddress().toString() ) );
+    setId( QString( "DBSyncConnection/%1" ).arg( socket().data()->peerAddress().toString() ) );
     check();
 }
 

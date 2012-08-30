@@ -23,10 +23,10 @@
 #include "TomahawkSettings.h"
 #include "ResolverAccount.h"
 
-#include <QtCore/QLibrary>
-#include <QtCore/QDir>
-#include <QtCore/QPluginLoader>
-#include <QtCore/QCoreApplication>
+#include <QLibrary>
+#include <QDir>
+#include <QPluginLoader>
+#include <QCoreApplication>
 #include <QTimer>
 #include <sip/SipHandler.h>
 

@@ -20,7 +20,7 @@
 #ifndef SEEKSLIDER_H
 #define SEEKSLIDER_H
 
-#include <QtGui/QSlider>
+#include <QSlider>
 
 #include "DllMacro.h"
 

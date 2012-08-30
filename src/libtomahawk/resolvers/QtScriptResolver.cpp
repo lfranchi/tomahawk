@@ -31,13 +31,13 @@
 #include "utils/Logger.h"
 
 
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 
-#include <QtCore/QMetaProperty>
-#include <QtCore/QCryptographicHash>
+#include <QMetaProperty>
+#include <QCryptographicHash>
 
 // FIXME: bloody hack, remove this for 0.3
 // this one adds new functionality to old resolvers

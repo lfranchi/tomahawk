@@ -152,7 +152,7 @@ public:
 @interface QButtonTarget : NSObject
 {
 @public
-    QPointer<QButtonPrivate> pimpl;
+    QWeakPointer<QButtonPrivate> pimpl;
 }
 -(void)clicked;
 @end

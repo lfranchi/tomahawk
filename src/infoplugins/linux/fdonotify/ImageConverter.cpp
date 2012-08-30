@@ -21,7 +21,7 @@
 
 #include <QtDBus/QDBusArgument>
 #include <QtDBus/QDBusMetaType>
-#include <QtGui/QImage>
+#include <QImage>
 
 #include "utils/Logger.h"
 

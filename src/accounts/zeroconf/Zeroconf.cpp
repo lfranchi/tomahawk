@@ -21,7 +21,7 @@
 
 #include <QtPlugin>
 
-#include <QtCore/QTimer>
+#include <QTimer>
 
 #include "TomahawkSettings.h"
 #include "utils/Logger.h"

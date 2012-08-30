@@ -19,10 +19,10 @@
 #include "MetadataEditor.h"
 #include "ui_MetadataEditor.h"
 
-#include <QtGui/QDialog>
-#include <QtGui/QDialogButtonBox>
-#include <QtCore/QFileInfo>
-#include <QtCore/QFile>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QFileInfo>
+#include <QFile>
 
 #include "Result.h"
 #include "Artist.h"

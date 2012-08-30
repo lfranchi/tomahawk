@@ -2,7 +2,7 @@
 #define QBUTTON_H
 
 #include <QWidget>
-#include <QPointer>
+#include <QWeakPointer>
 
 #include "DllMacro.h"
 
@@ -46,6 +46,6 @@ signals:
 
 private:
     friend class QButtonPrivate;
-    QPointer<QButtonPrivate> pimpl;
+    QWeakPointer<QButtonPrivate> pimpl;
 };
 #endif // QBUTTON_H

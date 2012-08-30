@@ -62,14 +62,14 @@ public:
             emit qSearchField->returnPressed();
     }
 
-    QPointer<QSearchField> qSearchField;
+    QWeakPointer<QSearchField> qSearchField;
     NSSearchField *nsSearchField;
 };
 
 @interface QSearchFieldDelegate : NSObject<NSTextFieldDelegate>
 {
 @public
-    QPointer<QSearchFieldPrivate> pimpl;
+    QWeakPointer<QSearchFieldPrivate> pimpl;
 }
 -(void)controlTextDidChange:(NSNotification*)notification;
 -(void)controlTextDidEndEditing:(NSNotification*)notification;
@@ -77,19 +77,19 @@ public:
 
 @implementation QSearchFieldDelegate
 -(void)controlTextDidChange:(NSNotification*)notification {
-    Q_ASSERT(pimpl);
-    if (pimpl)
-        pimpl->textDidChange(toQString([[notification object] stringValue]));
+    Q_ASSERT(!pimpl.isNull());
+    if (!pimp.isNull()l)
+        pimpl.data()->textDidChange(toQString([[notification object] stringValue]));
 }
 
 -(void)controlTextDidEndEditing:(NSNotification*)notification {
     Q_UNUSED(notification);
     // No Q_ASSERT here as it is called on destruction.
-    if (pimpl)
-        pimpl->textDidEndEditing();
+    if (!pimp.isNull()l)
+        pimpl.data()->textDidEndEditing();
 
     if ([[[notification userInfo] objectForKey:@"NSTextMovement"] intValue] == NSReturnTextMovement)
-        pimpl->returnPressed();
+        pimpl.data()->returnPressed();
 }
 @end
 
@@ -139,7 +139,7 @@ QSearchField::QSearchField(QWidget *parent) : QWidget(parent)
     NSSearchField *search = [[QocoaSearchField alloc] init];
 
     QSearchFieldDelegate *delegate = [[QSearchFieldDelegate alloc] init];
-    pimpl = delegate->pimpl = new QSearchFieldPrivate(this, search);
+    pimpl = delegate->pimpl = QWeakPointer<QSearchFieldPrivate>(new QSearchFieldPrivate(this, search));
     [search setDelegate:delegate];
 
     setupLayout(search, this);
@@ -156,71 +156,71 @@ QSearchField::QSearchField(QWidget *parent) : QWidget(parent)
 
 void QSearchField::setText(const QString &text)
 {
-    Q_ASSERT(pimpl);
-    if (!pimpl)
+    Q_ASSERT(!pimpl.isNull());
+    if (pimpl.isNull)
         return;
 
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    [pimpl->nsSearchField setStringValue:fromQString(text)];
+    [pimpl.data()->nsSearchField setStringValue:fromQString(text)];
     [pool drain];
 }
 
 void QSearchField::setPlaceholderText(const QString& text)
 {
-    Q_ASSERT(pimpl);
-    if (!pimpl)
+    Q_ASSERT(!pimpl.isNull());
+    if (pimpl.isNull)
         return;
 
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    [[pimpl->nsSearchField cell] setPlaceholderString:fromQString(text)];
+    [[pimpl.data()->nsSearchField cell] setPlaceholderString:fromQString(text)];
     [pool drain];
 }
 
 void QSearchField::clear()
 {
-    Q_ASSERT(pimpl);
-    if (!pimpl)
+    Q_ASSERT(!pimpl.isNull());
+    if (pimpl.isNull)
         return;
 
-    [pimpl->nsSearchField setStringValue:@""];
+    [pimpl.data()->nsSearchField setStringValue:@""];
     emit textChanged(QString());
 }
 
 void QSearchField::selectAll()
 {
-    Q_ASSERT(pimpl);
-    if (!pimpl)
+    Q_ASSERT(!pimpl.isNull());
+    if (pimpl.isNull)
         return;
 
-    [pimpl->nsSearchField performSelector:@selector(selectText:)];
+    [pimpl.data()->nsSearchField performSelector:@selector(selectText:)];
 }
 
 QString QSearchField::text() const
 {
-    Q_ASSERT(pimpl);
-    if (!pimpl)
+    Q_ASSERT(!pimpl.isNull());
+    if (pimpl.isNull)
         return QString();
 
-    return toQString([pimpl->nsSearchField stringValue]);
+    return toQString([pimpl.data()->nsSearchField stringValue]);
 }
 
 QString QSearchField::placeholderText() const
 {
-    Q_ASSERT(pimpl);
-    if (!pimpl)
+    Q_ASSERT(!pimpl.isNull());
+    if (pimpl.isNull)
         return QString();
 
-    return toQString([[pimpl->nsSearchField cell] placeholderString]);
+    return toQString([[pimpl.data()->nsSearchField cell] placeholderString]);
 }
 
 void QSearchField::setFocus(Qt::FocusReason reason)
 {
-    Q_ASSERT(pimpl);
-    if (!pimpl)
+    Q_ASSERT(!pimpl.isNull());
+    if (pimpl.isNull)
         return;
 
-    if ([pimpl->nsSearchField acceptsFirstResponder])
-        [[pimpl->nsSearchField window] makeFirstResponder: pimpl->nsSearchField];
+    if ([pimpl.data()->nsSearchField acceptsFirstResponder])
+        [[pimpl.data()->nsSearchField window] makeFirstResponder: pimpl.data()->nsSearchField];
 }
 
 void QSearchField::setFocus()

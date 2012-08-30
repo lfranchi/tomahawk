@@ -20,9 +20,9 @@
 #ifndef RESULT_H
 #define RESULT_H
 
-#include <QtCore/QObject>
-#include <QtCore/QSharedPointer>
-#include <QtCore/QVariant>
+#include <QObject>
+#include <QSharedPointer>
+#include <QVariant>
 
 #include "Typedefs.h"
 

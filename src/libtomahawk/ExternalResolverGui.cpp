@@ -23,8 +23,8 @@
 #include <QBuffer>
 #include <QDir>
 
-#include <QtGui/QIcon>
-#include <QtGui/QWidget>
+#include <QIcon>
+#include <QWidget>
 #include <QUiLoader>
 #include "utils/Logger.h"
 

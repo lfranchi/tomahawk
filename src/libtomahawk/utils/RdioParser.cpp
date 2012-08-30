@@ -38,7 +38,7 @@
 #include <QUrl>
 #include <QStringList>
 
-#include <QtCore/QCryptographicHash>
+#include <QCryptographicHash>
 
 using namespace Tomahawk;
 

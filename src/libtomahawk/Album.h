@@ -22,10 +22,10 @@
 
 #include "config.h"
 
-#include <QtCore/QObject>
-#include <QtCore/QSharedPointer>
+#include <QObject>
+#include <QSharedPointer>
 #ifndef ENABLE_HEADLESS
-    #include <QtGui/QPixmap>
+    #include <QPixmap>
 #endif
 #include <QFuture>
 

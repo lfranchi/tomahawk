@@ -1,7 +1,7 @@
 #include "NewReleasesPlugin.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QSettings>
+#include <QDir>
+#include <QSettings>
 #include <QtNetwork/QNetworkConfiguration>
 #include <QtNetwork/QNetworkReply>
 #include <QtPlugin>

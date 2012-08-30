@@ -2,7 +2,7 @@
 #define QSEARCHFIELD_H
 
 #include <QWidget>
-#include <QPointer>
+#include <QWeakPointer>
 
 #include "DllMacro.h"
 
@@ -37,7 +37,7 @@ protected:
 
 private:
     friend class QSearchFieldPrivate;
-    QPointer <QSearchFieldPrivate> pimpl;
+    QWeakPointer <QSearchFieldPrivate> pimpl;
 };
 
 #endif // QSEARCHFIELD_H

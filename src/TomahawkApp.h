@@ -26,11 +26,11 @@
 #include "HeadlessCheck.h"
 #include "config.h"
 
-#include <QtCore/QRegExp>
-#include <QtCore/QFile>
-#include <QtCore/QSettings>
-#include <QtCore/QDir>
-#include <QtCore/QPersistentModelIndex>
+#include <QRegExp>
+#include <QFile>
+#include <QSettings>
+#include <QDir>
+#include <QPersistentModelIndex>
 
 #include "QxtHttpServerConnector"
 #include "QxtHttpSessionManager"

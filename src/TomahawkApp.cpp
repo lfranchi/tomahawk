@@ -22,13 +22,13 @@
 
 #include <iostream>
 
-#include <QtCore/QPluginLoader>
-#include <QtCore/QDir>
-#include <QtCore/QMetaType>
-#include <QtCore/QTime>
+#include <QPluginLoader>
+#include <QDir>
+#include <QMetaType>
+#include <QTime>
 #include <QtNetwork/QNetworkReply>
-#include <QtCore/QFile>
-#include <QtCore/QFileInfo>
+#include <QFile>
+#include <QFileInfo>
 #include <QTranslator>
 
 #include "AclRegistryImpl.h"
@@ -79,7 +79,7 @@
     #include "TomahawkWindow.h"
     #include "SettingsDialog.h"
     #include "ActionCollection.h"
-    #include <QtGui/QMessageBox>
+    #include <QMessageBox>
     #include "widgets/HeaderLabel.h"
     #include <TomahawkSettingsGui.h>
 #endif

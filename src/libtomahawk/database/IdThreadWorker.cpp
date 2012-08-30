@@ -26,7 +26,7 @@
 
 #define ID_THREAD_DEBUG 0
 
-#include <QtCore/qfutureinterface.h>
+#include <qfutureinterface.h>
 
 using namespace Tomahawk;
 

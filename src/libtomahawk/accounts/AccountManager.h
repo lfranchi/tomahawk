@@ -20,7 +20,7 @@
 #ifndef ACCOUNTMANAGER_H
 #define ACCOUNTMANAGER_H
 
-#include <QtCore/QObject>
+#include <QObject>
 
 #include "Typedefs.h"
 #include "DllMacro.h"

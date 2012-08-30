@@ -20,17 +20,17 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
-#include <QtCore/QSharedPointer>
+#include <QSharedPointer>
 #include <QtNetwork/QTcpSocket>
 #include <QtNetwork/QHostAddress>
-#include <QtCore/QVariant>
-#include <QtCore/QVariantMap>
-#include <QtCore/QString>
-#include <QtCore/QDataStream>
-#include <QtCore/QtEndian>
-#include <QtCore/QTimer>
-#include <QtCore/QTime>
-#include <QtCore/QPointer>
+#include <QVariant>
+#include <QVariantMap>
+#include <QString>
+#include <QDataStream>
+#include <QtEndian>
+#include <QTimer>
+#include <QTime>
+#include <QWeakPointer>
 
 #include <qjson/parser.h>
 #include <qjson/serializer.h>
@@ -61,7 +61,7 @@ public:
     void setFirstMessage( msg_ptr m );
     msg_ptr firstMessage() const { return m_firstmsg; };
 
-    const QPointer<QTcpSocket>& socket() { return m_sock; };
+    QWeakPointer<QTcpSocket> socket() { return m_sock; };
 
     void setOutbound( bool o ) { m_outbound = o; };
     bool outbound() const { return m_outbound; }
@@ -126,7 +126,7 @@ private slots:
     void calcStats();
 
 protected:
-    QPointer<QTcpSocket> m_sock;
+    QWeakPointer<QTcpSocket> m_sock;
     int m_peerport;
     msg_ptr m_msg;
     QJson::Parser parser;

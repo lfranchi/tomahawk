@@ -1,7 +1,7 @@
 #ifndef __KDTOOLS_KDTOOLSGLOBAL_H__
 #define __KDTOOLS_KDTOOLSGLOBAL_H__
 
-#include <QtCore/QtGlobal>
+#include <QtGlobal>
 
 #define KDAB_DISABLE_COPY( x ) private: x( const x & ); x & operator=( const x & )
 

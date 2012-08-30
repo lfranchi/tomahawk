@@ -1,13 +1,13 @@
 #ifndef __KDTOOLSCORE_KDSINGLEAPPLICATIONGUARD_H__
 #define __KDTOOLSCORE_KDSINGLEAPPLICATIONGUARD_H__
 
-#include <QtCore/QObject>
+#include <QObject>
 
 #if QT_VERSION >= 0x040400 || defined(DOXYGEN_RUN)
 #ifndef QT_NO_SHAREDMEMORY
 
-#include <QtCore/QStringList>
-#include <QtCore/QMetaType>
+#include <QStringList>
+#include <QMetaType>
 
 #include "pimpl_ptr.h"
 #include "DllMacro.h"

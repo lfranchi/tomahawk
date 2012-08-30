@@ -20,7 +20,7 @@
 #ifndef DLLMACRO_H
 #define DLLMACRO_H
 
-#include <QtCore/qglobal.h>
+#include <qglobal.h>
 
 #ifndef DLLEXPORT
 # if defined (DLLEXPORT_PRO)

@@ -20,9 +20,9 @@
 #ifndef AUDIOENGINE_H
 #define AUDIOENGINE_H
 
-#include <QtCore/QObject>
-#include <QtCore/QTimer>
-#include <QtCore/QQueue>
+#include <QObject>
+#include <QTimer>
+#include <QQueue>
 
 #include <phonon/MediaObject>
 #include <phonon/AudioOutput>

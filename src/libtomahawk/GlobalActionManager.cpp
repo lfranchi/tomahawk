@@ -46,8 +46,8 @@
     #include "playlist/PlaylistView.h"
     #include "widgets/SearchWidget.h"
 
-    #include <QtGui/QApplication>
-    #include <QtGui/QClipboard>
+    #include <QApplication>
+    #include <QClipboard>
 #endif
 
 #include <QtNetwork/QNetworkAccessManager>
@@ -55,8 +55,8 @@
 #include <QtNetwork/QNetworkConfiguration>
 #include <QtNetwork/QNetworkProxy>
 
-#include <QtCore/QMimeData>
-#include <QtCore/QUrl>
+#include <QMimeData>
+#include <QUrl>
 
 
 GlobalActionManager* GlobalActionManager::s_instance = 0;

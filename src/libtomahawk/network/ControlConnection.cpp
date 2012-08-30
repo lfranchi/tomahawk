@@ -128,7 +128,7 @@ ControlConnection::setup()
 
     QString friendlyName = name();
 
-    tDebug() << "Detected name:" << name() << friendlyName << m_sock->peerAddress();
+    tDebug() << "Detected name:" << name() << friendlyName << m_sock.data()->peerAddress();
 
     // setup source and remote collection for this peer
     m_source = SourceList::instance()->get( id(), friendlyName, true );

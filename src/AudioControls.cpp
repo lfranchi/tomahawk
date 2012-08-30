@@ -21,8 +21,8 @@
 #include "ui_AudioControls.h"
 
 #include <QtNetwork/QNetworkReply>
-#include <QtGui/QDropEvent>
-#include <QtGui/QMouseEvent>
+#include <QDropEvent>
+#include <QMouseEvent>
 
 #include "audio/AudioEngine.h"
 #include "playlist/PlaylistView.h"

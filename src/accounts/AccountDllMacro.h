@@ -20,7 +20,7 @@
 #ifndef ACCOUNTDLLMACRO_H
 #define ACCOUNTDLLMACRO_H
 
-#include <QtCore/qglobal.h>
+#include <qglobal.h>
 
 #ifndef ACCOUNTDLLEXPORT
 # if defined (ACCOUNTDLLEXPORT_PRO)

@@ -24,7 +24,7 @@ quazip/(un)zip.h files for details, basically it's zlib license.
 #ifndef QUAZIP_GLOBAL_H
 #define QUAZIP_GLOBAL_H
 
-#include <QtCore/qglobal.h>
+#include <qglobal.h>
 /**
  * When building the library with MSVC, QUAZIP_BUILD must be defined.
  * qglobal.h takes care of defining Q_DECL_* correctly for msvc/gcc.

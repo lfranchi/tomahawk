@@ -30,7 +30,7 @@
 #ifndef TRACKINFOWIDGET_H
 #define TRACKINFOWIDGET_H
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 #include "PlaylistInterface.h"
 #include "ViewPage.h"

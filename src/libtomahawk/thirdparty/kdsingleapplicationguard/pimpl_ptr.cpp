@@ -9,7 +9,7 @@
   (The exception safety of this class has not been evaluated yet.)
 
   pimpl_ptr is a smart immutable pointer, which owns the contained object. Unlike other smart pointers,
-  it creates a standard constructed object when instanciated via the 
+  it creates a standard constructed object when instanciated via the
   \link pimpl_ptr() standard constructor\endlink.
   Additionally, pimpl_ptr respects constness of the pointer object and returns \c const \c T* for
   a const pimpl_ptr object.
@@ -126,7 +126,7 @@
 */
 
 /*!
-  \fn T * pimpl_ptr::operator->() 
+  \fn T * pimpl_ptr::operator->()
 
   Member-by-pointer operator. Returns get().
 */
@@ -136,7 +136,7 @@
 #include <kdunittest/test.h>
 
 #include <QObject>
-#include <QPointer>
+#include <QWeakPointer>
 
 namespace
 {
@@ -163,18 +163,18 @@ KDAB_UNITTEST_SIMPLE( pimpl_ptr, "kdcoretools" ) {
     }
 
 
-    {   
-        QPointer< QObject > o;
+    {
+        QWeakPointer< QObject > o;
         {
             kdtools::pimpl_ptr< QObject > qobject( new QObject );
-            o = qobject.get();
-            assertEqual( o, qobject.operator->() );
-            assertEqual( o, &(qobject.operator*()) );
+            o = QWeakPointer< QObject >( qobject.get() );
+            assertEqual( o.data(), qobject.operator->() );
+            assertEqual( o.data(), &(qobject.operator*()) );
         }
         assertNull( o );
     }
 
-    {   
+    {
         const kdtools::pimpl_ptr< QObject > qobject( new QObject );
         const QObject* o = qobject.get();
         assertEqual( o, qobject.operator->() );

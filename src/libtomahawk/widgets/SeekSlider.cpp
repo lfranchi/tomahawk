@@ -19,8 +19,8 @@
 
 #include "SeekSlider.h"
 
-#include <QtGui/QMouseEvent>
-#include <QtCore/QTimeLine>
+#include <QMouseEvent>
+#include <QTimeLine>
 
 #include "utils/TomahawkUtils.h"
 #include "utils/Logger.h"

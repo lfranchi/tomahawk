@@ -12,7 +12,7 @@
 #ifndef MPRISPLUGINROOTADAPTOR_H_1312900930
 #define MPRISPLUGINROOTADAPTOR_H_1312900930
 
-#include <QtCore/QObject>
+#include <QObject>
 #include <QtDBus/QtDBus>
 
 class QByteArray;

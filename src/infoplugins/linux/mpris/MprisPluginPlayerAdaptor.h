@@ -12,7 +12,7 @@
 #ifndef MPRISPLUGINPLAYERADAPTOR_H_1313089554
 #define MPRISPLUGINPLAYERADAPTOR_H_1313089554
 
-#include <QtCore/QObject>
+#include <QObject>
 #include <QtDBus/QtDBus>
 
 class QByteArray;

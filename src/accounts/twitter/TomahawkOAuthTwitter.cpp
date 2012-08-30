@@ -20,7 +20,7 @@
 
 #include "TomahawkOAuthTwitter.h"
 
-#include <QtGui/QInputDialog>
+#include <QInputDialog>
 
 #include "utils/Logger.h"
 

@@ -20,9 +20,9 @@
 #ifndef TOMAHAWK_TRAYICON_H
 #define TOMAHAWK_TRAYICON_H
 
-#include <QtGui/QSystemTrayIcon>
-#include <QtCore/QTimer>
-#include <QtGui/QMenu>
+#include <QSystemTrayIcon>
+#include <QTimer>
+#include <QMenu>
 
 #include "Result.h"
 

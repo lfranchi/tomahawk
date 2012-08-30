@@ -24,7 +24,7 @@
 #include "infoplugins/InfoPluginDllMacro.h"
 
 #include <QtNetwork/QNetworkReply>
-#include <QtCore/QObject>
+#include <QObject>
 
 class QNetworkReply;
 

@@ -1,13 +1,13 @@
 #ifndef __KDTOOLS__CORE__KDLOCKEDSHAREDMEMORYPOINTER_H__
 #define __KDTOOLS__CORE__KDLOCKEDSHAREDMEMORYPOINTER_H__
 
-#include <QtCore/QtGlobal>
+#include <QtGlobal>
 
 #if QT_VERSION >= 0x040400 || defined( DOXYGEN_RUN )
 #ifndef QT_NO_SHAREDMEMORY
 
 #include "kdsharedmemorylocker.h"
-#include <QtCore/QSharedMemory>
+#include <QSharedMemory>
 
 #include <cassert>
 

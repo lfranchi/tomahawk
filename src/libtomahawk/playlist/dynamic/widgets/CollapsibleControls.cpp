@@ -27,13 +27,13 @@
 #include "widgets/ElidedLabel.h"
 #include "Source.h"
 
-#include <QtGui/QLabel>
-#include <QtGui/QStackedLayout>
-#include <QtGui/QToolButton>
-#include <QtCore/QEasingCurve>
-#include <QtCore/QTimeLine>
-#include <QtGui/QPaintEvent>
-#include <QtGui/QPainter>
+#include <QLabel>
+#include <QStackedLayout>
+#include <QToolButton>
+#include <QEasingCurve>
+#include <QTimeLine>
+#include <QPaintEvent>
+#include <QPainter>
 
 #include "utils/Logger.h"
 

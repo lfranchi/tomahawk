@@ -20,9 +20,9 @@
 #ifndef AUDIOCONTROLS_H
 #define AUDIOCONTROLS_H
 
-#include <QtGui/QWidget>
-#include <QtCore/QTimer>
-#include <QtCore/QTimeLine>
+#include <QWidget>
+#include <QTimer>
+#include <QTimeLine>
 
 #include "Result.h"
 #include "PlaylistInterface.h"

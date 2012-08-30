@@ -45,7 +45,7 @@
 #include <jreen/pubsubmanager.h>
 
 #ifndef ENABLE_HEADLESS
-    #include <QtGui/QMessageBox>
+    #include <QMessageBox>
 #endif
 
 #include "accounts/AccountDllMacro.h"

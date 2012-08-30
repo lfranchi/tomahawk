@@ -21,14 +21,14 @@
 #define M3U_LOADER_H
 
 
-#include <QtCore/QFileInfo>
+#include <QFileInfo>
 #include "DllMacro.h"
 #include "Typedefs.h"
 #include "Query.h"
 #include "Playlist.h"
 #include <QObject>
 #include <QSet>
-#include <QtCore/QStringList>
+#include <QStringList>
 
 class TrackModel;
 

@@ -21,7 +21,7 @@
 #include "WelcomeWidget.h"
 #include "ui_WelcomeWidget.h"
 
-#include <QtGui/QPainter>
+#include <QPainter>
 
 #include "ViewManager.h"
 #include "SourceList.h"

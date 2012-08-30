@@ -1122,8 +1122,8 @@ void KDSingleApplicationGuard::Private::poll() {
 
 #include <iostream>
 
-#include <QtCore/QTime>
-#include <QtCore/QUuid>
+#include <QTime>
+#include <QUuid>
 #include <QtTest/QSignalSpy>
 
 static void wait( int msec, QSignalSpy * spy=0, int expectedCount=INT_MAX )

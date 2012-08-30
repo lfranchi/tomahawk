@@ -30,7 +30,7 @@
 
 #include <QObject>
 #include <QSet>
-#include <QtCore/QStringList>
+#include <QStringList>
 
 /**
  * Small class to parse grooveshark links into query_ptrs

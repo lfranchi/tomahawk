@@ -20,8 +20,8 @@
 #ifndef TOMAHAWKARTISTPLAYLISTINTERFACE_H
 #define TOMAHAWKARTISTPLAYLISTINTERFACE_H
 
-#include <QtCore/QObject>
-#include <QtCore/QSharedPointer>
+#include <QObject>
+#include <QSharedPointer>
 
 #include "Artist.h"
 #include "Typedefs.h"

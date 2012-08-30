@@ -22,7 +22,7 @@
 
 #include "Typedefs.h"
 
-#include <QtCore/qobject.h>
+#include <qobject.h>
 
 
 class XSPFGenerator : public QObject

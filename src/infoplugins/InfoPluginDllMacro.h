@@ -20,7 +20,7 @@
 #ifndef INFOPLUGINDLLMACRO_H
 #define INFOPLUGINDLLMACRO_H
 
-#include <QtCore/qglobal.h>
+#include <qglobal.h>
 
 #ifndef INFOPLUGINDLLEXPORT
 # if defined (INFOPLUGINDLLEXPORT_PRO)

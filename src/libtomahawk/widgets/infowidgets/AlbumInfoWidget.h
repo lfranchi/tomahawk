@@ -30,7 +30,7 @@
 #ifndef ALBUMINFOWIDGET_H
 #define ALBUMINFOWIDGET_H
 
-#include <QtGui/QWidget>
+#include <QWidget>
 
 #include "PlaylistInterface.h"
 #include "ViewPage.h"

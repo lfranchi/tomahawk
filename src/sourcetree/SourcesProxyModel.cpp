@@ -20,7 +20,7 @@
 
 #include "SourcesProxyModel.h"
 
-#include <QtGui/QTreeView>
+#include <QTreeView>
 
 #include "SourceList.h"
 #include "SourcesModel.h"

@@ -20,8 +20,8 @@
 #ifndef GENERATOR_INTERFACE_H
 #define GENERATOR_INTERFACE_H
 
-#include <QtCore/QObject>
-#include <QtCore/QSharedPointer>
+#include <QObject>
+#include <QSharedPointer>
 #include <QStringList>
 
 #include "Typedefs.h"

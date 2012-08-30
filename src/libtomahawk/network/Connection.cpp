@@ -23,15 +23,14 @@
 #include "utils/Logger.h"
 #include "Source.h"
 
-#include <QtCore/QTime>
-#include <QtCore/QThread>
+#include <QTime>
+#include <QThread>
 
 #define PROTOVER "4" // must match remote peer, or we can't talk.
 
 
 Connection::Connection( Servent* parent )
     : QObject()
-    , m_sock( 0 )
     , m_peerport( 0 )
     , m_servent( parent )
     , m_ready( false )
@@ -69,7 +68,7 @@ Connection::~Connection()
     if( !m_sock.isNull() )
     {
 //        qDebug() << "deleteLatering sock" << m_sock;
-        m_sock->deleteLater();
+        m_sock.data()->deleteLater();
     }
 
     delete m_statstimer;
@@ -84,10 +83,10 @@ Connection::handleIncomingQueueEmpty()
     //         << "m_peer_disconnected" << m_peer_disconnected
     //         << "bytes rx" << bytesReceived();
 
-    if( !m_sock.isNull() && m_sock->bytesAvailable() == 0 && m_peer_disconnected )
+    if( !m_sock.isNull() && m_sock.data()->bytesAvailable() == 0 && m_peer_disconnected )
     {
         qDebug() << "No more data to read, peer disconnected. shutting down connection."
-                 << "bytesavail" << m_sock->bytesAvailable()
+                 << "bytesavail" << m_sock.data()->bytesAvailable()
                  << "bytesrx" << m_rx_bytes;
         shutdown();
     }
@@ -152,9 +151,9 @@ Connection::actualShutdown()
     }
     m_actually_shutting_down = true;
 
-    if ( !m_sock.isNull() && m_sock->isOpen() )
+    if ( !m_sock.isNull() && m_sock.data()->isOpen() )
     {
-        m_sock->disconnectFromHost();
+        m_sock.data()->disconnectFromHost();
     }
 
 //    qDebug() << "EMITTING finished()";
@@ -178,11 +177,11 @@ Connection::start( QTcpSocket* sock )
     Q_ASSERT( sock );
     Q_ASSERT( sock->isValid() );
 
-    m_sock = sock;
+    m_sock = QWeakPointer<QTcpSocket>( sock );
 
     if( m_name.isEmpty() )
     {
-        m_name = QString( "peer[%1]" ).arg( m_sock->peerAddress().toString() );
+        m_name = QString( "peer[%1]" ).arg( m_sock.data()->peerAddress().toString() );
     }
 
     QTimer::singleShot( 0, this, SLOT( checkACL() ) );
@@ -273,7 +272,7 @@ Connection::doSetup()
     m_statstimer->start();
     m_statstimer_mark.start();
 
-    m_sock->moveToThread( thread() );
+    m_sock.data()->moveToThread( thread() );
 
     connect( m_sock.data(), SIGNAL( bytesWritten( qint64 ) ),
                               SLOT( bytesWritten( qint64 ) ), Qt::QueuedConnection );
@@ -311,13 +310,13 @@ Connection::socketDisconnected()
 {
     tDebug() << "SOCKET DISCONNECTED" << this->name() << id()
              << "shutdown will happen after incoming queue empties."
-             << "bytesavail:" << m_sock->bytesAvailable()
+             << "bytesavail:" << m_sock.data()->bytesAvailable()
              << "bytesRecvd" << bytesReceived();
 
     m_peer_disconnected = true;
     emit socketClosed();
 
-    if( m_msgprocessor_in.length() == 0 && m_sock->bytesAvailable() == 0 )
+    if( m_msgprocessor_in.length() == 0 && m_sock.data()->bytesAvailable() == 0 )
     {
         handleIncomingQueueEmpty();
         actualShutdown();
@@ -363,11 +362,11 @@ Connection::readyRead()
 
     if( m_msg.isNull() )
     {
-        if( m_sock->bytesAvailable() < Msg::headerSize() )
+        if( m_sock.data()->bytesAvailable() < Msg::headerSize() )
             return;
 
         char msgheader[ Msg::headerSize() ];
-        if( m_sock->read( (char*) &msgheader, Msg::headerSize() ) != Msg::headerSize() )
+        if( m_sock.data()->read( (char*) &msgheader, Msg::headerSize() ) != Msg::headerSize() )
         {
             qDebug() << "Failed reading msg header";
             this->markAsFailed();
@@ -378,10 +377,10 @@ Connection::readyRead()
         m_rx_bytes += Msg::headerSize();
     }
 
-    if( m_sock->bytesAvailable() < m_msg->length() )
+    if( m_sock.data()->bytesAvailable() < m_msg->length() )
         return;
 
-    QByteArray ba = m_sock->read( m_msg->length() );
+    QByteArray ba = m_sock.data()->read( m_msg->length() );
     if( ba.length() != (qint32)m_msg->length() )
     {
         qDebug() << "Failed to read full msg payload";
@@ -394,7 +393,7 @@ Connection::readyRead()
     handleReadMsg(); // process m_msg and clear() it
 
     // since there is no explicit threading, use the event loop to schedule this:
-    if( m_sock->bytesAvailable() )
+    if( m_sock.data()->bytesAvailable() )
     {
         QTimer::singleShot( 0, this, SLOT( readyRead() ) );
     }
@@ -475,7 +474,7 @@ Connection::sendMsg_now( msg_ptr msg )
     Q_ASSERT( QThread::currentThread() == thread() );
 //    Q_ASSERT( this->isRunning() );
 
-    if ( m_sock.isNull() || !m_sock->isOpen() || !m_sock->isWritable() )
+    if ( m_sock.isNull() || !m_sock.data()->isOpen() || !m_sock.data()->isWritable() )
     {
         qDebug() << "***** Socket problem, whilst in sendMsg(). Cleaning up. *****";
         shutdown( false );

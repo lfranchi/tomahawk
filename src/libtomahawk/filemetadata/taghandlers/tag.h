@@ -21,7 +21,7 @@
 
 #include "DllMacro.h"
 
-#include <QtCore/QString>
+#include <QString>
 
 #include <taglib/tag.h>
 #include <taglib/fileref.h>

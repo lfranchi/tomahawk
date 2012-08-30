@@ -23,7 +23,7 @@
 #include "audio/AudioEngine.h"
 #include "database/Database.h"
 
-#include <QtGui/QAction>
+#include <QAction>
 #include "SourceList.h"
 #include "database/DatabaseCommand_SocialAction.h"
 #include "SourcePlaylistInterface.h"

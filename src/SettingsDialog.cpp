@@ -22,14 +22,14 @@
 #include "SettingsDialog.h"
 #include "config.h"
 
-#include <QtGui/QDesktopServices>
-#include <QtGui/QFileDialog>
-#include <QtGui/QMessageBox>
+#include <QDesktopServices>
+#include <QFileDialog>
+#include <QMessageBox>
 #include <QtNetwork/QNetworkConfiguration>
 #include <QtNetwork/QNetworkProxy>
-#include <QtGui/QVBoxLayout>
-#include <QtGui/QSizeGrip>
-#include <QtGui/QToolBar>
+#include <QVBoxLayout>
+#include <QSizeGrip>
+#include <QToolBar>
 
 #include "AtticaManager.h"
 #include "AclRegistry.h"

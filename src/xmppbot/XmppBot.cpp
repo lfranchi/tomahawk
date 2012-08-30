@@ -31,7 +31,7 @@
 #include <gloox/message.h>
 #include <gloox/connectiontcpclient.h>
 
-#include <QtCore/QStringList>
+#include <QStringList>
 
 #include "utils/Logger.h"
 

@@ -27,7 +27,7 @@
 #include "utils/TomahawkUtils.h"
 #include "playlist/PlaylistUpdaterInterface.h"
 
-#include <QtGui/QPixmap>
+#include <QPixmap>
 
 namespace Tomahawk
 {

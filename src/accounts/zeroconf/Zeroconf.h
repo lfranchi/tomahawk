@@ -26,7 +26,7 @@
 
 #include "../AccountDllMacro.h"
 
-#include <QtCore/QTimer>
+#include <QTimer>
 
 #define MYNAME "Local Network"
 

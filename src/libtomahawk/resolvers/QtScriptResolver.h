@@ -25,9 +25,9 @@
 #include "utils/TomahawkUtils.h"
 #include "config.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QFile>
-#include <QtCore/QThread>
+#include <QDir>
+#include <QFile>
+#include <QThread>
 #include <QtWebKit/QWebPage>
 #include <QtWebKit/QWebFrame>
 

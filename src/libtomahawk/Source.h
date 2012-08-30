@@ -20,9 +20,9 @@
 #ifndef SOURCE_H
 #define SOURCE_H
 
-#include <QtCore/QObject>
-#include <QtCore/QSharedPointer>
-#include <QtCore/QVariantMap>
+#include <QObject>
+#include <QSharedPointer>
+#include <QVariantMap>
 
 #include "Typedefs.h"
 #include "network/DbSyncConnection.h"

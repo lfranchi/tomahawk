@@ -27,7 +27,7 @@
 #include "Typedefs.h"
 #include "Playlist.h"
 
-#include <QtCore/QObject>
+#include <QObject>
 #include <QStringList>
 #include <QSet>
 

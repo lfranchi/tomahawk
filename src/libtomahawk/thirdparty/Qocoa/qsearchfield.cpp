@@ -47,7 +47,7 @@ QSearchField::QSearchField(QWidget *parent) : QWidget(parent)
     connect(lineEdit, SIGNAL(returnPressed()),
             this, SIGNAL(returnPressed()));
 
-    pimpl = QPointer< QSearchFieldPrivate>( new QSearchFieldPrivate( lineEdit ) );
+    pimpl = QWeakPointer< QSearchFieldPrivate>( new QSearchFieldPrivate( lineEdit ) );
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(lineEdit);

@@ -19,7 +19,7 @@
 
 #include "TreeProxyModel.h"
 
-#include <QtGui/QListView>
+#include <QListView>
 
 #include "TreeProxyModelPlaylistInterface.h"
 #include "Source.h"

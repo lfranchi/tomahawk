@@ -19,11 +19,11 @@
 
 #include "Servent.h"
 
-#include <QtCore/QCoreApplication>
-#include <QtCore/QMutexLocker>
+#include <QCoreApplication>
+#include <QMutexLocker>
 #include <QtNetwork/QNetworkInterface>
-#include <QtCore/QFile>
-#include <QtCore/QThread>
+#include <QFile>
+#include <QThread>
 #include <QtNetwork/QNetworkProxy>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
@@ -123,7 +123,7 @@ Servent::startListening( QHostAddress ha, bool upnp, int port )
     }
 
     TomahawkSettings::ExternalAddressMode mode = TomahawkSettings::instance()->externalAddressMode();
-    
+
     tLog() << "Servent listening on port" << m_port << "- servent thread:" << thread()
            << "- address mode:" << (int)( mode );
 
@@ -397,8 +397,8 @@ Servent::readyRead()
             tLog() << "Socket has become invalid, possibly took too long to make an ACL decision, key:" << key << nodeid;
             goto closeconnection;
         }
-        tDebug( LOGVERBOSE ) << "claimOffer OK:" << key << nodeid;        
-        
+        tDebug( LOGVERBOSE ) << "claimOffer OK:" << key << nodeid;
+
         m_connectedNodes << nodeid;
         if( !nodeid.isEmpty() )
             conn->setId( nodeid );
@@ -428,7 +428,7 @@ Servent::createParallelConnection( Connection* orig_conn, Connection* new_conn, 
     // if we can connect to them directly:
     if( orig_conn && orig_conn->outbound() )
     {
-        connectToPeer( orig_conn->socket()->peerAddress().toString(),
+        connectToPeer( orig_conn->socket().data()->peerAddress().toString(),
                        orig_conn->peerPort(),
                        key,
                        new_conn );
@@ -466,7 +466,7 @@ Servent::socketConnected()
         tDebug( LOGVERBOSE ) << Q_FUNC_INFO << "Socket's connection was null, could have timed out or been given an invalid address";
         return;
     }
-    
+
     Connection* conn = sock->_conn.data();
     handoverSocket( conn, sock );
 }
@@ -630,7 +630,7 @@ Servent::claimOffer( ControlConnection* cc, const QString &nodeid, const QString
             bool authed = false;
             foreach( ControlConnection* cc, m_controlconnections )
             {
-                if( cc->socket()->peerAddress() == peer )
+                if( cc->socket().data()->peerAddress() == peer )
                 {
                     authed = true;
                     break;
@@ -776,7 +776,7 @@ Servent::isIPWhitelisted( QHostAddress ip )
     tDebug( LOGVERBOSE ) << Q_FUNC_INFO << "Performing checks against ip" << ip.toString();
     typedef QPair< QHostAddress, int > range;
     QList< range > subnetEntries;
-    
+
     QList< QNetworkInterface > networkInterfaces = QNetworkInterface::allInterfaces();
     foreach( QNetworkInterface interface, networkInterfaces )
     {

@@ -32,7 +32,7 @@ class QButtonPrivate : public QObject
 public:
     QButtonPrivate(QButton *button, QAbstractButton *abstractButton)
         : QObject(button), abstractButton(abstractButton) {}
-    QPointer<QAbstractButton> abstractButton;
+    QWeakPointer<QAbstractButton> abstractButton;
 };
 
 QButton::QButton(QWidget *parent, BezelStyle) : QWidget(parent)
@@ -44,7 +44,7 @@ QButton::QButton(QWidget *parent, BezelStyle) : QWidget(parent)
         button = new QPushButton(this);
     connect(button, SIGNAL(clicked()),
             this, SIGNAL(clicked()));
-    pimpl = new QButtonPrivate(this, button);
+    pimpl = QWeakPointer<QButtonPrivate>(new QButtonPrivate(this, button));
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setMargin(0);
@@ -53,37 +53,37 @@ QButton::QButton(QWidget *parent, BezelStyle) : QWidget(parent)
 
 void QButton::setText(const QString &text)
 {
-    Q_ASSERT(pimpl);
-    if (pimpl)
-        pimpl->abstractButton->setText(text);
+    Q_ASSERT(!pimpl.isNull());
+    if (!pimpl.isNull())
+        pimpl.data()->abstractButton.data()->setText(text);
 }
 
 void QButton::setImage(const QPixmap &image)
 {
-    Q_ASSERT(pimpl);
-    if (pimpl)
-        pimpl->abstractButton->setIcon(image);
+    Q_ASSERT(!pimpl.isNull());
+    if (!pimpl.isNull())
+        pimpl.data()->abstractButton.data()->setIcon(image);
 }
 
 void QButton::setChecked(bool checked)
 {
-    Q_ASSERT(pimpl);
-    if (pimpl)
-        pimpl->abstractButton->setChecked(checked);
+    Q_ASSERT(!pimpl.isNull());
+    if (!pimpl.isNull())
+        pimpl.data()->abstractButton.data()->setChecked(checked);
 }
 
 void QButton::setCheckable(bool checkable)
 {
-    Q_ASSERT(pimpl);
-    if (pimpl)
-        pimpl->abstractButton->setCheckable(checkable);
+    Q_ASSERT(!pimpl.isNull());
+    if (!pimpl.isNull())
+        pimpl.data()->abstractButton.data()->setCheckable(checkable);
 }
 
 bool QButton::isChecked()
 {
-    Q_ASSERT(pimpl);
-    if (!pimpl)
+    Q_ASSERT(!pimpl.isNull());
+    if (!pimpl.isNull())
         return false;
 
-    return pimpl->abstractButton->isChecked();
+    return pimpl.data()->abstractButton.data()->isChecked();
 }

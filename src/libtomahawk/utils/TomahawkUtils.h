@@ -23,9 +23,9 @@
 
 #include "DllMacro.h"
 
-#include <QtCore/QThread>
+#include <QThread>
 #include <QtNetwork/QNetworkProxy>
-#include <QtCore/QStringList>
+#include <QStringList>
 #include <Typedefs.h>
 
 #define RESPATH ":/data/"

@@ -20,17 +20,17 @@
 #ifndef TOMAHAWK_INFOSYSTEM_H
 #define TOMAHAWK_INFOSYSTEM_H
 
-#include <QtCore/QCryptographicHash>
-#include <QtCore/QObject>
-#include <QtCore/QtDebug>
-#include <QtCore/QMap>
-#include <QtCore/QWeakPointer>
-#include <QtCore/QSet>
-#include <QtCore/QLinkedList>
-#include <QtCore/QUrl>
-#include <QtCore/QVariant>
-#include <QtCore/QThread>
-#include <QtCore/QStringList>
+#include <QCryptographicHash>
+#include <QObject>
+#include <QtDebug>
+#include <QMap>
+#include <QWeakPointer>
+#include <QSet>
+#include <QLinkedList>
+#include <QUrl>
+#include <QVariant>
+#include <QThread>
+#include <QStringList>
 
 #include "DllMacro.h"
 #include "utils/TomahawkUtils.h"

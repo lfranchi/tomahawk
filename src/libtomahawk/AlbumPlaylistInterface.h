@@ -20,8 +20,8 @@
 #ifndef TOMAHAWKALBUMPLAYLISTINTERFACE_H
 #define TOMAHAWKALBUMPLAYLISTINTERFACE_H
 
-#include <QtCore/QObject>
-#include <QtCore/QSharedPointer>
+#include <QObject>
+#include <QSharedPointer>
 
 #include "Album.h"
 #include "Typedefs.h"

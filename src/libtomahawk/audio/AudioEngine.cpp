@@ -21,7 +21,7 @@
 
 #include "config.h"
 
-#include <QtCore/QUrl>
+#include <QUrl>
 #include <QtNetwork/QNetworkReply>
 #include <QTemporaryFile>
 

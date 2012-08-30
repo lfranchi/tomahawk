@@ -28,7 +28,7 @@
 #include "accounts/spotify/SpotifyAccount.h"
 #include <QObject>
 #include <QSet>
-#include <QtCore/QStringList>
+#include <QStringList>
 
 #define SPOTIFY_PLAYLIST_API_URL "http://spotikea.tomahawk-player.org"
 

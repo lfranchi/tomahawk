@@ -19,10 +19,10 @@
 
 #include "ScanManager.h"
 
-#include <QtCore/QThread>
-#include <QtCore/QCoreApplication>
-#include <QtCore/QTimer>
-#include <QtCore/QSet>
+#include <QThread>
+#include <QCoreApplication>
+#include <QTimer>
+#include <QSet>
 
 #include "MusicScanner.h"
 #include "TomahawkSettings.h"

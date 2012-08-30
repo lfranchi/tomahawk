@@ -32,9 +32,9 @@
 #include "Source.h"
 #include "TomahawkSettings.h"
 
-#include <QtGui/QApplication>
-#include <QtGui/QPainter>
-#include <QtGui/QMouseEvent>
+#include <QApplication>
+#include <QPainter>
+#include <QMouseEvent>
 #include <audio/AudioEngine.h>
 #include <ActionCollection.h>
 

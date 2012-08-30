@@ -30,7 +30,7 @@
 #include <QTweetLib/qtweetstatus.h>
 #include <QTweetLib/qtweetusershow.h>
 
-#include <QtCore/QtPlugin>
+#include <QtPlugin>
 
 namespace Tomahawk
 {

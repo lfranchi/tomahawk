@@ -19,7 +19,7 @@
 
 #include "MusicScanner.h"
 
-#include <QtCore/QCoreApplication>
+#include <QCoreApplication>
 
 #include "utils/TomahawkUtils.h"
 #include "TomahawkSettings.h"

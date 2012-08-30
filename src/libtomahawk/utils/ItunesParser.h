@@ -28,7 +28,7 @@
 
 #include <QObject>
 #include <QSet>
-#include <QtCore/QStringList>
+#include <QStringList>
 
 class QNetworkReply;
 class TrackModel;

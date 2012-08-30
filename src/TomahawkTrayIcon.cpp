@@ -19,7 +19,7 @@
 
 #include "TomahawkTrayIcon.h"
 
-#include <QtGui/QWheelEvent>
+#include <QWheelEvent>
 
 #include "Artist.h"
 

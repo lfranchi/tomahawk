@@ -21,9 +21,9 @@
 #ifndef WHATSHOTWIDGET_H
 #define WHATSHOTWIDGET_H
 
-#include <QtGui/QWidget>
-#include <QtGui/QListWidgetItem>
-#include <QtGui/QStyledItemDelegate>
+#include <QWidget>
+#include <QListWidgetItem>
+#include <QStyledItemDelegate>
 
 #include "PlaylistInterface.h"
 #include "infosystem/InfoSystem.h"

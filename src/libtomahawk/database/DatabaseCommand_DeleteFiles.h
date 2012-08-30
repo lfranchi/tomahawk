@@ -20,9 +20,9 @@
 #ifndef DATABASECOMMAND_DELETEFILES_H
 #define DATABASECOMMAND_DELETEFILES_H
 
-#include <QtCore/QObject>
-#include <QtCore/QDir>
-#include <QtCore/QVariantMap>
+#include <QObject>
+#include <QDir>
+#include <QVariantMap>
 
 #include "database/DatabaseCommandLoggable.h"
 #include "Typedefs.h"

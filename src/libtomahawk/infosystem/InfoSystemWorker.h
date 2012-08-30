@@ -23,14 +23,14 @@
 #include "infosystem/InfoSystem.h"
 
 #include <QtNetwork/QNetworkAccessManager>
-#include <QtCore/QObject>
-#include <QtCore/QtDebug>
-#include <QtCore/QMap>
-#include <QtCore/QWeakPointer>
-#include <QtCore/QSet>
-#include <QtCore/QList>
-#include <QtCore/QVariant>
-#include <QtCore/QTimer>
+#include <QObject>
+#include <QtDebug>
+#include <QMap>
+#include <QWeakPointer>
+#include <QSet>
+#include <QList>
+#include <QVariant>
+#include <QTimer>
 
 #include "DllMacro.h"
 
