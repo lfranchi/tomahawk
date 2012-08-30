@@ -33,8 +33,7 @@ PlaylistTypeSelectorDlg::PlaylistTypeSelectorDlg( QWidget* parent, Qt::WindowFla
 {
     ui->setupUi( this );
 
-#ifdef Q_WS_MAC
-//    ui->
+#ifdef Q_OS_MAC
     ui->verticalLayout->setContentsMargins( 4, 0, 4, 4 );
 
     setSizeGripEnabled( false );

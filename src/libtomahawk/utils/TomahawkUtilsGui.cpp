@@ -36,12 +36,12 @@
 #include <QStyleOption>
 #include <QDesktopServices>
 
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
     #include <QX11Info>
     #include <libqnetwm/netwm.h>
 #endif
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     #include <windows.h>
     #include <windowsx.h>
     #include <shellapi.h>
@@ -234,11 +234,11 @@ tomahawkWindow()
 }
 
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
 void
 bringToFront()
 {
-#if defined(Q_WS_X11)
+#if defined(Q_OS_LINUX)
     {
         qDebug() << Q_FUNC_INFO;
 
@@ -267,7 +267,7 @@ bringToFront()
 
         XSendEvent( QX11Info::display(), RootWindow( QX11Info::display(), DefaultScreen( QX11Info::display() ) ), False, SubstructureRedirectMask | SubstructureNotifyMask, &e );
     }
-#elif defined(Q_WS_WIN)
+#elif defined(Q_OS_WIN)
     {
         qDebug() << Q_FUNC_INFO;
 

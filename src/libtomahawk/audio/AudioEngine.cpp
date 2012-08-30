@@ -470,7 +470,7 @@ AudioEngine::loadTrack( const Tomahawk::result_ptr& result )
                 else
                 {
                     QString furl = m_currentTrack->url();
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
                     if ( furl.startsWith( "file://" ) )
                         furl = furl.right( furl.length() - 7 );
 #endif

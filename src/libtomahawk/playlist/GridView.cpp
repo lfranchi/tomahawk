@@ -250,7 +250,7 @@ GridView::verifySize()
     if ( !autoResize() || !m_model )
         return;
 
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
 //    int scrollbar = verticalScrollBar()->isVisible() ? verticalScrollBar()->width() + 16 : 0;
     int scrollbar = 0; verticalScrollBar()->rect().width();
 #else
@@ -292,7 +292,7 @@ GridView::layoutItems()
 {
     if ( autoFitItems() && m_model )
     {
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
 //        int scrollbar = verticalScrollBar()->isVisible() ? verticalScrollBar()->width() + 16 : 0;
         int scrollbar = 0; verticalScrollBar()->rect().width();
 #else

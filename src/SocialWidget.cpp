@@ -48,16 +48,16 @@ SocialWidget::SocialWidget( QWidget* parent )
     m_timer.setSingleShot( true );
     connect( &m_timer, SIGNAL( timeout() ), this, SLOT( hide() ) );
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QFont f( font() );
     f.setPointSize( f.pointSize() - 2 );
     setFont( f );
 #endif
 
     ui->charsLeftLabel->setForegroundRole( QPalette::BrightText );
-    
+
     ui->buttonBox->button( QDialogButtonBox::Ok )->setText( tr( "Tweet" ) );
-    
+
     m_parent->installEventFilter( this );
 
     connect( ui->buttonBox, SIGNAL( accepted() ), SLOT( accept() ) );
@@ -236,7 +236,7 @@ void
 SocialWidget::accept()
 {
     tDebug() << "Sharing social link!";
-    
+
     QVariantMap shareInfo;
     Tomahawk::InfoSystem::InfoStringHash trackInfo;
 

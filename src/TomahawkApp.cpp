@@ -84,7 +84,7 @@
     #include <TomahawkSettingsGui.h>
 #endif
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 #include "mac/MacShortcutHandler.h"
 
 #include <sys/resource.h>
@@ -96,7 +96,7 @@ const char* enApiSecret = "BNvTzfthHr/d1eNhHLvL1Jo=";
 void
 increaseMaxFileDescriptors()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     /// Following code taken from Clementine project, main.cpp. Thanks!
     // Bump the soft limit for the number of file descriptors from the default of 256 to
     // the maximum (usually 1024).
@@ -246,7 +246,7 @@ TomahawkApp::init()
     GeneratorFactory::registerFactory( "database", new DatabaseFactory );
 
     // Register shortcut handler for this platform
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     m_shortcutHandler = QWeakPointer<Tomahawk::ShortcutHandler>( new MacShortcutHandler( this ) );
     Tomahawk::setShortcutHandler( static_cast<MacShortcutHandler*>( m_shortcutHandler.data() ) );
 

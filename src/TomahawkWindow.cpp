@@ -411,7 +411,7 @@ TomahawkWindow::setupUpdateCheck()
 #if defined( Q_OS_MAC ) && defined( HAVE_SPARKLE )
     connect( ActionCollection::instance()->getAction( "checkForUpdates" ), SIGNAL( triggered( bool ) ),
              SLOT( checkForUpdates() ) );
-#elif defined( Q_WS_WIN )
+#elif defined( Q_OS_WIN )
     QUrl updaterUrl;
 
     if ( qApp->arguments().contains( "--debug" ) )
@@ -971,7 +971,7 @@ void
 TomahawkWindow::onAudioEngineError( AudioEngine::AudioErrorCode /* error */ )
 {
     QString msg;
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
     msg = tr( "Sorry, there is a problem accessing your audio device or the desired track, current track will be skipped. Make sure you have a suitable Phonon backend and required plugins installed." );
 #else
     msg = tr( "Sorry, there is a problem accessing your audio device or the desired track, current track will be skipped." );

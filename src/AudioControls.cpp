@@ -91,7 +91,7 @@ AudioControls::AudioControls( QWidget* parent )
     ui->socialButton->setFixedSize( QSize( 20, 20 ) );
     ui->loveButton->setFixedSize( QSize( 20, 20 ) );
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     ui->ownerLabel->setForegroundRole( QPalette::Text );
 #else
     ui->ownerLabel->setForegroundRole( QPalette::Dark );
@@ -362,7 +362,7 @@ AudioControls::onPlaybackStopped()
     m_sliderTimeLine.stop();
     m_sliderTimeLine.setCurrentTime( 0 );
     m_phononTickCheckTimer.stop();
-    
+
     ui->stackedLayout->setCurrentWidget( ui->playPauseButton );
     ui->loveButton->setEnabled( false );
     ui->loveButton->setVisible( false );
@@ -383,15 +383,15 @@ void
 AudioControls::onPlaybackTimer( qint64 msElapsed )
 {
     //tDebug() << Q_FUNC_INFO;
-    
+
     m_phononTickCheckTimer.stop();
-    
+
     if ( m_currentTrack.isNull() )
     {
         m_sliderTimeLine.stop();
         return;
     }
-    
+
     const int seconds = msElapsed / 1000;
     if ( seconds != m_lastTextSecondShown )
     {
@@ -407,7 +407,7 @@ AudioControls::onPlaybackTimer( qint64 msElapsed )
 
     int currentTime = m_sliderTimeLine.currentTime();
     //tDebug( LOGEXTRA ) << Q_FUNC_INFO << "msElapsed =" << msElapsed << "and timer current time =" << m_sliderTimeLine.currentTime();
-    
+
     // First condition checks for the common case where
     // 1) the track has been started
     // 2) we haven't seeked,

@@ -113,7 +113,7 @@ SettingsDialog::SettingsDialog(QObject *parent )
     m_advancedWidgetUi->aclEntryClearButton->setEnabled( TomahawkSettings::instance()->aclEntries().size() > 0 );
     connect( m_advancedWidgetUi->aclEntryClearButton, SIGNAL( clicked( bool ) ), this, SLOT( aclEntryClearButtonClicked() ) );
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // Avoid resize handles on sheets on osx
     m_proxySettings.setSizeGripEnabled( true );
     QSizeGrip* p = m_proxySettings.findChild< QSizeGrip* >();
@@ -211,13 +211,6 @@ SettingsDialog::SettingsDialog(QObject *parent )
     m_advancedWidget->setContentsMargins( 6, 6, 6, 6 );
     m_advancedWidget->setMinimumHeight( m_advancedWidgetUi->verticalLayout->sizeHint().height() );
 #endif
-
-    // NOW PLAYING
-// #ifdef Q_WS_MAC
-//     ui->checkBoxEnableAdium->setChecked( s->nowPlayingEnabled() );
-// #else
-//     ui->checkBoxEnableAdium->hide();
-// #endif
 
     m_dialog->addTab( m_accountsWidget, QPixmap( RESPATH "images/account-settings.png" ), tr( "Services" ), tr( "Configure the accounts and services used by Tomahawk "
                                                                                                                 "to search and retrieve music, find your friends and "

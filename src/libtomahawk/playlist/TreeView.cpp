@@ -76,16 +76,16 @@ TreeView::TreeView( QWidget* parent )
     setHeader( m_header );
     setProxyModel( new TreeProxyModel( this ) );
 
-    #ifndef Q_WS_WIN
+#ifndef Q_OS_WIN
     QFont f = font();
     f.setPointSize( f.pointSize() - 1 );
     setFont( f );
-    #endif
+#endif
 
-    #ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     f.setPointSize( f.pointSize() - 2 );
     setFont( f );
-    #endif
+#endif
 
     m_timer.setInterval( SCROLL_TIMEOUT );
     connect( verticalScrollBar(), SIGNAL( rangeChanged( int, int ) ), SLOT( onViewChanged() ) );

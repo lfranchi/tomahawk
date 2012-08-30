@@ -117,7 +117,7 @@ ActionCollection::initActions()
     m_actionCollection[ "aboutTomahawk" ]->setMenuRole( QAction::AboutRole );
     m_actionCollection[ "legalInfo" ] =          new QAction( tr( "&Legal Information..." ), this );
     m_actionCollection[ "legalInfo" ]->setMenuRole( QAction::ApplicationSpecificRole );
-#if defined( Q_OS_MAC ) && defined( HAVE_SPARKLE ) || defined( Q_WS_WIN )
+#if defined( Q_OS_MAC ) && defined( HAVE_SPARKLE ) || defined( Q_OS_WIN )
     m_actionCollection[ "checkForUpdates" ] =    new QAction( tr( "Check For Updates..." ), this );
     m_actionCollection[ "checkForUpdates" ]->setMenuRole( QAction::ApplicationSpecificRole );
 #endif
@@ -162,7 +162,7 @@ ActionCollection::createMenuBar( QWidget *parent )
 
 #if defined( Q_OS_MAC ) && defined( HAVE_SPARKLE )
     helpMenu->addAction( m_actionCollection[ "checkForUpdates" ] );
-#elif defined( Q_WS_WIN )
+#elif defined( Q_OS_WIN )
     helpMenu->addSeparator();
     helpMenu->addAction( m_actionCollection[ "checkForUpdates" ] );
 #endif
@@ -223,7 +223,7 @@ ActionCollection::createCompactMenu( QWidget *parent )
 
 #if defined( Q_OS_MAC ) && defined( HAVE_SPARKLE )
     compactMenu->addAction( m_actionCollection[ "checkForUpdates" ] );
-#elif defined( Q_WS_WIN )
+#elif defined( Q_OS_WIN )
     compactMenu->addSeparator();
     compactMenu->addAction( m_actionCollection[ "checkForUpdates" ] );
 #endif
