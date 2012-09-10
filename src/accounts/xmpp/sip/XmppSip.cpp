@@ -191,6 +191,12 @@ XmppSipPlugin::~XmppSipPlugin()
     delete m_client;
 }
 
+QString
+XmppSipPlugin::inviteString() const
+{
+    return tr( "Enter Jabber ID" );
+}
+
 
 InfoSystem::InfoPluginPtr
 XmppSipPlugin::infoPlugin()
@@ -261,9 +267,10 @@ XmppSipPlugin::disconnectPlugin()
 
     publishTune( QUrl(), Tomahawk::InfoSystem::InfoStringHash() );
 
-    m_client->disconnectFromServer( true );
     m_state = Account::Disconnecting;
     emit stateChanged( m_state );
+
+    m_client->disconnectFromServer( true );
 }
 
 

@@ -3,6 +3,7 @@
  *   Copyright 2010-2011, Christian Muehlhaeuser <muesli@tomahawk-player.org>
  *   Copyright 2010-2012, Leo Franchi <lfranchi@kde.org>
  *   Copyright 2010-2011, Jeff Mitchell <jeff@tomahawk-player.org>
+ *   Copyright 2012,      Teo Mrnjavac <teo@kde.org>
  *
  *   Tomahawk is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -26,7 +27,9 @@
 #include <QPushButton>
 #include <QString>
 #include <QStackedWidget>
+#include <QToolButton>
 
+#include "config.h"
 #include "Result.h"
 #include "audio/AudioEngine.h"
 #include "utils/XspfLoader.h"
@@ -35,6 +38,7 @@
     #include <shobjidl.h>
 #endif
 
+class SettingsDialog;
 namespace Tomahawk
 {
     namespace Accounts
@@ -54,6 +58,8 @@ class TomahawkTrayIcon;
 class PlaylistModel;
 class QueueView;
 class AnimatedSplitter;
+
+class AccountsToolButton;
 
 namespace Ui
 {
@@ -95,15 +101,12 @@ public slots:
     void legalInfo();
     void updateCollectionManually();
     void rescanCollectionManually();
-    void pluginMenuAdded( QMenu* );
-    void pluginMenuRemoved( QMenu* );
     void showOfflineSources();
 
     void fullScreenEntered();
     void fullScreenExited();
 
 private slots:
-    void onAccountAdded( Tomahawk::Accounts::Account* account );
     void onAccountConnected();
     void onAccountDisconnected();
     void onAccountError();
@@ -143,6 +146,9 @@ private slots:
 
     void crashNow();
 
+    void toggleMenuBar();
+    void balanceToolbar();
+
 #ifdef Q_OS_WIN
     void audioStateChanged( AudioState newState, AudioState oldState );
     void updateWindowsLoveButton();
@@ -154,6 +160,7 @@ private:
 
     void applyPlatformTweaks();
     void setupSignals();
+    void setupMenuBar();
     void setupToolBar();
     void setupSideBar();
     void setupUpdateCheck();
@@ -161,8 +168,10 @@ private:
 #ifdef Q_OS_WIN
     bool setupWindowsButtons();
     const unsigned int m_buttonCreatedID;
-    ITaskbarList3 *m_taskbarList;
+  #ifdef HAVE_THUMBBUTTON
+    ITaskbarList3* m_taskbarList;
     THUMBBUTTON m_thumbButtons[5];
+  #endif
     enum TB_STATES{ TP_PREVIOUS = 0,TP_PLAY_PAUSE = 1,TP_NEXT = 2,TP_LOVE = 4 };
 #endif
 
@@ -176,6 +185,18 @@ private:
     QueueView* m_queueView;
     AnimatedSplitter* m_sidebar;
     JobStatusSortModel* m_jobsModel;
+    SettingsDialog* m_settingsDialog;
+
+    // Menus and menu actions: Accounts menu
+    QMenuBar    *m_menuBar;
+#ifndef Q_OS_MAC
+    QAction     *m_compactMenuAction;
+    QMenu       *m_compactMainMenu;
+#endif
+    AccountsToolButton *m_accountsButton;
+    QToolBar *m_toolbar;
+    QWidget *m_toolbarLeftBalancer;
+    QWidget *m_toolbarRightBalancer;
 
     QAction* m_backAction;
     QAction* m_forwardAction;

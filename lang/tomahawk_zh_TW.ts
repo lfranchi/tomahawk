@@ -63,73 +63,184 @@ connect and stream from you?</source>
     </message>
 </context>
 <context>
+    <name>AccountWidget</name>
+    <message>
+        <location filename="../src/widgets/AccountWidget.cpp" line="128"/>
+        <source>Invite</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
+    <name>AccountsToolButton</name>
+    <message>
+        <location filename="../src/widgets/AccountsToolButton.cpp" line="50"/>
+        <source>Connections</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/widgets/AccountsToolButton.cpp" line="60"/>
+        <source>Configure Accounts</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
     <name>ActionCollection</name>
     <message>
-        <location filename="../src/libtomahawk/ActionCollection.cpp" line="54"/>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="55"/>
         <source>&amp;Listen Along</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/ActionCollection.cpp" line="57"/>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="58"/>
         <source>Stop &amp;Listening Along</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/ActionCollection.cpp" line="61"/>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="62"/>
         <source>&amp;Follow in real-time</source>
         <translation>即時跟隨</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/ActionCollection.cpp" line="66"/>
-        <location filename="../src/libtomahawk/ActionCollection.cpp" line="152"/>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="67"/>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="304"/>
         <source>&amp;Listen Privately</source>
         <translation>私下聆聽</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/ActionCollection.cpp" line="66"/>
-        <location filename="../src/libtomahawk/ActionCollection.cpp" line="152"/>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="67"/>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="304"/>
         <source>&amp;Listen Publicly</source>
         <translation>公開聆聽</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/ActionCollection.cpp" line="72"/>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="73"/>
+        <source>Go &amp;Online</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="75"/>
         <source>&amp;Load Playlist</source>
         <translation>載入播放清單</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/ActionCollection.cpp" line="73"/>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="76"/>
         <source>&amp;Rename Playlist</source>
         <translation>重新命名播放清單</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/ActionCollection.cpp" line="74"/>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="77"/>
         <source>&amp;Copy Playlist Link</source>
         <translation>複製播放清單連結</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/ActionCollection.cpp" line="75"/>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="78"/>
         <source>&amp;Play</source>
         <translation>播放</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/ActionCollection.cpp" line="76"/>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="81"/>
         <source>&amp;Stop</source>
         <translation>停止</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/ActionCollection.cpp" line="77"/>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="82"/>
         <source>&amp;Previous Track</source>
         <translation>上一首曲目</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/ActionCollection.cpp" line="78"/>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="83"/>
         <source>&amp;Next Track</source>
         <translation>下一個曲目</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/ActionCollection.cpp" line="79"/>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="84"/>
         <source>&amp;Quit</source>
         <translation>結束</translation>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="97"/>
+        <source>Load &amp;XSPF...</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="98"/>
+        <source>U&amp;pdate Collection</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="99"/>
+        <source>Fully &amp;Rescan Collection</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="100"/>
+        <source>Show Offline Sources</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="102"/>
+        <source>&amp;Configure Tomahawk...</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="105"/>
+        <source>Minimize</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="107"/>
+        <source>Zoom</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="110"/>
+        <source>Hide Menu Bar</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="114"/>
+        <source>Diagnostics...</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="116"/>
+        <source>About &amp;Tomahawk...</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="118"/>
+        <source>&amp;Legal Information...</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="121"/>
+        <source>Check For Updates...</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="132"/>
+        <source>&amp;Controls</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="147"/>
+        <source>&amp;Settings</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="153"/>
+        <source>&amp;Help</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="178"/>
+        <source>&amp;Window</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/ActionCollection.cpp" line="191"/>
+        <source>Main Menu</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -281,11 +392,13 @@ connect and stream from you?</source>
     </message>
     <message>
         <location filename="../src/AudioControls.ui" line="493"/>
+        <location filename="../src/AudioControls.cpp" line="261"/>
         <source>Shuffle</source>
         <translation>隨機</translation>
     </message>
     <message>
         <location filename="../src/AudioControls.ui" line="506"/>
+        <location filename="../src/AudioControls.cpp" line="262"/>
         <source>Repeat</source>
         <translation>重複</translation>
     </message>
@@ -298,6 +411,31 @@ connect and stream from you?</source>
         <location filename="../src/AudioControls.ui" line="576"/>
         <source>High</source>
         <translation>高</translation>
+    </message>
+    <message>
+        <location filename="../src/AudioControls.cpp" line="258"/>
+        <source>Time Elapsed</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/AudioControls.cpp" line="259"/>
+        <source>Time Remaining</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/AudioControls.cpp" line="260"/>
+        <source>Music Source</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/AudioControls.cpp" line="263"/>
+        <source>Share</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/AudioControls.cpp" line="264"/>
+        <source>Love</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -373,12 +511,12 @@ connect and stream from you?</source>
     </message>
     <message>
         <location filename="../src/libtomahawk/context/ContextWidget.ui" line="38"/>
-        <location filename="../src/libtomahawk/context/ContextWidget.cpp" line="343"/>
+        <location filename="../src/libtomahawk/context/ContextWidget.cpp" line="341"/>
         <source>Show Footnotes</source>
         <translation>顯示註腳</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/context/ContextWidget.cpp" line="337"/>
+        <location filename="../src/libtomahawk/context/ContextWidget.cpp" line="335"/>
         <source>Hide Footnotes</source>
         <translation>隱藏註腳</translation>
     </message>
@@ -453,12 +591,12 @@ connect and stream from you?</source>
         <translation>關於</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/DelegateConfigWrapper.cpp" line="77"/>
+        <location filename="../src/libtomahawk/accounts/DelegateConfigWrapper.cpp" line="84"/>
         <source>Delete Account</source>
         <translation>刪除帳戶</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/DelegateConfigWrapper.cpp" line="140"/>
+        <location filename="../src/libtomahawk/accounts/DelegateConfigWrapper.cpp" line="147"/>
         <source>About this Account</source>
         <translation>關於此帳戶</translation>
     </message>
@@ -513,7 +651,7 @@ connect and stream from you?</source>
         <translation>信息欄</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/infobar/InfoBar.cpp" line="90"/>
+        <location filename="../src/libtomahawk/infobar/InfoBar.cpp" line="92"/>
         <source>Filter...</source>
         <translation>過濾器...</translation>
     </message>
@@ -526,32 +664,32 @@ connect and stream from you?</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/lastfm/LastFmConfig.ui" line="41"/>
+        <location filename="../src/libtomahawk/accounts/lastfm/LastFmConfig.ui" line="38"/>
         <source>Scrobble tracks to Last.fm</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/lastfm/LastFmConfig.ui" line="50"/>
+        <location filename="../src/libtomahawk/accounts/lastfm/LastFmConfig.ui" line="47"/>
         <source>Username:</source>
         <translation>用戶名稱：</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/lastfm/LastFmConfig.ui" line="60"/>
+        <location filename="../src/libtomahawk/accounts/lastfm/LastFmConfig.ui" line="57"/>
         <source>Password:</source>
         <translation>密碼：</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/lastfm/LastFmConfig.ui" line="76"/>
+        <location filename="../src/libtomahawk/accounts/lastfm/LastFmConfig.ui" line="73"/>
         <source>Test Login</source>
         <translation>測試登錄</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/lastfm/LastFmConfig.ui" line="83"/>
+        <location filename="../src/libtomahawk/accounts/lastfm/LastFmConfig.ui" line="80"/>
         <source>Import Playback History</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/lastfm/LastFmConfig.ui" line="90"/>
+        <location filename="../src/libtomahawk/accounts/lastfm/LastFmConfig.ui" line="87"/>
         <source>Synchronize Loved Tracks</source>
         <translation type="unfinished"/>
     </message>
@@ -905,12 +1043,12 @@ connect and stream from you?</source>
 <context>
     <name>PlaylistItemDelegate</name>
     <message>
-        <location filename="../src/libtomahawk/playlist/PlaylistItemDelegate.cpp" line="154"/>
+        <location filename="../src/libtomahawk/playlist/PlaylistItemDelegate.cpp" line="157"/>
         <source>played %1 by you</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/playlist/PlaylistItemDelegate.cpp" line="156"/>
+        <location filename="../src/libtomahawk/playlist/PlaylistItemDelegate.cpp" line="159"/>
         <source>played %1 by %2</source>
         <translation type="unfinished"/>
     </message>
@@ -1226,49 +1364,209 @@ connect and stream from you?</source>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="300"/>
+        <location filename="../src/SettingsDialog.cpp" line="226"/>
         <source>Collection</source>
         <translation>收藏</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="307"/>
+        <location filename="../src/SettingsDialog.cpp" line="228"/>
         <source>Advanced</source>
         <translation>進階</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="155"/>
+        <location filename="../src/SettingsDialog.cpp" line="150"/>
         <source>All</source>
         <translation>所有</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="246"/>
+        <location filename="../src/SettingsDialog.cpp" line="274"/>
         <source>Some changed settings will not take effect until Tomahawk is restarted</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="293"/>
+        <location filename="../src/SettingsDialog.cpp" line="222"/>
         <source>Services</source>
         <translation>服務</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="459"/>
+        <location filename="../src/SettingsDialog.cpp" line="123"/>
+        <source>Install from file</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="222"/>
+        <source>Configure the accounts and services used by Tomahawk to search and retrieve music, find your friends and update your status.</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="226"/>
+        <source>Manage how Tomahawk finds music on your computer.</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="228"/>
+        <source>Configure Tomahawk&apos;s advanced settings, including network connectivity settings, browser interaction and more.</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/SettingsDialog.cpp" line="443"/>
         <source>Install resolver from file</source>
         <translation>從檔案安裝解析器</translation>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="506"/>
+        <location filename="../src/SettingsDialog.cpp" line="490"/>
         <source>Delete all Access Control entries?</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="507"/>
+        <location filename="../src/SettingsDialog.cpp" line="491"/>
         <source>Do you really want to delete all Access Control entries? You will be asked for a decision again for each peer that you connect to.</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/SettingsDialog.cpp" line="246"/>
+        <location filename="../src/SettingsDialog.cpp" line="274"/>
         <source>Information</source>
         <translation>資訊</translation>
+    </message>
+</context>
+<context>
+    <name>Settings_Accounts</name>
+    <message>
+        <location filename="../src/Settings_Accounts.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Accounts.ui" line="48"/>
+        <source>Filter by capability:</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
+    <name>Settings_Advanced</name>
+    <message>
+        <location filename="../src/Settings_Advanced.ui" line="20"/>
+        <source>Form</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Advanced.ui" line="29"/>
+        <source>Remote Peer Connection Method</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Advanced.ui" line="35"/>
+        <source>None (outgoing connections only)</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Advanced.ui" line="42"/>
+        <source>Use UPnP to establish port forward (recommended)</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Advanced.ui" line="49"/>
+        <source>Use static external IP address/host name and port</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Advanced.ui" line="62"/>
+        <source>Set this to your external IP address or host name. Make sure to forward the port to this host!</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Advanced.ui" line="80"/>
+        <source>Static Host Name:</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Advanced.ui" line="96"/>
+        <source>Static Port:</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Advanced.ui" line="134"/>
+        <source>SOCKS Proxy</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Advanced.ui" line="140"/>
+        <source>Use SOCKS Proxy</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Advanced.ui" line="169"/>
+        <source>Proxy Settings...</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Advanced.ui" line="195"/>
+        <source>Other Settings</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Advanced.ui" line="204"/>
+        <source>Allow web browsers to interact with Tomahawk (recommended)</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Advanced.ui" line="217"/>
+        <source>Send reports after Tomahawk crashed</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Advanced.ui" line="245"/>
+        <source>Clear All Access Control Entries</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
+    <name>Settings_Collection</name>
+    <message>
+        <location filename="../src/Settings_Collection.ui" line="20"/>
+        <source>Form</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Collection.ui" line="31"/>
+        <source>Path to scan for music files:</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Collection.ui" line="45"/>
+        <source>The Echo Nest supports keeping track of your catalog metadata
+ and using it to craft personalized radios. Enabling this option
+ will allow you (and all your friends) to create automatic playlists
+ and stations based on your personal taste profile.</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Collection.ui" line="51"/>
+        <source>Upload collection list to The Echo Nest to enable user radio</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Collection.ui" line="64"/>
+        <source>Watch for changes</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/Settings_Collection.ui" line="73"/>
+        <source>Time between scans, in seconds:</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
+    <name>SlideSwitchButton</name>
+    <message>
+        <location filename="../src/widgets/SlideSwitchButton.cpp" line="45"/>
+        <source>On</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/widgets/SlideSwitchButton.cpp" line="46"/>
+        <source>Off</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -1317,22 +1615,22 @@ connect and stream from you?</source>
         <translation>文字標籤</translation>
     </message>
     <message>
-        <location filename="../src/SocialWidget.cpp" line="59"/>
+        <location filename="../src/SocialWidget.cpp" line="52"/>
         <source>Tweet</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/SocialWidget.cpp" line="207"/>
+        <location filename="../src/SocialWidget.cpp" line="199"/>
         <source>Listening to &quot;%1&quot; by %2. %3</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/SocialWidget.cpp" line="209"/>
+        <location filename="../src/SocialWidget.cpp" line="201"/>
         <source>Listening to &quot;%1&quot; by %2 on &quot;%3&quot;. %4</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/SocialWidget.cpp" line="230"/>
+        <location filename="../src/SocialWidget.cpp" line="222"/>
         <source>%1 characters left</source>
         <translation type="unfinished"/>
     </message>
@@ -1340,44 +1638,44 @@ connect and stream from you?</source>
 <context>
     <name>SourceDelegate</name>
     <message>
-        <location filename="../src/sourcetree/SourceDelegate.cpp" line="55"/>
+        <location filename="../src/sourcetree/SourceDelegate.cpp" line="54"/>
         <source>Track</source>
         <translation>曲目</translation>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceDelegate.cpp" line="56"/>
+        <location filename="../src/sourcetree/SourceDelegate.cpp" line="55"/>
         <source>Album</source>
         <translation>專輯</translation>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceDelegate.cpp" line="57"/>
+        <location filename="../src/sourcetree/SourceDelegate.cpp" line="56"/>
         <source>Artist</source>
         <translation>演出者</translation>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceDelegate.cpp" line="58"/>
+        <location filename="../src/sourcetree/SourceDelegate.cpp" line="57"/>
         <source>Local</source>
         <translation>本地</translation>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceDelegate.cpp" line="59"/>
+        <location filename="../src/sourcetree/SourceDelegate.cpp" line="58"/>
         <source>Top 10</source>
         <translation>前10名</translation>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceDelegate.cpp" line="202"/>
+        <location filename="../src/sourcetree/SourceDelegate.cpp" line="205"/>
         <source>All available tracks</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceDelegate.cpp" line="295"/>
-        <location filename="../src/sourcetree/SourceDelegate.cpp" line="336"/>
+        <location filename="../src/sourcetree/SourceDelegate.cpp" line="302"/>
+        <location filename="../src/sourcetree/SourceDelegate.cpp" line="346"/>
         <source>Show</source>
         <translation>顯示</translation>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceDelegate.cpp" line="297"/>
-        <location filename="../src/sourcetree/SourceDelegate.cpp" line="338"/>
+        <location filename="../src/sourcetree/SourceDelegate.cpp" line="304"/>
+        <location filename="../src/sourcetree/SourceDelegate.cpp" line="348"/>
         <source>Hide</source>
         <translation>隱藏</translation>
     </message>
@@ -1477,68 +1775,68 @@ connect and stream from you?</source>
 <context>
     <name>SourceTreeView</name>
     <message>
-        <location filename="../src/sourcetree/SourceTreeView.cpp" line="194"/>
+        <location filename="../src/sourcetree/SourceTreeView.cpp" line="199"/>
         <source>&amp;Copy Link</source>
         <translation>複製鏈接</translation>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceTreeView.cpp" line="202"/>
+        <location filename="../src/sourcetree/SourceTreeView.cpp" line="207"/>
         <source>&amp;Delete %1</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceTreeView.cpp" line="206"/>
+        <location filename="../src/sourcetree/SourceTreeView.cpp" line="211"/>
         <source>Add to my Playlists</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceTreeView.cpp" line="208"/>
+        <location filename="../src/sourcetree/SourceTreeView.cpp" line="213"/>
         <source>Add to my Automatic Playlists</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceTreeView.cpp" line="210"/>
+        <location filename="../src/sourcetree/SourceTreeView.cpp" line="215"/>
         <source>Add to my Stations</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceTreeView.cpp" line="198"/>
+        <location filename="../src/sourcetree/SourceTreeView.cpp" line="203"/>
         <source>&amp;Export Playlist</source>
         <translation>匯出播放清單</translation>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceTreeView.cpp" line="352"/>
+        <location filename="../src/sourcetree/SourceTreeView.cpp" line="357"/>
         <source>playlist</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceTreeView.cpp" line="356"/>
+        <location filename="../src/sourcetree/SourceTreeView.cpp" line="361"/>
         <source>automatic playlist</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceTreeView.cpp" line="360"/>
+        <location filename="../src/sourcetree/SourceTreeView.cpp" line="365"/>
         <source>station</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceTreeView.cpp" line="383"/>
+        <location filename="../src/sourcetree/SourceTreeView.cpp" line="388"/>
         <source>Would you like to delete the %1 &lt;b&gt;&quot;%2&quot;&lt;/b&gt;?</source>
         <comment>e.g. Would you like to delete the playlist named Foobar?</comment>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceTreeView.cpp" line="385"/>
+        <location filename="../src/sourcetree/SourceTreeView.cpp" line="390"/>
         <source>Delete</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceTreeView.cpp" line="465"/>
+        <location filename="../src/sourcetree/SourceTreeView.cpp" line="470"/>
         <source>Save XSPF</source>
         <translation>儲存 XSPF</translation>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceTreeView.cpp" line="466"/>
+        <location filename="../src/sourcetree/SourceTreeView.cpp" line="471"/>
         <source>Playlists (*.xspf)</source>
         <translation>播放清單(*.xspf)</translation>
     </message>
@@ -1672,140 +1970,9 @@ connect and stream from you?</source>
 <context>
     <name>SpotifyPlaylistUpdater</name>
     <message>
-        <location filename="../src/libtomahawk/accounts/spotify/SpotifyPlaylistUpdater.cpp" line="285"/>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyPlaylistUpdater.cpp" line="338"/>
         <source>Delete associated Spotify playlist?</source>
         <translation type="unfinished"/>
-    </message>
-</context>
-<context>
-    <name>StackedSettingsDialog</name>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="14"/>
-        <source>Tomahawk Settings</source>
-        <translation>Tomahawk 設定</translation>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="158"/>
-        <source>Local Music Information</source>
-        <translation>本地音樂資訊</translation>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="166"/>
-        <source>Path to scan for music files:</source>
-        <translation>掃描音樂檔的路徑：</translation>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="180"/>
-        <source>The Echo Nest supports keeping track of your catalog metadata
- and using it to craft personalized radios. Enabling this option
- will allow you (and all your friends) to create automatic playlists
- and stations based on your personal taste profile.</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="186"/>
-        <source>Upload collection list to The Echo Nest to enable user radio</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="199"/>
-        <source>Watch for changes</source>
-        <translation>觀看變化</translation>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="208"/>
-        <source>Time between scans, in seconds:</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="245"/>
-        <source>Advanced Settings</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="254"/>
-        <source>Remote Peer Connection Method</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="260"/>
-        <source>None (outgoing connections only)</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="267"/>
-        <source>Use UPnP to establish port forward (recommended)</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="274"/>
-        <source>Use static external IP address/host name and port</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="287"/>
-        <source>Set this to your external IP address or host name. Make sure to forward the port to this host!</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="356"/>
-        <source>SOCKS Proxy</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="362"/>
-        <source>Use SOCKS Proxy</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="439"/>
-        <source>Clear All Access Control Entries</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="98"/>
-        <source>Internet Services</source>
-        <translation>上網服務</translation>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="109"/>
-        <source>Install from file...</source>
-        <translation>從安裝檔案...</translation>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="129"/>
-        <source>Filter by capability:</source>
-        <translation>按能力篩選：</translation>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="305"/>
-        <source>Static Host Name:</source>
-        <translation>靜態主機名稱：</translation>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="321"/>
-        <source>Static Port:</source>
-        <translation>靜態通訊埠：</translation>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="369"/>
-        <source>Proxy Settings...</source>
-        <translation>代理服務器設定...</translation>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="392"/>
-        <source>Other Settings</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="414"/>
-        <source>Send reports after Tomahawk crashed</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <location filename="../src/StackedSettingsDialog.ui" line="401"/>
-        <source>Allow web browsers to interact with Tomahawk (recommended)</source>
-        <translation>允許 Web 瀏覽器與 Tomahawk 互動 (推薦)</translation>
     </message>
 </context>
 <context>
@@ -1862,12 +2029,12 @@ connect and stream from you?</source>
 <context>
     <name>Tomahawk::Accounts::AccountModel</name>
     <message>
-        <location filename="../src/libtomahawk/accounts/AccountModel.cpp" line="529"/>
+        <location filename="../src/libtomahawk/accounts/AccountModel.cpp" line="539"/>
         <source>Manual Install Required</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/AccountModel.cpp" line="532"/>
+        <location filename="../src/libtomahawk/accounts/AccountModel.cpp" line="542"/>
         <source>Unfortunately, automatic installation of this resolver is not available or disabled for your platform.&lt;br /&gt;&lt;br /&gt;Please use &quot;Install from file&quot; above, by fetching it from your distribution or compiling it yourself. Further instructions can be found here:&lt;br /&gt;&lt;br /&gt;http://www.tomahawk-player.org/resolvers/%1</source>
         <translation type="unfinished"/>
     </message>
@@ -1875,22 +2042,22 @@ connect and stream from you?</source>
 <context>
     <name>Tomahawk::Accounts::GoogleWrapper</name>
     <message>
-        <location filename="../src/accounts/xmpp/googlewrapper/GoogleWrapper.cpp" line="82"/>
+        <location filename="../src/accounts/xmpp/googlewrapper/GoogleWrapper.cpp" line="88"/>
         <source>Configure this Google Account</source>
         <translation>配置這個 Google 帳戶</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/googlewrapper/GoogleWrapper.cpp" line="83"/>
-        <source>Google Address</source>
-        <translation>輸入谷歌地址</translation>
+        <location filename="../src/accounts/xmpp/googlewrapper/GoogleWrapper.cpp" line="89"/>
+        <source>Google Address:</source>
+        <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/googlewrapper/GoogleWrapper.cpp" line="84"/>
+        <location filename="../src/accounts/xmpp/googlewrapper/GoogleWrapper.cpp" line="90"/>
         <source>Enter your Google login to connect with your friends using Tomahawk!</source>
         <translation>輸入您的 Google登錄，以與您使用的 Tomahawk 朋友連線！</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/googlewrapper/GoogleWrapper.cpp" line="85"/>
+        <location filename="../src/accounts/xmpp/googlewrapper/GoogleWrapper.cpp" line="91"/>
         <source>username@gmail.com</source>
         <translation>username@gmail.com</translation>
     </message>
@@ -1906,12 +2073,17 @@ connect and stream from you?</source>
 <context>
     <name>Tomahawk::Accounts::GoogleWrapperSip</name>
     <message>
-        <location filename="../src/accounts/xmpp/googlewrapper/GoogleWrapper.cpp" line="61"/>
+        <location filename="../src/accounts/xmpp/googlewrapper/GoogleWrapper.cpp" line="59"/>
+        <source>Enter Google Address</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/accounts/xmpp/googlewrapper/GoogleWrapper.cpp" line="67"/>
         <source>Add Friend</source>
         <translation>加為好友</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/googlewrapper/GoogleWrapper.cpp" line="62"/>
+        <location filename="../src/accounts/xmpp/googlewrapper/GoogleWrapper.cpp" line="68"/>
         <source>Enter Google Address:</source>
         <translation>輸入谷歌地址：</translation>
     </message>
@@ -1979,7 +2151,7 @@ connect and stream from you?</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/lastfm/LastFmConfig.cpp" line="411"/>
+        <location filename="../src/libtomahawk/accounts/lastfm/LastFmConfig.cpp" line="418"/>
         <source>Synchronization Finished</source>
         <translation type="unfinished"/>
     </message>
@@ -1987,37 +2159,47 @@ connect and stream from you?</source>
 <context>
     <name>Tomahawk::Accounts::SpotifyAccount</name>
     <message>
-        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="475"/>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="480"/>
         <source>Sync with Spotify</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="479"/>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="484"/>
         <source>Re-enable syncing with Spotify</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="487"/>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="492"/>
         <source>Create local copy</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="503"/>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="508"/>
         <source>Subscribe to playlist changes</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="507"/>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="512"/>
         <source>Re-enable playlist subscription</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="511"/>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="516"/>
         <source>Stop subscribing to changes</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="489"/>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="536"/>
+        <source>Enable Spotify collaborations</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="538"/>
+        <source>Disable Spotify collaborations</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.cpp" line="494"/>
         <source>Stop syncing with Spotify</source>
         <translation type="unfinished"/>
     </message>
@@ -2025,28 +2207,28 @@ connect and stream from you?</source>
 <context>
     <name>Tomahawk::Accounts::SpotifyAccountConfig</name>
     <message>
-        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccountConfig.cpp" line="153"/>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccountConfig.cpp" line="162"/>
         <source>Logging in...</source>
         <translation>登錄中...</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccountConfig.cpp" line="190"/>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccountConfig.cpp" line="199"/>
         <source>Failed: %1</source>
         <translation>失敗：%1</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccountConfig.cpp" line="213"/>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccountConfig.cpp" line="222"/>
         <source>Logged in as %1</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccountConfig.cpp" line="215"/>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccountConfig.cpp" line="224"/>
         <source>Log Out</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccountConfig.cpp" line="231"/>
-        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccountConfig.cpp" line="241"/>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccountConfig.cpp" line="240"/>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccountConfig.cpp" line="250"/>
         <source>Log In</source>
         <translation>登錄</translation>
     </message>
@@ -2054,7 +2236,7 @@ connect and stream from you?</source>
 <context>
     <name>Tomahawk::Accounts::SpotifyAccountFactory</name>
     <message>
-        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.h" line="70"/>
+        <location filename="../src/libtomahawk/accounts/spotify/SpotifyAccount.h" line="71"/>
         <source>Play music from and sync your playlists with Spotify Premium</source>
         <translation type="unfinished"/>
     </message>
@@ -3041,7 +3223,7 @@ Try tweaking the filters for a new set of songs to play.</source>
 <context>
     <name>Tomahawk::SpotifyParser</name>
     <message>
-        <location filename="../src/libtomahawk/utils/SpotifyParser.cpp" line="248"/>
+        <location filename="../src/libtomahawk/utils/SpotifyParser.cpp" line="252"/>
         <source>Error fetching Spotify information from the network!</source>
         <translation type="unfinished"/>
     </message>
@@ -3057,7 +3239,7 @@ Try tweaking the filters for a new set of songs to play.</source>
 <context>
     <name>TomahawkApp</name>
     <message>
-        <location filename="../src/TomahawkApp.cpp" line="603"/>
+        <location filename="../src/TomahawkApp.cpp" line="606"/>
         <source>My Collection</source>
         <translation>我的收藏</translation>
     </message>
@@ -3133,328 +3315,314 @@ enter the displayed PIN number here:</source>
         <translation>Tomahawk</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="75"/>
-        <source>&amp;Settings</source>
-        <translation>設定</translation>
-    </message>
-    <message>
-        <location filename="../src/TomahawkWindow.ui" line="81"/>
-        <source>&amp;Controls</source>
-        <translation>控制</translation>
-    </message>
-    <message>
-        <location filename="../src/TomahawkWindow.ui" line="100"/>
-        <source>&amp;Network</source>
-        <translation>網路</translation>
-    </message>
-    <message>
-        <location filename="../src/TomahawkWindow.ui" line="107"/>
-        <source>&amp;Window</source>
-        <translation>視窗</translation>
-    </message>
-    <message>
-        <location filename="../src/TomahawkWindow.ui" line="114"/>
-        <source>&amp;Help</source>
-        <translation>幫助</translation>
-    </message>
-    <message>
-        <location filename="../src/TomahawkWindow.ui" line="129"/>
+        <location filename="../src/TomahawkWindow.ui" line="67"/>
         <source>&amp;Quit</source>
         <translation>結束</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="132"/>
+        <location filename="../src/TomahawkWindow.ui" line="70"/>
         <source>Ctrl+Q</source>
         <translation>Ctrl+Q</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="140"/>
+        <location filename="../src/TomahawkWindow.ui" line="78"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1170"/>
         <source>Go &amp;Online</source>
         <translation>上網</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="145"/>
+        <location filename="../src/TomahawkWindow.ui" line="83"/>
         <source>Add &amp;Friend...</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="150"/>
+        <location filename="../src/TomahawkWindow.ui" line="88"/>
         <source>U&amp;pdate Collection</source>
         <translation>更新收藏</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="153"/>
+        <location filename="../src/TomahawkWindow.ui" line="91"/>
         <source>Update Collection</source>
         <translation>更新收藏</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="158"/>
+        <location filename="../src/TomahawkWindow.ui" line="96"/>
         <source>&amp;Configure Tomahawk...</source>
         <translation>配置 Tomahawk ...</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="166"/>
+        <location filename="../src/TomahawkWindow.ui" line="104"/>
         <source>Load &amp;XSPF...</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="171"/>
+        <location filename="../src/TomahawkWindow.ui" line="109"/>
         <source>Create &amp;New Playlist...</source>
         <translation>建立新的播放清單...</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="176"/>
+        <location filename="../src/TomahawkWindow.ui" line="114"/>
         <source>About &amp;Tomahawk...</source>
         <translation>關於 Tomahawk...</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="184"/>
+        <location filename="../src/TomahawkWindow.ui" line="122"/>
         <source>Create New &amp;Automatic Playlist</source>
         <translation>建立新的自動播放清單</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="189"/>
+        <location filename="../src/TomahawkWindow.ui" line="127"/>
         <source>Create New &amp;Station</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="197"/>
+        <location filename="../src/TomahawkWindow.ui" line="135"/>
         <source>Show Offline Sources</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="202"/>
+        <location filename="../src/TomahawkWindow.ui" line="140"/>
         <source>Hide Offline Sources</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="207"/>
+        <location filename="../src/TomahawkWindow.ui" line="145"/>
         <source>Minimize</source>
         <translation>最小化</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="210"/>
+        <location filename="../src/TomahawkWindow.ui" line="148"/>
         <source>Ctrl+M</source>
         <translation>Ctrl+M</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="215"/>
+        <location filename="../src/TomahawkWindow.ui" line="153"/>
         <source>Zoom</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="218"/>
+        <location filename="../src/TomahawkWindow.ui" line="156"/>
         <source>Meta+Ctrl+Z</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="223"/>
+        <location filename="../src/TomahawkWindow.ui" line="161"/>
         <source>&amp;Legal Info...</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="231"/>
+        <location filename="../src/TomahawkWindow.ui" line="169"/>
         <source>Diagnostics...</source>
         <translation>診斷...</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="239"/>
+        <location filename="../src/TomahawkWindow.ui" line="177"/>
         <source>Fully &amp;Rescan Collection</source>
         <translation>徹底地重新掃描收藏</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="242"/>
+        <location filename="../src/TomahawkWindow.ui" line="180"/>
         <source>Fully Rescan Collection</source>
         <translation>徹底地重新掃描收藏</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="247"/>
-        <location filename="../src/TomahawkWindow.cpp" line="1055"/>
+        <location filename="../src/TomahawkWindow.ui" line="185"/>
         <source>Play</source>
         <translation>播放</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="250"/>
+        <location filename="../src/TomahawkWindow.ui" line="188"/>
         <source>Space</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="255"/>
+        <location filename="../src/TomahawkWindow.ui" line="193"/>
         <source>Previous</source>
         <translation>前一首</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.ui" line="260"/>
+        <location filename="../src/TomahawkWindow.ui" line="198"/>
         <source>Next</source>
         <translation>下一首</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="237"/>
+        <location filename="../src/TomahawkWindow.cpp" line="259"/>
         <source>Back</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="238"/>
+        <location filename="../src/TomahawkWindow.cpp" line="260"/>
         <source>Go back one page</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="239"/>
+        <location filename="../src/TomahawkWindow.cpp" line="261"/>
         <source>Forward</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="240"/>
+        <location filename="../src/TomahawkWindow.cpp" line="262"/>
         <source>Go forward one page</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="247"/>
+        <location filename="../src/TomahawkWindow.cpp" line="274"/>
         <source>Global Search...</source>
         <translation>全域搜尋...</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="314"/>
-        <location filename="../src/TomahawkWindow.cpp" line="331"/>
-        <source>Check For Updates...</source>
-        <translation>檢查更新...</translation>
+        <location filename="../src/TomahawkWindow.cpp" line="200"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1329"/>
+        <source>Hide Menu Bar</source>
+        <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="749"/>
-        <location filename="../src/TomahawkWindow.cpp" line="756"/>
-        <location filename="../src/TomahawkWindow.cpp" line="764"/>
+        <location filename="../src/TomahawkWindow.cpp" line="200"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1323"/>
+        <source>Show Menu Bar</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/TomahawkWindow.cpp" line="298"/>
+        <source>&amp;Main Menu</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/TomahawkWindow.cpp" line="850"/>
+        <location filename="../src/TomahawkWindow.cpp" line="857"/>
+        <location filename="../src/TomahawkWindow.cpp" line="865"/>
         <source>Connect To Peer</source>
         <translation>連接點對點</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="750"/>
+        <location filename="../src/TomahawkWindow.cpp" line="851"/>
         <source>Enter peer address:</source>
         <translation>輸入對等地址：</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="757"/>
+        <location filename="../src/TomahawkWindow.cpp" line="858"/>
         <source>Enter peer port:</source>
         <translation>輸入對等連接埠：</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="765"/>
+        <location filename="../src/TomahawkWindow.cpp" line="866"/>
         <source>Enter peer key:</source>
         <translation>輸入對等密鑰：</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="875"/>
+        <location filename="../src/TomahawkWindow.cpp" line="957"/>
         <source>XSPF Error</source>
         <translation>XSPF 錯誤</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="875"/>
+        <location filename="../src/TomahawkWindow.cpp" line="957"/>
         <source>This is not a valid XSPF playlist.</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="879"/>
+        <location filename="../src/TomahawkWindow.cpp" line="961"/>
         <source>Failed to save tracks</source>
         <translation>無法儲存曲目</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="879"/>
+        <location filename="../src/TomahawkWindow.cpp" line="961"/>
         <source>Some tracks in the playlist do not contain an artist and a title. They will be ignored.</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="893"/>
+        <location filename="../src/TomahawkWindow.cpp" line="975"/>
         <source>Sorry, there is a problem accessing your audio device or the desired track, current track will be skipped. Make sure you have a suitable Phonon backend and required plugins installed.</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="895"/>
+        <location filename="../src/TomahawkWindow.cpp" line="977"/>
         <source>Sorry, there is a problem accessing your audio device or the desired track, current track will be skipped.</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="927"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1009"/>
         <source>Station</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="929"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1011"/>
         <source>Create New Station</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="929"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1011"/>
         <source>Name:</source>
         <translation>名稱：</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="992"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1074"/>
         <source>Playlist</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="1014"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1096"/>
         <source>Automatic Playlist</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="1035"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1117"/>
         <source>Pause</source>
         <translation>暫停</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="1081"/>
-        <source>Go &amp;offline</source>
-        <translation>離線</translation>
+        <location filename="../src/TomahawkWindow.cpp" line="1137"/>
+        <source>&amp;Play</source>
+        <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="1088"/>
-        <source>Go &amp;online</source>
-        <translation>上網</translation>
+        <location filename="../src/TomahawkWindow.cpp" line="1163"/>
+        <source>Go &amp;Offline</source>
+        <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="1111"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1182"/>
         <source>Authentication Error</source>
         <translation>驗證錯誤</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="1112"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1183"/>
         <source>Error connecting to SIP: Authentication failed!</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="1126"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1197"/>
         <source>%1 by %2</source>
         <comment>track, artist name</comment>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="1127"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1198"/>
         <source>%1 - %2</source>
         <comment>current track, some window title</comment>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="1138"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1209"/>
         <source>&lt;h2&gt;&lt;b&gt;Tomahawk %1&lt;br/&gt;(%2)&lt;/h2&gt;</source>
         <translation>&lt;h2&gt;&lt;b&gt;Tomahawk %1&lt;br/&gt;(%2)&lt;/h2&gt;</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="1142"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1213"/>
         <source>&lt;h2&gt;&lt;b&gt;Tomahawk %1&lt;/h2&gt;</source>
         <translation>&lt;h2&gt;&lt;b&gt;Tomahawk %1&lt;/h2&gt;</translation>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="1146"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1217"/>
         <source>Copyright 2010 - 2012</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="1147"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1218"/>
         <source>Thanks to:</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/TomahawkWindow.cpp" line="1154"/>
+        <location filename="../src/TomahawkWindow.cpp" line="1225"/>
         <source>About Tomahawk</source>
         <translation type="unfinished"/>
     </message>
@@ -3538,7 +3706,7 @@ enter the displayed PIN number here:</source>
 <context>
     <name>TrackView</name>
     <message>
-        <location filename="../src/libtomahawk/playlist/TrackView.cpp" line="508"/>
+        <location filename="../src/libtomahawk/playlist/TrackView.cpp" line="497"/>
         <source>Sorry, your filter &apos;%1&apos; did not match any results.</source>
         <translation type="unfinished"/>
     </message>
@@ -3589,7 +3757,7 @@ enter the displayed PIN number here:</source>
 <context>
     <name>TreeView</name>
     <message>
-        <location filename="../src/libtomahawk/playlist/TreeView.cpp" line="297"/>
+        <location filename="../src/libtomahawk/playlist/TreeView.cpp" line="286"/>
         <source>Sorry, your filter &apos;%1&apos; did not match any results.</source>
         <translation type="unfinished"/>
     </message>
@@ -3663,6 +3831,14 @@ You can re-send a sync message at any time simply by sending another tweet using
     </message>
 </context>
 <context>
+    <name>TwitterSipPlugin</name>
+    <message>
+        <location filename="../src/accounts/twitter/sip/TwitterSip.cpp" line="104"/>
+        <source>Enter Twitter username</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
     <name>ViewManager</name>
     <message>
         <location filename="../src/libtomahawk/ViewManager.cpp" line="280"/>
@@ -3718,7 +3894,12 @@ You can re-send a sync message at any time simply by sending another tweet using
         <translation>最近播放的曲目</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/widgets/WelcomeWidget.cpp" line="209"/>
+        <location filename="../src/libtomahawk/widgets/WelcomeWidget.cpp" line="128"/>
+        <source>Recently played tracks</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/libtomahawk/widgets/WelcomeWidget.cpp" line="214"/>
         <source>No recently created playlists in your network.</source>
         <translation>沒有最近建立的播放清單在您的網路。</translation>
     </message>
@@ -3960,107 +4141,112 @@ Lyrics for &quot;%1&quot; by %2:
 <context>
     <name>XmppSipPlugin</name>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="372"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="379"/>
         <source>User Interaction</source>
         <translation>使用者互動</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="375"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="382"/>
         <source>Host is unknown</source>
         <translation>主機是未知</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="378"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="385"/>
         <source>Item not found</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="381"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="388"/>
         <source>Authorization Error</source>
         <translation>授權錯誤</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="384"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="391"/>
         <source>Remote Stream Error</source>
         <translation>遠端串流錯誤</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="387"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="394"/>
         <source>Remote Connection failed</source>
         <translation>遠端連線失敗</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="390"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="397"/>
         <source>Internal Server Error</source>
         <translation>內部服務器錯誤</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="393"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="400"/>
         <source>System shutdown</source>
         <translation>系統關閉</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="396"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="403"/>
         <source>Conflict</source>
         <translation>衝突</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="411"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="418"/>
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="780"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="787"/>
         <source>Do you want to add &lt;b&gt;%1&lt;/b&gt; to your friend list?</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="399"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="406"/>
         <source>No Compression Support</source>
         <translation>沒有壓縮支持</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="402"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="197"/>
+        <source>Enter Jabber ID</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="409"/>
         <source>No Encryption Support</source>
         <translation>沒有加密支持</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="405"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="412"/>
         <source>No Authorization Support</source>
         <translation>沒有授權支持</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="408"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="415"/>
         <source>No Supported Feature</source>
         <translation>沒有支持的功能</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="475"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="482"/>
         <source>Add Friend</source>
         <translation>加為好友</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="476"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="483"/>
         <source>Enter Xmpp ID:</source>
         <translation>輸入XMPP識別碼：</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="632"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="639"/>
         <source>Add Friend...</source>
         <translation>加為好友...</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="637"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="644"/>
         <source>XML Console...</source>
         <translation>XML的控制台...</translation>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="685"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="692"/>
         <source>I&apos;m sorry -- I&apos;m just an automatic presence used by Tomahawk Player (http://gettomahawk.com). If you are getting this message, the person you are trying to reach is probably not signed on, so please try again later!</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="779"/>
+        <location filename="../src/accounts/xmpp/sip/XmppSip.cpp" line="786"/>
         <source>Authorize User</source>
         <translation>授權用戶</translation>
     </message>

@@ -43,7 +43,6 @@ using namespace Tomahawk;
 ContextWidget::ContextWidget( QWidget* parent )
     : QWidget( parent )
     , ui( new Ui::ContextWidget )
-    , m_minHeight( 22 )
     , m_currentView( 0 )
     , m_visible( false )
 {
@@ -84,11 +83,10 @@ ContextWidget::ContextWidget( QWidget* parent )
     QPalette whitePal = ui->toggleButton->palette();
     whitePal.setColor( QPalette::Foreground, Qt::white );
     ui->toggleButton->setPalette( whitePal );
+    ui->toggleButton->setCursor( Qt::PointingHandCursor );
 
-    QFont boldFont = ui->toggleButton->font();
-    boldFont.setPixelSize( 12 );
-    boldFont.setBold( true );
-    ui->toggleButton->setFont( boldFont );
+    m_minHeight = TomahawkUtils::defaultFontHeight() * 1.4;
+    ui->toggleButton->setMinimumHeight( m_minHeight );
 
     setAutoFillBackground( true );
     setFixedHeight( m_minHeight );

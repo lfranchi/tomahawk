@@ -59,6 +59,9 @@ TwitterAccount::TwitterAccount( const QString &accountId )
     connect( m_configWidget.data(), SIGNAL( twitterAuthed( bool ) ), SLOT( configDialogAuthedSignalSlot( bool ) ) );
 
     m_twitterAuth = QWeakPointer< TomahawkOAuthTwitter >( new TomahawkOAuthTwitter( TomahawkUtils::nam(), this ) );
+
+    m_onlinePixmap = QPixmap( ":/twitter-icon.png" );
+    m_offlinePixmap = QPixmap( ":/twitter-offline-icon.png" );
 }
 
 
@@ -83,6 +86,9 @@ TwitterAccount::configDialogAuthedSignalSlot( bool authed )
 Account::ConnectionState
 TwitterAccount::connectionState() const
 {
+    if ( m_twitterSipPlugin.isNull() )
+        return Account::Disconnected;
+
     return m_twitterSipPlugin.data()->connectionState();
 }
 
@@ -132,13 +138,13 @@ TwitterAccount::authenticateSlot()
             Tomahawk::InfoSystem::InfoSystem::instance()->addInfoPlugin( infoPlugin() );
         }
     }
-    
+
     if ( m_isAuthenticating )
     {
         tDebug( LOGVERBOSE ) << Q_FUNC_INFO << "Already authenticating";
         return;
     }
-    
+
     tDebug() << Q_FUNC_INFO << "credentials: " << credentials().keys();
 
     if ( credentials()[ "oauthtoken" ].toString().isEmpty() || credentials()[ "oauthtokensecret" ].toString().isEmpty() )
@@ -162,7 +168,7 @@ void
 TwitterAccount::deauthenticate()
 {
     tDebug() << Q_FUNC_INFO;
-    
+
     if ( m_twitterSipPlugin )
         sipPlugin()->disconnectPlugin();
 
@@ -171,7 +177,7 @@ TwitterAccount::deauthenticate()
 
     m_isAuthenticated = false;
     m_isAuthenticating = false;
-    
+
     emit nowDeauthenticated();
 }
 
@@ -224,8 +230,11 @@ TwitterAccount::connectAuthVerifyReply( const QTweetUser &user )
 
 
 QPixmap
-TwitterAccount::icon() const {
-    return QPixmap( ":/twitter-icon.png" );
+TwitterAccount::icon() const
+{
+    if ( connectionState() == Connected )
+        return m_onlinePixmap;
+    return m_offlinePixmap;
 }
 
 

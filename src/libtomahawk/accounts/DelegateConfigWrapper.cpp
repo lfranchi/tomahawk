@@ -52,7 +52,14 @@ DelegateConfigWrapper::DelegateConfigWrapper( QWidget* conf, QWidget* aboutWidge
         m_buttons->button( QDialogButtonBox::Help )->setText( tr( "About" ) );
     }
 
-    v->addWidget( m_buttons );
+    QHBoxLayout* h = new QHBoxLayout( this );
+    h->addWidget( m_buttons );
+    if( m_widget && m_widget->layout() )
+        h->setContentsMargins( m_widget->layout()->contentsMargins() );
+    else if( m_widget )
+        h->setContentsMargins( m_widget->contentsMargins() );
+
+    v->addLayout( h );
 
     setLayout( v );
 

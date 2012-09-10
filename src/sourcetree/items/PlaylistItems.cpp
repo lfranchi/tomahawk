@@ -291,6 +291,29 @@ PlaylistItem::onUpdated()
     emit updated();
 }
 
+bool
+PlaylistItem::collaborative() const
+{
+    Q_ASSERT( !m_playlist.isNull() );
+
+    if ( m_playlist->updaters().isEmpty() )
+        return false;
+
+    bool collaborative = false;
+
+    foreach ( PlaylistUpdaterInterface* updater, m_playlist->updaters() )
+    {
+        if( !updater->collaborative() )
+            continue;
+        /// @note:  We only care for collaborations if in sync
+        if( !updater->sync() )
+            continue;
+        collaborative = updater->collaborative();
+    }
+
+    return collaborative;
+}
+
 
 bool
 PlaylistItem::createOverlay()
@@ -302,6 +325,7 @@ PlaylistItem::createOverlay()
 
     m_showSubscribed = false;
     m_canSubscribe = false;
+
     foreach ( PlaylistUpdaterInterface* updater, m_playlist->updaters() )
     {
         if ( updater->canSubscribe() )
@@ -348,6 +372,7 @@ PlaylistItem::createOverlay()
         // NOTE only works if icons.size == 2 as ensured above
         overlayRect.moveLeft( 0 );
     }
+
 
     p.end();
 

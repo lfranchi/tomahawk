@@ -53,6 +53,12 @@ GoogleWrapperSip::~GoogleWrapperSip()
 {
 }
 
+QString
+GoogleWrapperSip::inviteString() const
+{
+    return tr( "Enter Google Address" );
+}
+
 
 void
 GoogleWrapperSip::showAddFriendDialog()
@@ -80,25 +86,21 @@ GoogleWrapper::GoogleWrapper ( const QString& pluginID )
 {
     XmppConfigWidget* config = static_cast< XmppConfigWidget* >( m_configWidget.data() );
     config->m_ui->headerLabel->setText( tr( "Configure this Google Account" ) );
-    config->m_ui->emailLabel->setText( tr( "Google Address" ) );
+    config->m_ui->emailLabel->setText( tr( "Google Address:" ) );
     config->m_ui->xmppBlurb->setText( tr( "Enter your Google login to connect with your friends using Tomahawk!" ) );
     config->m_ui->xmppUsername->setPlaceholderText( tr( "username@gmail.com" ) );
     config->m_ui->logoLabel->setPixmap( QPixmap( ":/gmail-logo.png" ) );
     config->m_ui->xmppServer->setText( "talk.google.com" );
     config->m_ui->xmppPort->setValue( 5222 );
     config->m_ui->groupBoxXmppAdvanced->hide();
+
+    m_onlinePixmap = QPixmap( ":/gmail-logo.png" );
+    m_offlinePixmap = QPixmap( ":/gmail-offline-logo.png" );
 }
 
 GoogleWrapper::~GoogleWrapper()
 {
     delete m_sipPlugin.data();
-}
-
-
-QPixmap
-GoogleWrapper::icon() const
-{
-    return QPixmap( ":/gmail-logo.png" );
 }
 
 

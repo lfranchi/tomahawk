@@ -85,6 +85,8 @@ private:
     bool m_single;
     bool m_trackMode;
     bool m_createNewPlaylist;
+    bool m_collaborative;
+    int m_subscribers;
     QList< query_ptr > m_tracks;
     QSet< QNetworkReply* > m_queries;
     QString m_title, m_info, m_creator;

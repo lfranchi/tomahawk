@@ -1,7 +1,6 @@
 /* === This file is part of Tomahawk Player - <http://tomahawk-player.org> ===
  *
- *   Copyright 2011, Michael Zanetti <mzanetti@kde.org>
- *   Copyright 2011, Leo Franchi <lfranchi@kde.org>
+ *   Copyright 2012,      Teo Mrnjavac   <teo@kde.org>
  *
  *   Tomahawk is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,23 +16,32 @@
  *   along with Tomahawk. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SETTINGSLISTDELEGATE_H
-#define SETTINGSLISTDELEGATE_H
+#ifndef CONTAINEDMENUBUTTON_H
+#define CONTAINEDMENUBUTTON_H
 
-#include <QStyledItemDelegate>
+#include <QtGui/QMenu>
+#include <QtGui/QToolButton>
 
-class SettingsListDelegate : public QStyledItemDelegate
+/**
+ * @brief The ContainedMenuButton class defines a modified QToolButton that pops
+ *        up a QMenu under itself, stretching left instead of right and witout
+ *        drawing an arrow primitive.
+ */
+class ContainedMenuButton : public QToolButton
 {
     Q_OBJECT
 public:
-    explicit SettingsListDelegate(QObject *parent = 0);
+    explicit ContainedMenuButton( QWidget *parent = 0 );
 
-    virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    void setMenu( QMenu *menu );
+    QMenu *menu() const { return m_menu; }
 
-signals:
-
-public slots:
-
+protected:
+    void mousePressEvent( QMouseEvent *event );
+private slots:
+    void menuHidden();
+private:
+    QMenu *m_menu;
 };
 
-#endif // SETTINGSLISTDELEGATE_H
+#endif // CONTAINEDMENUBUTTON_H

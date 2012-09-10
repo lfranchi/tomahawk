@@ -63,7 +63,7 @@ public:
     XmppAccount( const QString &accountId );
     virtual ~XmppAccount();
 
-    QPixmap icon() const { return QPixmap( ":/xmpp-icon.png" ); }
+    QPixmap icon() const;
 
     void authenticate();
     void deauthenticate();
@@ -83,6 +83,9 @@ protected:
     QWeakPointer< QWidget > m_configWidget; // so the google wrapper can change the config dialog a bit
     QWeakPointer< XmppSipPlugin > m_xmppSipPlugin;
     QWeakPointer< Tomahawk::InfoSystem::XmppInfoPlugin > m_xmppInfoPlugin;
+
+    QPixmap m_onlinePixmap;
+    QPixmap m_offlinePixmap;
 };
 
 };

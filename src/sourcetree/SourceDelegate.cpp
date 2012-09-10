@@ -40,7 +40,6 @@
 
 #define TREEVIEW_INDENT_ADD 12
 
-
 SourceDelegate::SourceDelegate( QAbstractItemView* parent )
     : QStyledItemDelegate( parent )
     , m_parent( parent )
@@ -72,6 +71,7 @@ SourceDelegate::SourceDelegate( QAbstractItemView* parent )
     m_realtimeUnlocked.load( RESPATH "images/open-padlock.png" );
     m_nowPlayingSpeaker.load( RESPATH "images/now-playing-speaker.png" );
     m_nowPlayingSpeakerDark.load( RESPATH "images/now-playing-speaker-dark.png" );
+    m_collaborativeOn.load( RESPATH "images/green-dot.png" );
 }
 
 
@@ -89,23 +89,24 @@ SourceDelegate::sizeHint( const QStyleOptionViewItem& option, const QModelIndex&
 
     if ( type == SourcesModel::Collection )
     {
-        return QSize( option.rect.width(), 40 );
+        return QSize( option.rect.width(), option.fontMetrics.height() * 3.0 );
     }
     else if ( type == SourcesModel::Divider )
     {
         return QSize( option.rect.width(), 6 );
     }
-    else if ( type == SourcesModel::Group && index.row() > 0 )
+    else if ( type == SourcesModel::Group )
     {
-        return QSize( option.rect.width(), 24 );
+        int groupSpacer = index.row() > 0 ? option.fontMetrics.height() * 0.6 : option.fontMetrics.height() * 0.2;
+        return QSize( option.rect.width(), option.fontMetrics.height() + groupSpacer );
     }
     else if ( m_expandedMap.contains( index ) )
     {
         if ( !m_expandedMap.value( index )->initialized() )
         {
             int dropTypes = dropTypeCount( item );
-            QSize originalSize = QStyledItemDelegate::sizeHint( option, index );
-            QSize targetSize = originalSize + QSize( 0, dropTypes == 0 ? 0 : 56 );
+            QSize originalSize = QSize( option.rect.width(), option.fontMetrics.height() * 1.2 );
+            QSize targetSize = originalSize + QSize( 0, dropTypes == 0 ? 0 : 38 + option.fontMetrics.height() * 1.2 );
             m_expandedMap.value( index )->initialize( originalSize, targetSize, 300 );
             m_expandedMap.value( index )->expand();
         }
@@ -113,7 +114,7 @@ SourceDelegate::sizeHint( const QStyleOptionViewItem& option, const QModelIndex&
         return m_expandedMap.value( index )->size();
     }
     else
-        return QStyledItemDelegate::sizeHint( option, index );
+        return QSize( option.rect.width(), option.fontMetrics.height() * 1.4 ); //QStyledItemDelegate::sizeHint( option, index ) );
 }
 
 
@@ -155,6 +156,8 @@ SourceDelegate::paintDecorations( QPainter* painter, const QStyleOptionViewItem&
 void
 SourceDelegate::paintCollection( QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const
 {
+    painter->save();
+
     QFont normal = option.font;
     QFont bold = option.font;
     bold.setBold( true );
@@ -162,7 +165,7 @@ SourceDelegate::paintCollection( QPainter* painter, const QStyleOptionViewItem& 
     QFont figFont = bold;
     figFont.setFamily( "Arial Bold" );
     figFont.setWeight( QFont::Black );
-    figFont.setPixelSize( 10 );
+    figFont.setPointSize( normal.pointSize() - 1 );
 
     SourceTreeItem* item = index.data( SourcesModel::SourceTreeItemRole ).value< SourceTreeItem* >();
     SourceItem* colItem = qobject_cast< SourceItem* >( item );
@@ -260,7 +263,7 @@ SourceDelegate::paintCollection( QPainter* painter, const QStyleOptionViewItem& 
     {
         painter->setRenderHint( QPainter::Antialiasing );
 
-        QRect figRect = option.rect.adjusted( option.rect.width() - figWidth - 13, 0, -14, -option.rect.height() + 16 );
+        QRect figRect = option.rect.adjusted( option.rect.width() - figWidth - 13, 0, -14, -option.rect.height() + option.fontMetrics.height() * 1.1 );
         int hd = ( option.rect.height() - figRect.height() ) / 2;
         figRect.adjust( 0, hd, 0, hd );
 
@@ -272,12 +275,16 @@ SourceDelegate::paintCollection( QPainter* painter, const QStyleOptionViewItem& 
 
         TomahawkUtils::drawBackgroundAndNumbers( painter, tracks, figRect );
     }
+
+    painter->restore();
 }
 
 
 void
 SourceDelegate::paintCategory( QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const
 {
+    painter->save();
+
     QTextOption to( Qt::AlignVCenter );
 
     painter->setPen( option.palette.color( QPalette::Base ) );
@@ -296,8 +303,7 @@ SourceDelegate::paintCategory( QPainter* painter, const QStyleOptionViewItem& op
         if ( option.state & QStyle::State_Open )
             text = tr( "Hide" );
 
-        QFont font = painter->font();
-        font.setPixelSize( 11 );
+        QFont font = option.font;
         font.setBold( true );
         painter->setFont( font );
         QTextOption to( Qt::AlignVCenter | Qt::AlignRight );
@@ -308,14 +314,18 @@ SourceDelegate::paintCategory( QPainter* painter, const QStyleOptionViewItem& op
         painter->setPen( QColor( 99, 113, 128 ) );
         painter->drawText( option.rect.translated( -4, 0 ), text, to );
     }
+
+    painter->restore();
 }
 
 
 void
 SourceDelegate::paintGroup( QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index ) const
 {
+    painter->save();
+
     QFont font = painter->font();
-    font.setPixelSize( 12 );
+    font.setPointSize( option.font.pointSize() + 1 );
     font.setBold( true );
     painter->setFont( font );
 
@@ -337,8 +347,7 @@ SourceDelegate::paintGroup( QPainter* painter, const QStyleOptionViewItem& optio
         if ( option.state & QStyle::State_Open )
             text = tr( "Hide" );
 
-        font.setPixelSize( font.pixelSize() - 1 );
-        painter->setFont( font );
+        painter->setFont( option.font );
         QTextOption to( Qt::AlignBottom | Qt::AlignRight );
 
         // draw close icon
@@ -347,6 +356,8 @@ SourceDelegate::paintGroup( QPainter* painter, const QStyleOptionViewItem& optio
         painter->setPen( QColor( 99, 113, 128 ) );
         painter->drawText( option.rect.translated( -4, 0 ), text, to );
     }
+
+    painter->restore();
 }
 
 
@@ -357,12 +368,6 @@ SourceDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, co
     QStyleOptionViewItemV4 o3 = option;
 
     painter->save();
-
-    QFont font = painter->font();
-    font.setPixelSize( 11 );
-    painter->setFont( font );
-    o.font = font;
-    o3.font = font;
 
     SourcesModel::RowType type = static_cast< SourcesModel::RowType >( index.data( SourcesModel::SourceTreeItemTypeRole ).toInt() );
     SourceTreeItem* item = index.data( SourcesModel::SourceTreeItemRole ).value< SourceTreeItem* >();
@@ -458,7 +463,7 @@ SourceDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, co
         painter->setPen( pen );
 
         QFont font = painter->font();
-        font.setPixelSize( 12 );
+        font.setPointSize( option.font.pointSize() - 1 );
         painter->setFont( font );
         QFont fontBold = painter->font();
         fontBold.setBold( true );
@@ -564,6 +569,14 @@ SourceDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, co
                 const QRect subRect( o.rect.right() - padding - imgWidth, o.rect.top() + padding, imgWidth, imgWidth );
                 painter->drawPixmap( subRect, icon );
             }
+
+            if ( plItem->collaborative() )
+            {
+                const int imgWidth = m_collaborativeOn.size().width();
+                const QRect subRect( o.rect.left(), o.rect.top(), imgWidth, imgWidth );
+                painter->drawPixmap( subRect, m_collaborativeOn );
+
+            }
         }
         else
             QStyledItemDelegate::paint( painter, o, index );
@@ -573,7 +586,6 @@ SourceDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, co
 
     painter->restore();
 }
-
 
 void
 SourceDelegate::updateEditorGeometry( QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index ) const

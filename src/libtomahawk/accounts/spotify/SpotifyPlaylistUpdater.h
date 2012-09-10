@@ -49,7 +49,6 @@ public:
 
 #ifndef ENABLE_HEADLESS
     virtual QWidget* configurationWidget() const { return 0; }
-
     virtual QPixmap typeIcon() const;
 #endif
 
@@ -62,6 +61,14 @@ public:
     void setSubscribedStatus( bool subscribed );
     bool canSubscribe() const;
     void setCanSubscribe( bool canSub );
+    void setSubscribers( int numSubscribers );
+    int subscribers() const { return m_subscribers; }
+    // Collaborative actions
+    void setOwner( bool owner );
+    bool owner() const;
+    bool collaborative() const;
+    void setCollaborative( bool collaborative );
+
     QString spotifyId() const { return m_spotifyId; }
 
     virtual bool hasCustomDeleter() const { return true; }
@@ -110,6 +117,10 @@ private:
     bool m_sync;
     bool m_subscribed;
     bool m_canSubscribe;
+    bool m_isOwner;
+    bool m_collaborative;
+    int m_subscribers;
+
     QQueue<_detail::Closure*> m_queuedOps;
 #ifndef ENABLE_HEADLESS
     static QPixmap* s_typePixmap;

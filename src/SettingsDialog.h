@@ -3,6 +3,7 @@
  *   Copyright 2010-2011, Christian Muehlhaeuser <muesli@tomahawk-player.org>
  *   Copyright 2010-2011, Leo Franchi <lfranchi@kde.org>
  *   Copyright 2010-2012, Jeff Mitchell <jeff@tomahawk-player.org>
+ *   Copyright 2012,      Teo Mrnjavac <teo@kde.org>
  *
  *   Tomahawk is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -23,19 +24,23 @@
 
 #include <QtGui/QDialog>
 #include <QtCore/QModelIndex>
+#include <QtGui/QActionGroup>
+#include <QtGui/QToolBar>
 
 #include "config.h"
 
 class AnimatedSpinner;
 class QListWidgetItem;
-class Ui_StackedSettingsDialog;
+class Ui_Settings_Accounts;
+class Ui_Settings_Collection;
+class Ui_Settings_Advanced;
 class SipPlugin;
 class ResolversModel;
 class QNetworkReply;
+class QToolbarTabDialog;
 
 namespace Ui
 {
-    class SettingsDialog;
     class ProxyDialog;
 }
 
@@ -65,14 +70,15 @@ private:
     Ui::ProxyDialog* ui;
 };
 
-class SettingsDialog : public QDialog
+class SettingsDialog : public QObject
 {
 Q_OBJECT
 
 public:
-    explicit SettingsDialog( QWidget* parent = 0 );
+    explicit SettingsDialog( QObject* parent = 0 );
     ~SettingsDialog();
 
+    void show();
 protected:
     void changeEvent( QEvent* e );
 
@@ -94,17 +100,26 @@ private slots:
 
     void updateScanOptionsView();
 
-    void changePage( QListWidgetItem*, QListWidgetItem* );
     void serventReady();
 
     void aclEntryClearButtonClicked();
-    
+
     void requiresRestart();
 
-private:
-    void createIcons();
+private slots:
+    void saveSettings();
 
-    Ui_StackedSettingsDialog* ui;
+private:
+    Ui_Settings_Accounts* m_accountsWidgetUi;
+    QWidget* m_accountsWidget;
+
+    Ui_Settings_Collection* m_collectionWidgetUi;
+    QWidget* m_collectionWidget;
+
+    Ui_Settings_Advanced* m_advancedWidgetUi;
+    QWidget* m_advancedWidget;
+
+    QToolbarTabDialog* m_dialog;
 
     ProxyDialog m_proxySettings;
     bool m_rejected;

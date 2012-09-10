@@ -49,17 +49,19 @@ InfoBar::InfoBar( QWidget* parent )
     layout()->setContentsMargins( 8, 4, 8, 4 );
 
     QFont boldFont = ui->captionLabel->font();
-    boldFont.setPixelSize( 18 );
+    boldFont.setPointSize( TomahawkUtils::defaultFontSize() + 5 );
     boldFont.setBold( true );
     ui->captionLabel->setFont( boldFont );
     ui->captionLabel->setElideMode( Qt::ElideRight );
 
-    boldFont.setPixelSize( 12 );
+    QFontMetrics boldFontMetrics( boldFont );
+    boldFont.setPointSize( TomahawkUtils::defaultFontSize() + 1 );
     boldFont.setBold( false );
     ui->descriptionLabel->setFont( boldFont );
 
+    boldFontMetrics = QFontMetrics( boldFont );
     QFont regFont = ui->longDescriptionLabel->font();
-    regFont.setPixelSize( 11 );
+    regFont.setPointSize( TomahawkUtils::defaultFontSize() );
     ui->longDescriptionLabel->setFont( regFont );
 
     m_whitePal = ui->captionLabel->palette();
@@ -95,9 +97,7 @@ InfoBar::InfoBar( QWidget* parent )
 
     setAutoFillBackground( true );
 
-    setMinimumHeight( geometry().height() );
-    setMaximumHeight( geometry().height() );
-
+    setFixedHeight( 80 );
     createTile();
 
     connect( ViewManager::instance(), SIGNAL( filterAvailable( bool ) ), SLOT( setFilterAvailable( bool ) ) );

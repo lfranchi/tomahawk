@@ -70,10 +70,18 @@ SET( tomahawkSourcesGui ${tomahawkSourcesGui}
      AudioControls.cpp
      SettingsDialog.cpp
      DiagnosticsDialog.cpp
-     SettingsListDelegate.cpp
      TomahawkWindow.cpp
      LoadXSPFDialog.cpp
      SocialWidget.cpp
+     
+     widgets/ContainedMenuButton.cpp
+     widgets/AccountListWidget.cpp
+     widgets/AccountModelFactoryProxy.cpp
+     widgets/AccountWidget.cpp
+     widgets/AccountsPopupWidget.cpp
+     widgets/AccountsToolButton.cpp
+     widgets/SlideSwitchButton.cpp
+     widgets/UnstyledFrame.cpp
 )
 
 IF( WITH_BREAKPAD )
@@ -83,7 +91,9 @@ ENDIF()
 SET( tomahawkUI ${tomahawkUI}
      TomahawkWindow.ui
      DiagnosticsDialog.ui
-     StackedSettingsDialog.ui
+     Settings_Accounts.ui
+     Settings_Advanced.ui
+     Settings_Collection.ui
      ProxyDialog.ui
 
      AudioControls.ui

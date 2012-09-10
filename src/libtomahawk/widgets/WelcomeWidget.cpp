@@ -122,6 +122,11 @@ WelcomeWidget::WelcomeWidget( QWidget* parent )
     ui->tracksView->setPlaylistModel( m_tracksModel );
     m_tracksModel->setSource( source_ptr() );
 
+    QFont f;
+    f.setBold( true );
+    QFontMetrics fm( f );
+    ui->tracksView->setMinimumWidth( fm.width( tr( "Recently played tracks" ) ) * 2 );
+
     m_recentAlbumsModel = new AlbumModel( ui->additionsView );
     ui->additionsView->setPlayableModel( m_recentAlbumsModel );
     ui->additionsView->proxyModel()->sort( -1 );
@@ -246,7 +251,18 @@ PlaylistDelegate::sizeHint( const QStyleOptionViewItem& option, const QModelInde
 {
     Q_UNUSED( option );
     Q_UNUSED( index );
-    return QSize( 0, 64 );
+
+    // Calculates the size for the bold line + 3 normal lines + margins
+    int height = 2 * 6; // margins
+    QFont font = option.font;
+    QFontMetrics fm1( font );
+    font.setPointSize( TomahawkUtils::defaultFontSize() - 1 );
+    height += fm1.height() * 3;
+    font.setPointSize( TomahawkUtils::defaultFontSize() );
+    QFontMetrics fm2( font );
+    height += fm2.height();
+
+    return QSize( 0, height );
 }
 
 
@@ -269,14 +285,15 @@ PlaylistDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, 
     QTextOption to;
     to.setAlignment( Qt::AlignCenter );
     QFont font = opt.font;
-    font.setPixelSize( 10 );
+    font.setPointSize( TomahawkUtils::defaultFontSize() - 1 );
 
     QFont boldFont = font;
     boldFont.setBold( true );
-    boldFont.setPixelSize( 11 );
+    boldFont.setPointSize( TomahawkUtils::defaultFontSize() );
+    QFontMetrics boldFontMetrics( boldFont );
 
     QFont figFont = boldFont;
-    figFont.setPixelSize( 10 );
+    figFont.setPointSize( TomahawkUtils::defaultFontSize() - 1 );
 
     QPixmap icon;
     RecentlyPlayedPlaylistsModel::PlaylistTypes type = (RecentlyPlayedPlaylistsModel::PlaylistTypes)index.data( RecentlyPlayedPlaylistsModel::PlaylistTypeRole ).toInt();
@@ -287,9 +304,8 @@ PlaylistDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, 
     else if( type == RecentlyPlayedPlaylistsModel::Station )
         icon = m_stationIcon;
 
-    QRect pixmapRect = option.rect.adjusted( 10, 13, -option.rect.width() + 48, -13 );
+    QRect pixmapRect = option.rect.adjusted( 10, 14, -option.rect.width() + option.rect.height() - 18, -14 );
     icon = icon.scaled( pixmapRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
-
     painter->drawPixmap( pixmapRect, icon );
 
     if ( type != RecentlyPlayedPlaylistsModel::Station )
@@ -301,7 +317,7 @@ PlaylistDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, 
 //         int bottomEdge = pixmapRect
         // right edge 10px past right edge of pixmapRect
         // bottom edge flush with bottom of pixmap
-        QRect rect( pixmapRect.right() - width , 0, width - 8, 0 );
+        QRect rect( pixmapRect.right() - width, 0, width - 8, 0 );
         rect.adjust( -2, 0, 0, 0 );
         rect.setTop( pixmapRect.bottom() - painter->fontMetrics().height() - 1 );
         rect.setBottom( pixmapRect.bottom() + 1 );
@@ -317,7 +333,7 @@ PlaylistDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, 
     QPixmap avatar = index.data( RecentlyPlayedPlaylistsModel::PlaylistRole ).value< Tomahawk::playlist_ptr >()->author()->avatar( Source::FancyStyle );
     if ( avatar.isNull() )
         avatar = m_defaultAvatar;
-    QRect r( option.rect.width() - avatar.width() - 10, option.rect.top() + option.rect.height()/2 - avatar.height()/2, avatar.width(), avatar.height() );
+    QRect r( option.rect.width() - option.fontMetrics.height() * 2.5 - 10, option.rect.top() + option.rect.height()/2.25 - option.fontMetrics.height(), option.fontMetrics.height() * 2.5, option.fontMetrics.height() * 2.2 );
     painter->drawPixmap( r, avatar );
 
     painter->setFont( font );
@@ -346,7 +362,7 @@ PlaylistDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, 
         painter->setPen( QColor( Qt::gray ).darker() );
     }
 
-    QRect rectText = option.rect.adjusted( 66, 20, -leftEdge - 10, -8 );
+    QRect rectText = option.rect.adjusted( option.fontMetrics.height() * 4.5, boldFontMetrics.height() + 6, -leftEdge - 10, -8 );
 #ifdef Q_WS_MAC
     rectText.adjust( 0, 1, 0, 0 );
 #elif defined Q_WS_WIN
@@ -358,7 +374,7 @@ PlaylistDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, 
     painter->setFont( font );
 
     painter->setFont( boldFont );
-    painter->drawText( option.rect.adjusted( 56, 6, -100, -option.rect.height() + 20 ), index.data().toString() );
+    painter->drawText( option.rect.adjusted( option.fontMetrics.height() * 4, 6, -100, -option.rect.height() + boldFontMetrics.height() + 6 ), index.data().toString() );
 
     painter->restore();
 }

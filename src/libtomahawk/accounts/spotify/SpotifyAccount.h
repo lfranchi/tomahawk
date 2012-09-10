@@ -29,6 +29,7 @@
 #include "DllMacro.h"
 
 class QAction;
+class QAction;
 class SpotifyPlaylistUpdater;
 class QTimer;
 
@@ -50,11 +51,11 @@ class SpotifyAccountConfig;
 // metadata for a playlist
 struct SpotifyPlaylistInfo {
     QString name, plid, revid;
-    bool sync, subscribed, changed;
+    bool sync, subscribed, changed, isOwner;
 
 
-    SpotifyPlaylistInfo( const QString& nname, const QString& pid, const QString& rrevid, bool ssync, bool ssubscribed )
-        : name( nname ), plid( pid ), revid( rrevid ), sync( ssync ), subscribed( ssubscribed ), changed( false ) {}
+    SpotifyPlaylistInfo( const QString& nname, const QString& pid, const QString& rrevid, bool ssync, bool ssubscribed, bool isowner = false )
+        : name( nname ), plid( pid ), revid( rrevid ), sync( ssync ), subscribed( ssubscribed ), changed( false ), isOwner( isowner ) {}
 
     SpotifyPlaylistInfo() : sync( false ), changed( false ) {}
 };
@@ -103,7 +104,7 @@ public:
 
 
     void registerUpdaterForPlaylist( const QString& plId, SpotifyPlaylistUpdater* updater );
-    void registerPlaylistInfo( const QString& name, const QString& plid, const QString &revid, const bool sync, const bool subscribed );
+    void registerPlaylistInfo( const QString& name, const QString& plid, const QString &revid, const bool sync, const bool subscribed , const bool owner = false);
     void registerPlaylistInfo( SpotifyPlaylistInfo* info );
     void unregisterUpdater( const QString& plid );
 
@@ -115,11 +116,12 @@ public:
 
 public slots:
     QString sendMessage( const QVariantMap& msg, QObject* receiver = 0, const QString& slot = QString(), const QVariant& extraData = QVariant() );
-    
+
     void aboutToShow( QAction* action, const Tomahawk::playlist_ptr& playlist );
-    void syncActionTriggered( bool );
-    void subscribeActionTriggered( bool );
+    void syncActionTriggered( QAction* action );
+    void subscribeActionTriggered( QAction* action );
     void atticaLoaded(Attica::Content::List);
+    void collaborateActionTriggered( QAction* action );
 
 private slots:
     void resolverChanged();
@@ -157,7 +159,8 @@ private:
     void createActions();
     void removeActions();
     playlist_ptr playlistFromAction( QAction* action ) const;
-
+    SpotifyPlaylistUpdater* getPlaylistUpdater( const playlist_ptr plptr);
+    SpotifyPlaylistUpdater* getPlaylistUpdater( QObject* sender );
     static SpotifyAccount* s_instance;
 
     QWeakPointer<SpotifyAccountConfig> m_configWidget;
@@ -185,5 +188,6 @@ private:
 }
 
 Q_DECLARE_METATYPE( Tomahawk::Accounts::SpotifyPlaylistInfo* )
+Q_DECLARE_METATYPE( QAction* )
 
 #endif // SpotifyAccount_H
