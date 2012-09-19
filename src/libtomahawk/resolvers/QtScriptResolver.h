@@ -130,6 +130,7 @@ public:
     static ExternalResolver* factory( const QString& scriptPath );
 
     virtual QString name() const         { return m_name; }
+    virtual QPixmap icon() const         { return m_icon; }
     virtual unsigned int weight() const  { return m_weight; }
     virtual unsigned int timeout() const { return m_timeout; }
 
@@ -140,6 +141,7 @@ public:
     virtual bool running() const;
     virtual void reload();
 
+    virtual void setIcon( const QPixmap& icon ) { m_icon = icon; }
 public slots:
     virtual void resolve( const Tomahawk::query_ptr& query );
     virtual void stop();
@@ -168,6 +170,7 @@ private:
     ScriptEngine* m_engine;
 
     QString m_name;
+    QPixmap m_icon;
     unsigned int m_weight, m_timeout;
 
     bool m_ready, m_stopped;

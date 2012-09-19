@@ -124,9 +124,14 @@ AccountWidget::AccountWidget( QWidget* parent )
     idContainer->setFixedWidth( m_inviteContainer->width() );
 
     m_inviteButton = new QPushButton( this );
-    m_inviteButton->setFixedWidth( m_inviteButton->logicalDpiX() * 0.8 );
+    m_inviteButton->setMinimumWidth( m_inviteButton->logicalDpiX() * 0.8 );
     m_inviteButton->setText( tr( "Invite" ) );
     vLayout->addWidget( m_inviteButton, 1, 1 );
+
+
+#ifdef Q_OS_MAC
+    layout()->setContentsMargins( 0, 0, 0, 0 );
+#endif
 
     setInviteWidgetsEnabled( false );
 }

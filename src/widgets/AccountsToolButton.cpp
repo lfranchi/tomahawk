@@ -19,7 +19,7 @@
 #include "AccountsToolButton.h"
 
 #include "AccountListWidget.h"
-#include "utils/TomahawkUtils.h"
+#include "utils/TomahawkUtilsGui.h"
 
 #include <QLabel>
 #include <QListView>
@@ -51,7 +51,7 @@ AccountsToolButton::AccountsToolButton( QWidget* parent )
 
     QFont clFont = connectionsLabel->font();
     clFont.setBold( true );
-    clFont.setPointSize( 12 );
+    clFont.setPointSize( TomahawkUtils::defaultFontSize() + 3 );
     connectionsLabel->setFont( clFont );
     connectionsLabel->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Preferred );
 
@@ -71,6 +71,11 @@ AccountsToolButton::AccountsToolButton( QWidget* parent )
     separatorLine->setContentsMargins( 0, 0, 0, 0 );
     separatorLine->setStyleSheet( "QWidget { border-top: 1px solid black; }" );
     wMainLayout->addWidget( separatorLine );
+
+#ifdef Q_OS_MAC
+    w->setContentsMargins( 4, 4, 2, 2 );
+    wMainLayout->setContentsMargins( 4, 4, 2, 2 );
+#endif
 
     m_popup->setWidget( w );
     connect( m_popup, SIGNAL( hidden() ), SLOT( popupHidden() ) );

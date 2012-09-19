@@ -22,6 +22,7 @@
 
 #include "PlaylistInterface.h"
 #include "utils/StyleHelper.h"
+#include "utils/TomahawkUtilsGui.h"
 
 using namespace Tomahawk;
 
@@ -38,7 +39,7 @@ ContextProxyPage::paint( QPainter* painter, const QStyleOptionGraphicsItem* opti
 
     QFont f( font() );
     f.setBold( true );
-    f.setPointSize( 8 );
+    f.setPointSize( TomahawkUtils::defaultFontSize() - 1 );
     painter->setFont( f );
     painter->setPen( Qt::white );
 
@@ -68,7 +69,7 @@ ContextProxyPage::setPage( Tomahawk::ContextPage* page )
 
     QFont f( font() );
     f.setBold( true );
-    f.setPointSize( 8 );
+    f.setPointSize( TomahawkUtils::defaultFontSize() - 1 );
     QFontMetrics fm( f );
     QGraphicsLinearLayout* layout = new QGraphicsLinearLayout();
     layout->setContentsMargins( 4, fm.height() * 1.1, 4, 4 );

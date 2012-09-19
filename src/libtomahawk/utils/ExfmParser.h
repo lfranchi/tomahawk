@@ -17,51 +17,43 @@
  *   along with Tomahawk. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SPOTIFY_PARSER_H
-#define SPOTIFY_PARSER_H
+#ifndef Exfm_PARSER_H
+#define Exfm_PARSER_H
 
 #include "DllMacro.h"
 #include "Typedefs.h"
 #include "Query.h"
+#include "DropJob.h"
 #include "jobview/JobStatusItem.h"
-#include "accounts/spotify/SpotifyPlaylistUpdater.h"
-#include "accounts/spotify/SpotifyAccount.h"
 #include <QObject>
-#include <QSet>
 #include <QtCore/QStringList>
 
-#define SPOTIFY_PLAYLIST_API_URL "http://spotikea.tomahawk-player.org"
-
 /**
- * Small class to parse spotify links into query_ptrs
+ * Small class to parse Exfm links into query_ptrs
  *
  * Connect to the signals to get the results
  */
 
 class QNetworkReply;
-class SpotifyAccount;
-class SpotifyPlaylistUpdater;
+
 namespace Tomahawk
 {
 
 class DropJobNotifier;
 
-class DLLEXPORT SpotifyParser : public QObject
+class DLLEXPORT ExfmParser : public QObject
 {
     Q_OBJECT
 public:
-    friend class SpotifyJobNotifier;
-    explicit SpotifyParser( const QString& trackUrl, bool createNewPlaylist = false, QObject* parent = 0 );
-    explicit SpotifyParser( const QStringList& trackUrls, bool createNewPlaylist = false, QObject* parent = 0 );
-    virtual ~SpotifyParser();
+    friend class ExfmJobNotifier;
+    explicit ExfmParser( const QString& trackUrl, bool createNewPlaylist = false, QObject* parent = 0 );
+    explicit ExfmParser( const QStringList& trackUrls, bool createNewPlaylist = false, QObject* parent = 0 );
+    virtual ~ExfmParser();
 
     // if true, emits track(), if false, emits tracks().
-    // only matters if you're using the QStrin constructor and explicityl dont' want
+    // only matters if you're using the QString constructor and explicityl dont' want
     // the single track signal
     void setSingleMode( bool single ) { m_single = single; }
-
-public slots:
-    void  playlistListingResult( const QString& msgType, const QVariantMap& msg, const QVariant& extraData );
 
 signals:
     void track( const Tomahawk::query_ptr& track );
@@ -69,30 +61,26 @@ signals:
     void playlist( const Tomahawk::query_ptr& playlist );
 
 private slots:
-    void spotifyTrackLookupFinished();
-    void spotifyBrowseFinished();
-
+    void exfmBrowseFinished();
+    void exfmLookupFinished();
     void playlistCreated();
+
 private:
     QPixmap pixmap() const;
-
     void lookupUrl( const QString& url );
-    void lookupTrack( const QString& track );
-    void lookupSpotifyBrowse( const QString& playlist );
-    void checkTrackFinished();
     void checkBrowseFinished();
-    int  m_limit;
+    void parseTrack( const QVariantMap& res );
+
     bool m_single;
     bool m_trackMode;
     bool m_createNewPlaylist;
-    bool m_collaborative;
+
     int m_subscribers;
     QList< query_ptr > m_tracks;
     QSet< QNetworkReply* > m_queries;
-    QString m_title, m_info, m_creator;
     Tomahawk::playlist_ptr m_playlist;
     DropJobNotifier* m_browseJob;
-    QString m_browseUri;
+    DropJob::DropType m_type;
     static QPixmap* s_pixmap;
 };
 

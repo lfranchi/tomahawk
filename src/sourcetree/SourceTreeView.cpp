@@ -69,13 +69,10 @@ SourceTreeView::SourceTreeView( QWidget* parent )
     setContentsMargins( 0, 0, 0, 0 );
 
     QFont fnt;
-    fnt.setPointSize( font().pointSize() - 1 );
-    setFont( fnt );
-
     QFontMetrics fm( fnt );
     // This is sort of the longest string in there. With translations
     // we will never get it right so setting it to something reasonable for the average case
-    setMinimumWidth( fm.width( "Track Album Artist Local Top10") );
+    setMinimumWidth( fm.width( "Track Album Artist Local Top10" ) );
 
     setHeaderHidden( true );
     setRootIsDecorated( true );

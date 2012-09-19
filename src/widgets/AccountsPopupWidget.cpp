@@ -47,6 +47,11 @@ AccountsPopupWidget::AccountsPopupWidget( QWidget* parent )
 
     setContentsMargins( contentsMargins().left() + 2, contentsMargins().top() + 2 ,
                         contentsMargins().right(), contentsMargins().bottom() );
+
+#ifdef Q_OS_MAC
+    setContentsMargins( 0, 0, 0, 0 );
+    layout()->setContentsMargins( 0, 0, 0, 0 );
+#endif
 }
 
 void
@@ -60,7 +65,13 @@ AccountsPopupWidget::setWidget( QWidget* widget )
 void
 AccountsPopupWidget::anchorAt( const QPoint &p )
 {
+#ifdef Q_OS_WIN
+    // We do this because Windows sticks the toolbutton really close to the
+    // right side border of the window
+    QPoint myTopRight( p.x() - sizeHint().width(), p.y() );
+#else
     QPoint myTopRight( p.x() - sizeHint().width() + 8, p.y() );
+#endif
     move( myTopRight );
     if( isVisible() )
         repaint();
@@ -79,6 +90,7 @@ void AccountsPopupWidget::paintEvent( QPaintEvent* )
     QPainter p( this );
 
     p.setRenderHint( QPainter::Antialiasing );
+    p.setBackgroundMode( Qt::TransparentMode );
 
     QPen pen( QColor( 0x8c, 0x8c, 0x8c ) );
     pen.setWidth( 2 );

@@ -28,6 +28,7 @@
 #include "database/DatabaseCommand_AllTracks.h"
 #include "database/DatabaseCommand_AddFiles.h"
 
+#include "utils/TomahawkUtilsGui.h"
 #include "utils/Logger.h"
 
 using namespace Tomahawk;
@@ -63,6 +64,7 @@ Result::isCached( const QString& url )
 Result::Result( const QString& url )
     : QObject()
     , m_url( url )
+    , m_sourceIcon( 0 )
     , m_duration( 0 )
     , m_bitrate( 0 )
     , m_size( 0 )
@@ -80,6 +82,7 @@ Result::Result( const QString& url )
 
 Result::~Result()
 {
+    delete m_sourceIcon;
 }
 
 
@@ -178,6 +181,7 @@ Result::toVariant() const
     m.insert( "album", album()->name() );
     m.insert( "track", track() );
     m.insert( "source", friendlySource() );
+    m.insert( "sourceIcon", sourceIcon() );
     m.insert( "mimetype", mimetype() );
     m.insert( "size", size() );
     m.insert( "bitrate", bitrate() );
@@ -291,6 +295,28 @@ Result::friendlySource() const
     }
     else
         return collection()->source()->friendlyName();
+}
+
+
+QPixmap
+Result::sourceIcon() const
+{
+    if ( collection().isNull() )
+    {
+        if ( !m_sourceIcon )
+            return QPixmap();
+        else
+            return *m_sourceIcon;
+    }
+    else
+    {
+        QPixmap avatar = collection()->source()->avatar( Source::FancyStyle );
+        if ( !avatar )
+        {
+            avatar = TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultSourceAvatar, TomahawkUtils::AvatarInFrame );
+        }
+        return avatar;
+    }
 }
 
 

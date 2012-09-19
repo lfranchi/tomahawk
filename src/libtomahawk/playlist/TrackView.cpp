@@ -80,17 +80,6 @@ TrackView::TrackView( QWidget* parent )
     sortByColumn( -1 );
     setContextMenuPolicy( Qt::CustomContextMenu );
 
-#ifndef Q_WS_WIN
-    QFont f = font();
-    f.setPointSize( f.pointSize() - 1 );
-    setFont( f );
-#endif
-
-#ifdef Q_WS_MAC
-    f.setPointSize( f.pointSize() - 2 );
-    setFont( f );
-#endif
-
     m_timer.setInterval( SCROLL_TIMEOUT );
     connect( verticalScrollBar(), SIGNAL( rangeChanged( int, int ) ), SLOT( onViewChanged() ) );
     connect( verticalScrollBar(), SIGNAL( valueChanged( int ) ), SLOT( onViewChanged() ) );
@@ -334,6 +323,11 @@ TrackView::keyPressEvent( QKeyEvent* event )
     if ( event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return )
     {
         onItemActivated( currentIndex() );
+    }
+    if ( event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace )
+    {
+        tDebug() << "Removing selected items from playlist";
+        deleteSelectedItems();
     }
 }
 
@@ -604,6 +598,10 @@ TrackView::onMenuTriggered( int action )
             onItemActivated( m_contextMenuIndex );
             break;
 
+        case ContextMenu::ActionDelete:
+            deleteSelectedItems();
+            break;
+
         default:
             break;
     }
@@ -751,4 +749,18 @@ TrackView::setFilter( const QString& filter )
     ViewPage::setFilter( filter );
     m_proxyModel->setFilter( filter );
     return true;
+}
+
+
+void
+TrackView::deleteSelectedItems()
+{
+    if ( !model()->isReadOnly() )
+    {
+        proxyModel()->removeIndexes( selectedIndexes() );
+    }
+    else
+    {
+        tDebug() << Q_FUNC_INFO << "Error: Model is read-only!";
+    }
 }

@@ -195,16 +195,19 @@ TomahawkApp::init()
     setWindowIcon( QIcon( RESPATH "icons/tomahawk-icon-128x128.png" ) );
     setQuitOnLastWindowClosed( false );
 
-    QFont f = APP->font();
-    f.setPixelSize( HeaderLabel::defaultFontSize() );
-    QFontMetrics fm( f );
-    TomahawkUtils::setHeaderHeight( fm.height() + 8 );
+    QFont f = font();
+#ifdef Q_OS_MAC
+    f.setPointSize( f.pointSize() - 2 );
+    setFont( f );
+#endif
+
+    tDebug() << "Default font:" << f.pixelSize() << f.pointSize() << f.pointSizeF() << f.family();
+    tDebug() << "Font height:" << QFontMetrics( f ).height();
+    TomahawkUtils::setDefaultFontSize( f.pointSize() );
 #endif
 
     TomahawkUtils::setHeadless( m_headless );
-
     TomahawkSettings* s = TomahawkSettings::instance();
-
     new ACLRegistryImpl( this );
 
     tDebug( LOGINFO ) << "Setting NAM.";
@@ -334,10 +337,9 @@ TomahawkApp::init()
     // A bug in Qt means the wheel_scroll_lines setting gets ignored and replaced
     // with the default value of 3 in QApplicationPrivate::initialize.
     {
-        QSettings qt_settings(QSettings::UserScope, "Trolltech");
-        qt_settings.beginGroup("Qt");
-        QApplication::setWheelScrollLines(
-            qt_settings.value("wheelScrollLines", QApplication::wheelScrollLines()).toInt());
+        QSettings qt_settings( QSettings::UserScope, "Trolltech" );
+        qt_settings.beginGroup( "Qt" );
+        QApplication::setWheelScrollLines( qt_settings.value( "wheelScrollLines", QApplication::wheelScrollLines() ).toInt() );
     }
 
 #ifndef ENABLE_HEADLESS
@@ -417,6 +419,7 @@ TomahawkApp::printHelp()
     echo( "  --help         Show this help\n" );
     echo( "  --http         Initialize HTTP server\n" );
     echo( "  --filescan     Scan files on startup\n" );
+    echo( "  --headless     Do not create a main window\n" );
     echo( "  --hide         Hide main window on startup\n" );
     echo( "  --testdb       Use a test database instead of real collection\n" );
     echo( "  --noupnp       Disable UPnP\n" );
@@ -747,7 +750,10 @@ TomahawkApp::instanceStarted( KDSingleApplicationGuard::Instance instance )
     const QStringList arguments = instance.arguments();
 
     if ( arguments.size() < 2 )
+    {
+        activate();
         return;
+    }
 
     QString arg1 = arguments[ 1 ];
     if ( loadUrl( arg1 ) )
@@ -768,4 +774,6 @@ TomahawkApp::instanceStarted( KDSingleApplicationGuard::Instance instance )
         AudioEngine::instance()->pause();
     else if ( arguments.contains( "--stop" ) )
         AudioEngine::instance()->stop();
+    else
+        activate();
 }

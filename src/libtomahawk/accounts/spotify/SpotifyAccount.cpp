@@ -639,9 +639,7 @@ SpotifyAccount::collaborateActionTriggered( QAction* action )
             msg[ "_msgtype" ] = "setCollaborative";
             msg[ "collaborative" ] = !updater->collaborative();
             msg[ "playlistid" ] = info->plid;
-
             sendMessage( msg, this );
-            updater->setCollaborative( !updater->collaborative() );
         }
         else
             tLog() << "cant set collab for this pl, not owner!?" << info->name << info->plid;
@@ -906,7 +904,7 @@ SpotifyAccount::resolverMessage( const QString &msgType, const QVariantMap &msg 
 
         updater->spotifyTracksMoved( tracksList, newStartPos, newRev, oldRev  );
     }
-    else if ( msgType == "playlistRenamed" )
+    else if ( msgType == "playlistMetadataChanged" )
     {
         const QString plid = msg.value( "id" ).toString();
         // We should already be syncing this playlist if we get updates for it
@@ -919,12 +917,30 @@ SpotifyAccount::resolverMessage( const QString &msgType, const QVariantMap &msg 
         SpotifyPlaylistUpdater* updater = m_updaters[ plid ];
         Q_ASSERT( updater->sync() );
 
-        qDebug() << "Playlist renamed fetched in tomahawk";
         const QString title = msg.value( "name" ).toString();
         const QString newRev = msg.value( "revid" ).toString();
         const QString oldRev = msg.value( "oldRev" ).toString();
+        const bool collaborative = msg.value( "collaborative" ).toBool();
+        const int subscribers = msg.value( "subscribers" ).toInt();
 
-        updater->spotifyPlaylistRenamed( title, newRev, oldRev  );
+        SpotifyPlaylistInfo* info = m_allSpotifyPlaylists[ plid ];
+        if( info && info->name != title )
+        {
+            qDebug() << "Playlist renamed fetched in tomahawk";
+            updater->spotifyPlaylistRenamed( title, newRev, oldRev  );
+        }
+
+        if( updater->collaborative() != collaborative )
+        {
+            tLog() << "Setting collaborative!" << collaborative;
+            updater->setCollaborative( collaborative );
+        }
+
+        if( updater->subscribers() != subscribers )
+        {
+            tLog() << "Updateing number of subscribers" << subscribers;
+            updater->setSubscribers( subscribers );
+        }
     }
     else if ( msgType == "spotifyError" )
     {
@@ -1244,7 +1260,7 @@ SpotifyAccount::playlistCopyCreated( const QString& msgType, const QVariantMap& 
         return;
     }
 
-    SpotifyPlaylistInfo *info = new SpotifyPlaylistInfo( title, id, revid, true, false );
+    SpotifyPlaylistInfo *info = new SpotifyPlaylistInfo( title, id, revid, true, false, true );
     startPlaylistSync( info );
 }
 
@@ -1275,6 +1291,7 @@ SpotifyAccount::playlistCreated( const QString& msgType, const QVariantMap& msg,
 
     playlist_ptr playlist = m_waitingForCreateReply.take( qid );
     SpotifyPlaylistUpdater* updater = new SpotifyPlaylistUpdater( this, revid, id, playlist );
+    updater->setOwner( true );
     updater->setSync( true );
     m_updaters[ id ] = updater;
 }
@@ -1407,21 +1424,24 @@ SpotifyAccount::createActions()
 
     QAction* syncAction = new QAction( 0 );
     syncAction->setIcon( QIcon( RESPATH "images/spotify-logo.png" ) );
-    NewClosure( syncAction, SIGNAL( triggered( bool ) ), this, SLOT( syncActionTriggered( QAction* ) ), syncAction );
+    _detail::Closure* c = NewClosure( syncAction, SIGNAL( triggered( bool ) ), this, SLOT( syncActionTriggered( QAction* ) ), syncAction );
+    c->setAutoDelete( false );
     ActionCollection::instance()->addAction( ActionCollection::LocalPlaylists, syncAction, this );
     syncAction->setData( Sync);
     m_customActions.append( syncAction );
 
     QAction* subscribeAction = new QAction( 0 );
     subscribeAction->setIcon( QIcon( RESPATH "images/spotify-logo.png" ) );
-    NewClosure( subscribeAction, SIGNAL( triggered( bool ) ), this, SLOT( subscribeActionTriggered( QAction* ) ), subscribeAction );
+    c = NewClosure( subscribeAction, SIGNAL( triggered( bool ) ), this, SLOT( subscribeActionTriggered( QAction* ) ), subscribeAction );
+    c->setAutoDelete( false );
     ActionCollection::instance()->addAction( ActionCollection::LocalPlaylists, subscribeAction, this );
     subscribeAction->setData( Subscribe );
     m_customActions.append( subscribeAction );
 
     QAction* collaborateAction = new QAction( 0 );
     collaborateAction->setIcon( QIcon( RESPATH "images/spotify-logo.png" ) );
-    NewClosure( collaborateAction, SIGNAL( triggered( bool ) ), this, SLOT( collaborateActionTriggered( QAction* ) ), collaborateAction );
+    c = NewClosure( collaborateAction, SIGNAL( triggered( bool ) ), this, SLOT( collaborateActionTriggered( QAction* ) ), collaborateAction );
+    c->setAutoDelete( false );
     ActionCollection::instance()->addAction( ActionCollection::LocalPlaylists, collaborateAction, this );
     collaborateAction->setData( Collaborate );
     m_customActions.append( collaborateAction );
