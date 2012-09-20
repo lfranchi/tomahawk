@@ -29,16 +29,15 @@
 using namespace Tomahawk;
 
 WebResultHintChecker::WebResultHintChecker( const query_ptr& q )
-    : QObject()
+    : QObject( 0 )
     , m_query( q )
 {
-    const QString resultHint = q->resultHint();
+    m_url = q->resultHint();
 
     foreach ( const result_ptr& result, q->results() )
     {
-        if ( result->url() == resultHint )
+        if ( result->url() == m_url )
         {
-            m_url = result->url();
             m_result = result;
             break;
         }
@@ -64,13 +63,17 @@ WebResultHintChecker::~WebResultHintChecker()
 void
 WebResultHintChecker::headFinished( QNetworkReply* reply )
 {
-    reply->deleteLater();
-
     if ( reply->error() != QNetworkReply::NoError )
     {
         // Error getting headers for the http resulthint, remove it from the result
         // as it's definitely not playable
         tLog() << "Removing HTTP result from query since HEAD request failed to verify it was a valid url:" << m_url;
-        m_query->removeResult( m_result );
+        if ( !m_result.isNull() )
+            m_query->removeResult( m_result );
+        if ( m_query->resultHint() == m_url )
+            m_query->setResultHint( QString() );
     }
+
+    reply->deleteLater();
+    deleteLater();
 }
