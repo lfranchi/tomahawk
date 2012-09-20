@@ -123,6 +123,8 @@ signals:
     void resolverUninstalled( const QString& resolverId );
     void resolverInstallationFailed( const QString& resolverId );
 
+    void resolverIconUpdated( const QString& resolverId );
+
     void startedInstalling( const QString& resolverId );
 
 private slots:
@@ -144,6 +146,7 @@ private slots:
 private:
     void doResolverRemove( const QString& id ) const;
     void doInstallResolver(  const Attica::Content& resolver, bool autoCreate, Tomahawk::Accounts::AtticaResolverAccount* handler );
+    void fetchMissingIcons();
     QString hostname() const;
 
     Attica::ProviderManager m_manager;
