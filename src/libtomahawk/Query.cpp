@@ -164,6 +164,7 @@ Query::init()
     m_duration = -1;
     m_albumpos = 0;
     m_discnumber = 0;
+    m_saveResultHint = false;
 
     updateSortNames();
 }
@@ -768,6 +769,13 @@ Query::socialActionDescription( const QString& action, DescriptionMode mode ) co
     }
 
     return desc;
+}
+
+
+void
+Query::setSaveHTTPResultHint( bool saveResultHint )
+{
+    m_saveResultHint = saveResultHint;
 }
 
 

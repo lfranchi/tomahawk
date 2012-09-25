@@ -467,6 +467,11 @@ NetworkProxyFactory::setNoProxyHosts( const QStringList& hosts )
 void
 NetworkProxyFactory::setProxy( const QNetworkProxy& proxy )
 {
+
+    m_proxyChanged = false;
+    if( m_proxy != proxy )
+         m_proxyChanged = true;
+
     m_proxy = proxy;
     QFlags< QNetworkProxy::Capability > proxyCaps;
     proxyCaps |= QNetworkProxy::TunnelingCapability;
@@ -933,6 +938,14 @@ extractBinaryResolver( const QString& zipFilename, QObject* receiver )
 {
     BinaryExtractWorker* worker = new BinaryExtractWorker( zipFilename, receiver );
     worker->start( QThread::LowPriority );
+}
+
+
+bool
+whitelistedHttpResultHint( const QString& url )
+{
+    // For now, just http/https
+    return url.startsWith( "http" );
 }
 
 

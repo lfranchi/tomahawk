@@ -40,7 +40,7 @@
 */
 #include "Schema.sql.h"
 
-#define CURRENT_SCHEMA_VERSION 28
+#define CURRENT_SCHEMA_VERSION 29
 
 DatabaseImpl::DatabaseImpl( const QString& dbname )
 {
@@ -618,21 +618,24 @@ DatabaseImpl::resultFromHint( const Tomahawk::query_ptr& origquery )
         s = SourceList::instance()->getLocal();
         fileUrl = url;
     }
-    else
+    else if ( TomahawkUtils::whitelistedHttpResultHint( url ) )
     {
-//        Q_ASSERT( false );
-/*        res = Tomahawk::result_ptr( new Tomahawk::Result() );
-        s = SourceList::instance()->webSource();
-        res->setUrl( url );
-        res->setCollection( s->collection() );
+        // Return http resulthint directly
+        res = Tomahawk::Result::get( url );
         res->setRID( uuid() );
         res->setScore( 1.0 );
-        res->setArtist( Tomahawk::artist_ptr( new Tomahawk::Artist( 0, origquery->artist() ) ) );
-        res->setAlbum( Tomahawk::album_ptr( new Tomahawk::Album( 0, origquery->album(), res->artist() ) ) );
+        res->setArtist( Tomahawk::Artist::get( artistId( origquery->artist(), false ), origquery->artist() ) );
+        res->setAlbum( Tomahawk::Album::get( albumId( res->artist()->id(), origquery->album(), false ), origquery->album(), res->artist() ) );
         res->setTrack( origquery->track() );
         res->setDuration( origquery->duration() );
-        res->setFriendlySource( url );*/
+        const QUrl u = QUrl::fromUserInput( url );
+        res->setFriendlySource( u.host() );
 
+        return res;
+    }
+    else
+    {
+        // No resulthint
         return res;
     }
 

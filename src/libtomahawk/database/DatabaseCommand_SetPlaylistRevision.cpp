@@ -153,7 +153,7 @@ DatabaseCommand_SetPlaylistRevision::exec( DatabaseImpl* lib )
             if ( !e->query()->numResults() )
                 continue;
 
-            adde.bindValue( 0, e->query()->results().first()->url() );
+            adde.bindValue( 0, hintFromQuery( e->query() ) );
             adde.bindValue( 1, e->guid() );
             adde.exec();
         }
@@ -189,7 +189,7 @@ DatabaseCommand_SetPlaylistRevision::exec( DatabaseImpl* lib )
                       "VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
         adde.prepare( sql );
 
-        qDebug() << "Num new playlist_items to add:" << m_addedentries.length();
+//         qDebug() << "Num new playlist_items to add:" << m_addedentries.length();
         foreach( const plentry_ptr& e, m_addedentries )
         {
             if ( !e->isValid() )
@@ -199,11 +199,7 @@ DatabaseCommand_SetPlaylistRevision::exec( DatabaseImpl* lib )
 
             m_addedmap.insert( e->guid(), e ); // needed in postcommithook
 
-            QString resultHint;
-            if ( !e->query()->results().isEmpty() )
-                resultHint = e->query()->results().first()->url();
-            else if ( !e->query()->resultHint().isEmpty() )
-                resultHint = e->query()->resultHint();
+            const QString resultHint = hintFromQuery( e->query() );
 
             adde.bindValue( 0, e->guid() );
             adde.bindValue( 1, m_playlistguid );
@@ -271,3 +267,24 @@ DatabaseCommand_SetPlaylistRevision::exec( DatabaseImpl* lib )
 //        Q_ASSERT( false );
     }
 }
+
+
+QString
+DatabaseCommand_SetPlaylistRevision::hintFromQuery( const query_ptr& query ) const
+{
+    QString resultHint, foundResult;
+    if ( !query->results().isEmpty() )
+        foundResult = query->results().first()->url();
+    else if ( !query->resultHint().isEmpty() )
+        foundResult = query->resultHint();
+
+    if ( foundResult.startsWith( "file://" ) ||
+         foundResult.startsWith( "servent://" ) || // Save resulthints for local files and peers automatically
+         ( TomahawkUtils::whitelistedHttpResultHint( foundResult ) && query->saveHTTPResultHint() ) )
+    {
+        resultHint = foundResult;
+    }
+
+    return resultHint;
+}
+

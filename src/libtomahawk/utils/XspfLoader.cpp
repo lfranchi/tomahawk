@@ -232,6 +232,10 @@ XSPFLoader::gotBody()
             {
                 url = n.text();
             }
+            else if ( n.namespaceURI() == m_NS && n.localName() == "location" )
+            {
+                url = n.text();
+            }
         }
 
         if ( artist.isEmpty() || track.isEmpty() )
@@ -250,7 +254,10 @@ XSPFLoader::gotBody()
 
         q->setDuration( duration.toInt() / 1000 );
         if ( !url.isEmpty() )
+        {
             q->setResultHint( url );
+            q->setSaveHTTPResultHint( true );
+        }
 
         m_entries << q;
     }
