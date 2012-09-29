@@ -218,7 +218,7 @@ PlaylistLargeItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem&
         QFont smallFont = opt.font;
         smallFont.setPointSize( TomahawkUtils::defaultFontSize() - 2 );
 
-        r.adjust( pixmapRect.width() + 12, 1, -28 - avatar.width(), 0 );
+        r.adjust( pixmapRect.width() + 12, 1, - 16 - avatar.width(), 0 );
         QRect leftRect = r.adjusted( 0, 0, -48, 0 );
         QRect rightRect = r.adjusted( r.width() - smallBoldFontMetrics.width( TomahawkUtils::timeToString( duration ) ), 0, 0, 0 );
 
@@ -242,6 +242,16 @@ PlaylistLargeItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem&
             textDoc.setHtml( item->query()->socialActionDescription( "Love", Query::Short ) );
 
         drawRichText( painter, option, leftRect, Qt::AlignBottom, textDoc );
+
+        const int sourceIconSize = avatarRect.width() - 6;
+        if ( !q->results().isEmpty() && !q->results().first()->sourceIcon( Result::DropShadow, QSize( sourceIconSize, sourceIconSize ) ).isNull() )
+        {
+            const QPixmap sourceIcon = q->results().first()->sourceIcon( Result::DropShadow, QSize( sourceIconSize, sourceIconSize ) );
+            painter->setOpacity( 0.8 );
+            painter->drawPixmap( QRect( rightRect.right() - sourceIconSize, r.center().y() - sourceIconSize/2, sourceIcon.width(), sourceIcon.height() ), sourceIcon );
+            painter->setOpacity( 1. );
+            rightRect.moveLeft( rightRect.left() - sourceIcon.width() - 8 );
+        }
 
         if ( duration > 0 )
         {

@@ -24,6 +24,7 @@
 #include <QtGui/QPixmap>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QVariant>
+#include <QMutex>
 
 #include "Typedefs.h"
 
@@ -49,6 +50,11 @@ friend class ::DatabaseCommand_AddFiles;
 friend class ::DatabaseCommand_LoadFile;
 
 public:
+    enum SourceImageStyle {
+        Plain,
+        DropShadow
+    };
+
     static Tomahawk::result_ptr get( const QString& url );
     static bool isCached( const QString& url );
     virtual ~Result();
@@ -72,9 +78,10 @@ public:
     QString url() const { return m_url; }
     QString mimetype() const { return m_mimetype; }
     QString friendlySource() const;
-    QPixmap sourceIcon() const;
     QString purchaseUrl() const { return m_purchaseUrl; }
     QString linkUrl() const { return m_linkUrl; }
+
+    QPixmap sourceIcon( SourceImageStyle style, const QSize& desiredSize = QSize() ) const;
 
     unsigned int duration() const { return m_duration; }
     unsigned int bitrate() const { return m_bitrate; }
@@ -104,9 +111,6 @@ public:
     void setModificationTime( unsigned int modtime ) { m_modtime = modtime; }
     void setYear( unsigned int year ) { m_year = year; }
     void setDiscNumber( unsigned int discnumber ) { m_discnumber = discnumber; }
-
-    // Takes ownership of the pixmap
-    void setSourceIcon( QPixmap* i ) { m_sourceIcon = i; }
 
     QVariantMap attributes() const { return m_attributes; }
     void setAttributes( const QVariantMap& map ) { m_attributes = map; updateAttributes(); }
@@ -148,8 +152,6 @@ private:
     QString m_linkUrl;
     QString m_mimetype;
     QString m_friendlySource;
-
-    QPixmap* m_sourceIcon;
 
     unsigned int m_duration;
     unsigned int m_bitrate;
