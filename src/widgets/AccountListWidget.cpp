@@ -19,17 +19,23 @@
 #include "AccountListWidget.h"
 
 #include "accounts/AccountModel.h"
+#include "accounts/AccountManager.h"
 #include "AccountWidget.h"
 #include "utils/TomahawkUtilsGui.h"
 
 #include <QDebug>
+#include <QPushButton>
 
 AccountListWidget::AccountListWidget( AccountModelFactoryProxy* model, QWidget* parent )
     : QWidget( parent )
     , m_model( model )
 {
-    m_layout = new QVBoxLayout( this );
+    QVBoxLayout* mainLayout = new QVBoxLayout( this );
+    TomahawkUtils::unmarginLayout( mainLayout );
+    m_layout = new QVBoxLayout;
     TomahawkUtils::unmarginLayout( m_layout );
+    mainLayout->addLayout( m_layout );
+    mainLayout->setSpacing( 8 );
 
     connect( m_model, SIGNAL( dataChanged( QModelIndex, QModelIndex ) ),
              this, SLOT( updateEntries( QModelIndex, QModelIndex ) ) );
@@ -39,6 +45,38 @@ AccountListWidget::AccountListWidget( AccountModelFactoryProxy* model, QWidget* 
              this, SLOT( removeEntries( QModelIndex, int, int ) ) );
     connect( m_model, SIGNAL( modelReset() ),
              this, SLOT( loadAllEntries() ) );
+
+    connect( m_model, SIGNAL( dataChanged( QModelIndex, QModelIndex ) ),
+             this, SLOT( updateToggleOnlineStateButton() ) );
+
+    QWidget* separatorLine = new QWidget( this );
+    separatorLine->setFixedHeight( 1 );
+    separatorLine->setContentsMargins( 0, 0, 0, 0 );
+    separatorLine->setStyleSheet( "QWidget { border-top: 1px solid " +
+                                  TomahawkUtils::Colors::BORDER_LINE.name() + "; }" ); //from ProxyStyle
+    mainLayout->insertWidget( 0, separatorLine );
+    mainLayout->addSpacing( 6 );
+
+    QLabel *connectionsLabel = new QLabel( tr( "Connections" ).toUpper(), this );
+    QFont clFont = connectionsLabel->font();
+    clFont.setBold( true );
+    connectionsLabel->setStyleSheet( "color: " + TomahawkUtils::Colors::GROUP_HEADER.name() );
+    clFont.setPointSize( TomahawkUtils::defaultFontSize() + 1 );
+    connectionsLabel->setFont( clFont );
+    connectionsLabel->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Preferred );
+
+    m_toggleOnlineButton = new QPushButton( tr( "Connect &All" ), this );
+    m_toggleOnlineButtonState = false;
+    connect( m_toggleOnlineButton, SIGNAL( clicked() ),
+             this, SLOT( toggleOnlineStateForAll() ) );
+
+    QHBoxLayout *headerLayout = new QHBoxLayout( this );
+    headerLayout->addWidget( connectionsLabel );
+    headerLayout->addSpacing( 30 );
+    headerLayout->addWidget( m_toggleOnlineButton );
+    mainLayout->insertLayout( 0, headerLayout );
+
+    updateToggleOnlineStateButton();
 }
 
 void
@@ -146,4 +184,49 @@ AccountListWidget::removeEntries( const QModelIndex& parent, int start, int end 
     }
     adjustSize();
     qobject_cast< QWidget* >( QWidget::parent() )->adjustSize();
+}
+
+void
+AccountListWidget::toggleOnlineStateForAll()
+{
+    bool newState = !m_toggleOnlineButtonState;
+    foreach ( QList< AccountWidget* > awgts, m_entries )
+    {
+        foreach ( AccountWidget* awgt, awgts )
+        {
+            awgt->setConnectionState( newState );
+        }
+    }
+}
+
+void
+AccountListWidget::updateToggleOnlineStateButton()
+{
+    bool newState = false;
+    foreach ( QList< AccountWidget* > awgts, m_entries )
+    {
+        foreach ( AccountWidget* awgt, awgts )
+        {
+            if ( awgt->connectionState() )
+            {
+                newState = true;
+                goto end; //break 2 levels
+            }
+        }
+    }
+    end:;
+
+    if ( newState != m_toggleOnlineButtonState )
+    {
+        m_toggleOnlineButtonState = newState;
+        if ( newState )
+            Tomahawk::Accounts::AccountManager::instance()->connectAll();
+        else
+            Tomahawk::Accounts::AccountManager::instance()->disconnectAll();
+    }
+
+    m_toggleOnlineButton->setText( m_toggleOnlineButtonState ? tr( "Disconnect &All" )
+                                                             : tr( "Connect &All" ) );
+    m_toggleOnlineButton->setIcon( m_toggleOnlineButtonState ? QIcon( RESPATH "images/account-online.png" )
+                                                             : QIcon( RESPATH "images/account-offline.png" ) );
 }

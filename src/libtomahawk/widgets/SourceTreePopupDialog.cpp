@@ -1,6 +1,7 @@
 /* === This file is part of Tomahawk Player - <http://tomahawk-player.org> ===
  *
  *   Copyright 2012 Leo Franchi <lfranchi@kde.org>
+ *   Copyright 2012 Teo Mrnjavac <teo@kde.org>
  *
  *   Tomahawk is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,6 +18,8 @@
  */
 
 #include "SourceTreePopupDialog.h"
+
+#include "utils/TomahawkUtilsGui.h"
 
 #include <QPaintEvent>
 #include <QPainter>
@@ -47,22 +50,49 @@ SourceTreePopupDialog::SourceTreePopupDialog()
     setAutoFillBackground( false );
     setAttribute( Qt::WA_TranslucentBackground, true );
 
-    setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed );
+    //setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed );
+
+
+    m_title = new QLabel( this );
+    QFont titleFont = m_title->font();
+    titleFont.setBold( true );
+    m_title->setStyleSheet( "color: " + TomahawkUtils::Colors::GROUP_HEADER.name() );
+    titleFont.setPointSize( TomahawkUtils::defaultFontSize() + 1 );
+    m_title->setFont( titleFont );
+    m_title->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Preferred );
 
     m_label = new QLabel( this );
     m_buttons = new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this );
-    m_buttons->button( QDialogButtonBox::Ok )->setIcon( QIcon() );
-    m_buttons->button( QDialogButtonBox::Cancel )->setIcon( QIcon() );
+
+    m_buttons->button( QDialogButtonBox::Ok )->setIcon( QIcon( RESPATH "images/delete.png" ) );
+    m_buttons->button( QDialogButtonBox::Cancel )->setIcon( QIcon( RESPATH "images/cancel.png" ) );
 
     connect( m_buttons, SIGNAL( accepted() ), this, SLOT( onAccepted() ) );
     connect( m_buttons, SIGNAL( rejected() ), this, SLOT( onRejected() ) );
 
     m_layout = new QVBoxLayout;
+    TomahawkUtils::unmarginLayout( m_layout );
     setLayout( m_layout );
+    m_layout->setSpacing( 8 );
+    m_layout->setMargin( 6 );
 
-    layout()->addWidget( m_label );
-    layout()->addWidget( m_buttons );
-    setContentsMargins( contentsMargins().left() + 2, contentsMargins().top(), contentsMargins().right(), contentsMargins().bottom() );
+    m_layout->addWidget( m_title );
+
+    m_separatorLine = new QWidget( this );
+    m_separatorLine->setFixedHeight( 1 );
+    m_separatorLine->setContentsMargins( 0, 0, 0, 0 );
+    m_separatorLine->setStyleSheet( "QWidget { border-top: 1px solid " +
+                                    TomahawkUtils::Colors::BORDER_LINE.name() + "; }" );
+    m_layout->addWidget( m_separatorLine );
+    m_layout->addWidget( m_label );
+    m_layout->addWidget( m_buttons );
+    setContentsMargins( contentsMargins().left() + 12,
+                        contentsMargins().top() + 8,
+                        contentsMargins().right() + 8,
+                        contentsMargins().bottom() + 8 );
+
+    m_title->setVisible( false );
+    m_separatorLine->setVisible( false );
 
 /*
     m_buttons->button( QDialogButtonBox::Ok )->setStyleSheet(
@@ -82,6 +112,22 @@ SourceTreePopupDialog::SourceTreePopupDialog()
                             background-color: #D35052; \
                             border-style: flat; \
                         }" );*/
+}
+
+void
+SourceTreePopupDialog::setTitle( const QString& text )
+{
+    m_title->setText( text.toUpper() );
+    if ( m_title->text().isEmpty() )
+    {
+        m_title->setVisible( false );
+        m_separatorLine->setVisible( false );
+    }
+    else
+    {
+        m_title->setVisible( true );
+        m_separatorLine->setVisible( true );
+    }
 }
 
 
@@ -128,25 +174,19 @@ void
 SourceTreePopupDialog::paintEvent( QPaintEvent* event )
 {
     // Constants for painting
-    const int leftTriangleWidth = 20;
-    const int cornerRounding = 8;
-    const int leftEdgeOffset = offset() - 6;
+    const int leftTriangleWidth = 12;
+    const int cornerRounding = TomahawkUtils::POPUP_ROUNDING_RADIUS;
+    const int leftEdgeOffset = 2 /*margin*/ + leftTriangleWidth / 2;
     const QRect brect = rect().adjusted( 2, 3, -2, -3 );
 
     QPainterPath outline;
+
+    // Main rect
+    outline.addRoundedRect( brect.adjusted( leftTriangleWidth / 2, 0, 0, 0 ), cornerRounding, cornerRounding );
+
     // Left triangle top branch
     outline.moveTo( brect.left(), brect.top() + brect.height() / 2 );
     outline.lineTo( leftEdgeOffset, brect.top() + brect.height() / 2 - leftTriangleWidth / 2 );
-
-    // main outline
-    outline.lineTo( leftEdgeOffset, cornerRounding );
-    outline.quadTo( QPoint( leftEdgeOffset, brect.top() ), QPoint( leftEdgeOffset + cornerRounding, brect.top() ) );
-    outline.lineTo( brect.width() - cornerRounding, brect.top() );
-    outline.quadTo( QPoint( brect.width(), brect.top() ), QPoint( brect.width(), cornerRounding ) );
-    outline.lineTo( brect.width(), brect.height() - cornerRounding );
-    outline.quadTo( brect.bottomRight(), QPoint( brect.right() - cornerRounding, brect.height() ) );
-    outline.lineTo( leftEdgeOffset + cornerRounding, brect.height() );
-    outline.quadTo( QPoint( leftEdgeOffset, brect.height() ), QPoint( leftEdgeOffset, brect.height() - cornerRounding ) );
 
     // Left triangle bottom branch
     outline.lineTo( leftEdgeOffset, brect.top() + brect.height() / 2 + leftTriangleWidth / 2 );
@@ -156,13 +196,18 @@ SourceTreePopupDialog::paintEvent( QPaintEvent* event )
 
     p.setRenderHint( QPainter::Antialiasing );
 
-    QPen pen( QColor( "#3F4247" ) );
+    QPen pen( TomahawkUtils::Colors::BORDER_LINE );
     pen.setWidth( 2 );
     p.setPen( pen );
     p.drawPath( outline );
 
+#ifdef Q_OS_MAC
     p.setOpacity( 0.93 );
     p.fillPath( outline, QColor( "#D6E3F1" ) );
+#else
+    p.setOpacity( TomahawkUtils::POPUP_OPACITY );
+    p.fillPath( outline, TomahawkUtils::Colors::POPUP_BACKGROUND );
+#endif
 
 #ifdef QT_MAC_USE_COCOA
     // Work around bug in Qt/Mac Cocoa where opening subsequent popups

@@ -654,10 +654,13 @@ void
 AudioControls::onSocialButtonClicked()
 {
     if ( !m_socialWidget.isNull() )
-        return;
+        m_socialWidget.data()->close();
 
     m_socialWidget = new SocialWidget( m_parent );
-    m_socialWidget.data()->setPosition( m_socialWidget.data()->mapFromGlobal( QCursor::pos() ) );
+    QPoint socialWidgetPos = ui->socialButton->pos();
+    socialWidgetPos.rx() += ui->socialButton->width() / 2;
+    socialWidgetPos.ry() += 6;
+    m_socialWidget.data()->setPosition( m_socialWidget.data()->mapFromGlobal( ui->socialButton->parentWidget()->mapToGlobal( socialWidgetPos ) ) );
     m_socialWidget.data()->setQuery( m_currentTrack->toQuery() );
     m_socialWidget.data()->show();
 }

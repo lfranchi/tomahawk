@@ -1,6 +1,7 @@
 /* === This file is part of Tomahawk Player - <http://tomahawk-player.org> ===
  *
  *   Copyright 2012, Christian Muehlhaeuser <muesli@tomahawk-player.org>
+ *   Copyright 2012, Teo Mrnjavac <teo@kde.org>
  *
  *   Tomahawk is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -28,28 +29,44 @@
 #include "utils/Logger.h"
 #include "Source.h"
 
-#define CORNER_ROUNDNESS 8.0
-#define FADING_DURATION 500
-#define OPACITY 0.85
+#define ARROW_HEIGHT 6
 
 
 SocialWidget::SocialWidget( QWidget* parent )
     : QWidget( parent ) // this is on purpose!
     , ui( new Ui::SocialWidget )
-    , m_opacity( 0.00 )
     , m_parent( parent )
     , m_parentRect( parent->rect() )
 {
     ui->setupUi( this );
-
+    setWindowFlags( Qt::FramelessWindowHint );
+    setWindowFlags( Qt::Popup );
     setAttribute( Qt::WA_TranslucentBackground, true );
-    setOpacity( m_opacity );
+
+    TomahawkUtils::unmarginLayout( layout() );
+
+#ifndef Q_OS_MAC
+    ui->verticalLayout->setContentsMargins( 12, 4, 12, 12 );
+    setContentsMargins( contentsMargins().left() + 2, contentsMargins().top() + 2,
+                        contentsMargins().right() + 2, contentsMargins().bottom() + 2 + ARROW_HEIGHT );
+#else
+    ui->verticalLayout->setContentsMargins( 12, 0, 12, 16 );
+    setContentsMargins( contentsMargins().left() + 2, 4,
+                        contentsMargins().right() + 2, contentsMargins().bottom() + 2 + ARROW_HEIGHT );
+    ui->horizontalLayout->setContentsMargins( 0, 0, 0, 0 );
+#endif
+
 
     m_timer.setSingleShot( true );
     connect( &m_timer, SIGNAL( timeout() ), this, SLOT( hide() ) );
 
-    ui->charsLeftLabel->setForegroundRole( QPalette::BrightText );
+    ui->charsLeftLabel->setForegroundRole( QPalette::Text );
+    ui->charsLeftLabel->setStyleSheet( "text: black" );
     ui->buttonBox->button( QDialogButtonBox::Ok )->setText( tr( "Tweet" ) );
+    ui->buttonBox->button( QDialogButtonBox::Ok )->setIcon( QIcon( RESPATH "images/ok.png" ) );
+    ui->buttonBox->button( QDialogButtonBox::Cancel )->setIcon( QIcon( RESPATH "images/cancel.png" ) );
+
+    ui->textEdit->setStyleSheet( "border: 1px solid " + TomahawkUtils::Colors::BORDER_LINE.name() );
     
     m_parent->installEventFilter( this );
 
@@ -75,25 +92,6 @@ SocialWidget::~SocialWidget()
 
 
 void
-SocialWidget::setOpacity( qreal opacity )
-{
-    m_opacity = opacity;
-
-    if ( m_opacity == 0.00 && !isHidden() )
-    {
-        QWidget::hide();
-        emit hidden();
-    }
-    else if ( m_opacity > 0.00 && isHidden() )
-    {
-        QWidget::show();
-    }
-
-    repaint();
-}
-
-
-void
 SocialWidget::setPosition( QPoint position )
 {
     m_position = position;
@@ -107,13 +105,10 @@ SocialWidget::show( int timeoutSecs )
     if ( !isEnabled() )
         return;
 
-    QPropertyAnimation* animation = new QPropertyAnimation( this, "opacity" );
-    animation->setDuration( FADING_DURATION );
-    animation->setEndValue( 1.0 );
-    animation->start();
-
     if( timeoutSecs > 0 )
         m_timer.start( timeoutSecs * 1000 );
+
+    QWidget::show();
 }
 
 
@@ -123,10 +118,7 @@ SocialWidget::hide()
     if ( !isEnabled() )
         return;
 
-    QPropertyAnimation* animation = new QPropertyAnimation( this, "opacity" );
-    animation->setDuration( FADING_DURATION );
-    animation->setEndValue( 0.00 );
-    animation->start();
+    QWidget::hide();
 }
 
 
@@ -136,7 +128,7 @@ SocialWidget::shown() const
     if ( !isEnabled() )
         return false;
 
-    return m_opacity == OPACITY;
+    return isVisible();
 }
 
 
@@ -145,47 +137,28 @@ SocialWidget::paintEvent( QPaintEvent* event )
 {
     Q_UNUSED( event );
 
-    QPainter p( this );
+    QPainterPath outline;
+
     QRect r = contentsRect();
+    outline.addRoundedRect( r, TomahawkUtils::POPUP_ROUNDING_RADIUS, TomahawkUtils::POPUP_ROUNDING_RADIUS );
+    outline.moveTo( r.right() - ARROW_HEIGHT * 2, r.bottom()+1 );
+    outline.lineTo( r.right() - ARROW_HEIGHT * 3, r.bottom()+1 + ARROW_HEIGHT );
+    outline.lineTo( r.right() - ARROW_HEIGHT * 4, r.bottom()+1 );
 
-    p.setBackgroundMode( Qt::TransparentMode );
+    QPainter p( this );
     p.setRenderHint( QPainter::Antialiasing );
-    p.setOpacity( m_opacity );
+    p.setBackgroundMode( Qt::TransparentMode );
 
-    QPen pen( palette().dark().color(), .5 );
+    QPen pen( TomahawkUtils::Colors::BORDER_LINE );
+    pen.setWidth( 2 );
     p.setPen( pen );
-    p.setBrush( QColor( 30, 30, 30, 255.0 * OPACITY ) );
+    p.drawPath( outline );
 
-    p.drawRoundedRect( r, CORNER_ROUNDNESS, CORNER_ROUNDNESS );
+    p.setOpacity( TomahawkUtils::POPUP_OPACITY );
+    p.fillPath( outline, TomahawkUtils::Colors::POPUP_BACKGROUND );
 
     QWidget::paintEvent( event );
     return;
-
-    QTextOption to( Qt::AlignCenter );
-    to.setWrapMode( QTextOption::WrapAtWordBoundaryOrAnywhere );
-
-    QFont f( font() );
-    f.setPointSize( TomahawkUtils::defaultFontSize() + 7 );
-    f.setBold( true );
-
-    QRectF textRect = r.adjusted( 8, 8, -8, -8 );
-    qreal availHeight = textRect.height();
-
-    QFontMetricsF fm( f );
-    qreal textHeight = fm.boundingRect( textRect, Qt::AlignCenter | Qt::TextWordWrap, "SocialWidget" ).height();
-    while( textHeight > availHeight )
-    {
-        if( f.pointSize() <= 4 ) // don't try harder
-            break;
-
-        f.setPointSize( f.pointSize() - 1 );
-        fm = QFontMetricsF( f );
-        textHeight = fm.boundingRect( textRect, Qt::AlignCenter | Qt::TextWordWrap, "SocialWidget" ).height();
-    }
-
-    p.setFont( f );
-    p.setPen( palette().highlightedText().color() );
-    p.drawText( r.adjusted( 8, 8, -8, -8 ), "SocialWidget", to );
 }
 
 
@@ -206,7 +179,8 @@ void
 SocialWidget::setQuery( const Tomahawk::query_ptr& query )
 {
     m_query = query;
-    ui->coverImage->setPixmap( query->cover( ui->coverImage->size() ) );
+    ui->coverImage->setPixmap( TomahawkUtils::addDropShadow(
+                    query->cover( ui->coverImage->size() ), ui->coverImage->size() ) );
     onShortLinkReady( QString(), QString(), QVariant() );
     onChanged();
 
@@ -272,7 +246,8 @@ SocialWidget::onGeometryUpdate()
     m_position += p;
     m_parentRect = m_parent->rect();
 
-    QPoint position( m_position - QPoint( size().width(), size().height() ) );
+    QPoint position( m_position - QPoint( size().width(), size().height() )
+                     + QPoint( 2 + ARROW_HEIGHT * 3, 0 ) );
     if ( position != pos() )
     {
         move( position );

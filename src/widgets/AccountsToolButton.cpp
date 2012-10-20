@@ -19,6 +19,7 @@
 #include "AccountsToolButton.h"
 
 #include "AccountListWidget.h"
+#include "accounts/AccountManager.h"
 #include "utils/TomahawkUtilsGui.h"
 
 #include <QLabel>
@@ -47,34 +48,13 @@ AccountsToolButton::AccountsToolButton( QWidget* parent )
     w->setSizePolicy( QSizePolicy::Preferred, QSizePolicy::Minimum );
     QVBoxLayout *wMainLayout = new QVBoxLayout( w );
     w->setLayout( wMainLayout  );
-    QLabel *connectionsLabel = new QLabel( tr( "Connections" ), w );
 
-    QFont clFont = connectionsLabel->font();
-    clFont.setBold( true );
-    clFont.setPointSize( TomahawkUtils::defaultFontSize() + 3 );
-    connectionsLabel->setFont( clFont );
-    connectionsLabel->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Preferred );
+    TomahawkUtils::unmarginLayout( w->layout() );
 
-    QPushButton *settingsButton = new QPushButton( w );
-    settingsButton->setIcon( QIcon( RESPATH "images/account-settings.png" ) );
-    settingsButton->setText( tr( "Configure Accounts" ) );
-    connect( settingsButton, SIGNAL( clicked() ),
-             window(), SLOT( showSettingsDialog() ) );
-
-    QHBoxLayout *headerLayout = new QHBoxLayout( w );
-    headerLayout->addWidget( connectionsLabel );
-    headerLayout->addSpacing( 30 );
-    headerLayout->addWidget( settingsButton );
-    wMainLayout->addLayout( headerLayout );
-    QWidget *separatorLine = new QWidget( w );
-    separatorLine->setFixedHeight( 1 );
-    separatorLine->setContentsMargins( 0, 0, 0, 0 );
-    separatorLine->setStyleSheet( "QWidget { border-top: 1px solid black; }" );
-    wMainLayout->addWidget( separatorLine );
-
+    w->setContentsMargins( 6, 6, 6, 6 );
 #ifdef Q_OS_MAC
-    w->setContentsMargins( 4, 4, 2, 2 );
-    wMainLayout->setContentsMargins( 4, 4, 2, 2 );
+    w->setContentsMargins( 6, 6, 6, 0 );
+    wMainLayout->setMargin( 12 );
 #endif
 
     m_popup->setWidget( w );
@@ -93,6 +73,28 @@ AccountsToolButton::AccountsToolButton( QWidget* parent )
 
     connect( m_proxy, SIGNAL( dataChanged( QModelIndex, QModelIndex ) ),
              this, SLOT( repaint() ) );
+
+    QWidget *separatorLine = new QWidget( w );
+    separatorLine->setFixedHeight( 1 );
+    separatorLine->setContentsMargins( 0, 0, 0, 0 );
+    separatorLine->setStyleSheet( "QWidget { border-top: 1px solid " +
+                                  TomahawkUtils::Colors::BORDER_LINE.name() + "; }" ); //from ProxyStyle
+    wMainLayout->addWidget( separatorLine );
+
+    wMainLayout->addSpacing( 6 );
+
+    QPushButton *settingsButton = new QPushButton( w );
+    settingsButton->setIcon( QIcon( RESPATH "images/account-settings.png" ) );
+    settingsButton->setText( tr( "Configure Accounts" ) );
+    connect( settingsButton, SIGNAL( clicked() ),
+             window(), SLOT( showSettingsDialog() ) );
+
+    QHBoxLayout *bottomLayout = new QHBoxLayout( w );
+    TomahawkUtils::unmarginLayout( bottomLayout );
+    bottomLayout->addStretch();
+    bottomLayout->addWidget( settingsButton );
+    wMainLayout->addLayout( bottomLayout );
+
 
     //ToolButton stuff
     m_defaultPixmap = QPixmap( RESPATH "images/account-none.png" )
@@ -117,6 +119,7 @@ AccountsToolButton::mousePressEvent( QMouseEvent* event )
     {
         QPoint myPos = mapToGlobal( rect().bottomRight() );
         m_popup->anchorAt( myPos );
+        m_popup->setArrowOffset( rect().width() / 2 );
         m_popup->show();
         event->accept();
     }
@@ -229,6 +232,9 @@ AccountsToolButton::updateIcons()
     resize( sizeHint() );
     if ( oldWidth != sizeHint().width() )
         emit widthChanged();
+
+    m_popup->setArrowOffset( rect().width() / 2 );
+
     repaint();
 }
 
