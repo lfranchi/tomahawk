@@ -42,7 +42,7 @@ Q_OBJECT
 
 public:
     enum AudioErrorCode { StreamReadError, AudioDeviceError, DecodeError, UnknownError, NoError };
-    enum AudioState { Stopped, Playing, Paused, Error };
+    enum AudioState { Stopped = 0, Playing = 1, Paused = 2, Error = 3 };
 
     static AudioEngine* instance();
 
