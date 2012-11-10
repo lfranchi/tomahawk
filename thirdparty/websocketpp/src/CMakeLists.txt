@@ -28,11 +28,17 @@ set(websocketpp_md5_HDRS md5/md5.h md5/md5.hpp)
 
 set(websocketpp_HDRS base64/base64.h sha1/sha1.h md5/md5.hpp ${websocketpp_HDRS})
 
-add_library(websocketpp SHARED ${websocketpp_SRCS})
-set_target_properties(websocketpp PROPERTIES COMPILE_FLAGS -fPIC)
-target_link_libraries(websocketpp 
+add_library(tomahawk_websocketpp SHARED ${websocketpp_SRCS})
+set_target_properties(tomahawk_websocketpp PROPERTIES COMPILE_FLAGS -fPIC)
+target_link_libraries(tomahawk_websocketpp
     ${Boost_LIBRARIES}
     ${OPENSSL_LIBRARIES}
+)
+install(TARGETS tomahawk_websocketpp
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    BUNDLE DESTINATION library
 )
 
 file(COPY ${websocketpp_root_HDRS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include/websocketpp)
