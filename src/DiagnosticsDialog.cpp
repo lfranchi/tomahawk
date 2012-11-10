@@ -21,6 +21,15 @@
 #include "ui_DiagnosticsDialog.h"
 
 #include "config.h"
+#include "TomahawkVersion.h"
+
+#include "SourceList.h"
+
+#include "accounts/AccountManager.h"
+#include "network/Servent.h"
+#include "sip/SipHandler.h"
+#include "utils/TomahawkUtilsGui.h"
+#include "utils/Logger.h"
 
 #include <QLabel>
 #include <QTextEdit>
@@ -29,14 +38,6 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QDebug>
-
-#include "accounts/AccountManager.h"
-#include "network/Servent.h"
-#include "SourceList.h"
-
-#include "sip/SipHandler.h"
-#include "utils/TomahawkUtilsGui.h"
-#include "utils/Logger.h"
 
 
 DiagnosticsDialog::DiagnosticsDialog( QWidget *parent )

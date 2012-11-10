@@ -22,17 +22,18 @@
 #ifndef TOMAHAWKWINDOW_H
 #define TOMAHAWKWINDOW_H
 
+#include "Result.h"
+#include "audio/AudioEngine.h"
+#include "utils/XspfLoader.h"
+
+#include "config.h"
+
 #include <QMainWindow>
 #include <QVariantMap>
 #include <QPushButton>
 #include <QString>
 #include <QStackedWidget>
 #include <QToolButton>
-
-#include "config.h"
-#include "Result.h"
-#include "audio/AudioEngine.h"
-#include "utils/XspfLoader.h"
 
 #ifdef Q_OS_WIN
     #include <shobjidl.h>
@@ -75,8 +76,8 @@ public:
     TomahawkWindow( QWidget* parent = 0 );
     ~TomahawkWindow();
 
-    AudioControls* audioControls() { return m_audioControls; }
-    SourceTreeView* sourceTreeView() const { return m_sourcetree; }
+    AudioControls* audioControls();
+    SourceTreeView* sourceTreeView() const;
 
     void setWindowTitle( const QString& title );
 

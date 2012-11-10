@@ -119,6 +119,7 @@ set( libGuiSources
     utils/WebSocketWrapper.cpp
 
     widgets/AnimatedCounterLabel.cpp
+    widgets/BasicHeader.cpp
     widgets/Breadcrumb.cpp
     widgets/BreadcrumbButton.cpp
     widgets/CheckDirTree.cpp
@@ -325,7 +326,6 @@ set( libUI ${libUI}
     widgets/infowidgets/AlbumInfoWidget.ui
     widgets/infowidgets/TrackInfoWidget.ui
     playlist/QueueView.ui
-    playlist/PlaylistHeader.ui
     filemetadata/MetadataEditor.ui
     context/ContextWidget.ui
     infobar/InfoBar.ui

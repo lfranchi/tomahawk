@@ -18,7 +18,7 @@
 
 #include "ContainedMenuButton.h"
 
-#include <QtGui/QMouseEvent>
+#include <QMouseEvent>
 
 ContainedMenuButton::ContainedMenuButton( QWidget *parent )
     : QToolButton( parent )
@@ -49,4 +49,11 @@ void
 ContainedMenuButton::menuHidden()
 {
     setDown( false );
+}
+
+
+QMenu*
+ContainedMenuButton::menu() const
+{
+    return m_menu;
 }

@@ -19,7 +19,6 @@
 
 #include "CategoryItems.h"
 
-#include <QMimeData>
 
 #include "TomahawkApp.h"
 #include "ViewManager.h"
@@ -29,11 +28,13 @@
 #include "utils/TomahawkUtils.h"
 #include "widgets/NewPlaylistWidget.h"
 #include "TomahawkWindow.h"
-#include <playlist/dynamic/GeneratorInterface.h>
+#include "playlist/dynamic/GeneratorInterface.h"
 #include "utils/Logger.h"
 #include "DropJob.h"
 
 #include <echonest/Playlist.h>
+
+#include <QMimeData>
 
 using namespace Tomahawk;
 
@@ -376,4 +377,32 @@ void
 CategoryItem::activate()
 {
     emit toggleExpandRequest( this );
+}
+
+
+QString
+CategoryItem::text() const
+{
+    switch( m_category )
+    {
+    case SourcesModel::PlaylistsCategory:
+        return tr( "Playlists" );
+    case SourcesModel::StationsCategory:
+        return tr( "Stations" );
+    }
+    return QString();
+}
+
+
+Qt::ItemFlags
+CategoryItem::flags() const
+{
+    return Qt::ItemIsEnabled;
+}
+
+
+SourcesModel::CategoryType
+CategoryItem::categoryType()
+{
+    return m_category;
 }

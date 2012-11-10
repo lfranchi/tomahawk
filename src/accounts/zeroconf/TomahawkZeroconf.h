@@ -21,17 +21,17 @@
 
 #define ZCONF_PORT 50210
 
+#include "database/Database.h"
+#include "database/DatabaseImpl.h"
+#include "network/Servent.h"
+#include "accounts/AccountDllMacro.h"
+
 #include <QList>
 #include <QHostAddress>
 #include <QHostInfo>
 #include <QNetworkProxy>
 #include <QUdpSocket>
 #include <QTimer>
-
-#include "database/Database.h"
-#include "database/DatabaseImpl.h"
-#include "network/Servent.h"
-#include "accounts/AccountDllMacro.h"
 
 class Node : public QObject
 {
@@ -101,18 +101,17 @@ public slots:
         qDebug() << "Advertising us on the LAN (both versions)";
         // Keep newer versions first
         QByteArray advert = QString( "TOMAHAWKADVERT:%1:%2:%3" )
-                            .arg( m_port )
-                            .arg( Database::instance()->impl()->dbid() )
-                            .arg( QHostInfo::localHostName() )
-                            .toAscii();
-        m_sock.writeDatagram( advert.data(), advert.size(),
-                              QHostAddress::Broadcast, ZCONF_PORT );
+                               .arg( m_port )
+                               .arg( Database::instance()->impl()->dbid() )
+                               .arg( QHostInfo::localHostName() )
+                               .toAscii();
+        m_sock.writeDatagram( advert.data(), advert.size(), QHostAddress::Broadcast, ZCONF_PORT );
+
         advert = QString( "TOMAHAWKADVERT:%1:%2" )
-                            .arg( m_port )
-                            .arg( Database::instance()->impl()->dbid() )
-                            .toAscii();
-        m_sock.writeDatagram( advert.data(), advert.size(),
-                              QHostAddress::Broadcast, ZCONF_PORT );
+                    .arg( m_port )
+                    .arg( Database::instance()->impl()->dbid() )
+                    .toAscii();
+        m_sock.writeDatagram( advert.data(), advert.size(), QHostAddress::Broadcast, ZCONF_PORT );
     }
 
 signals:

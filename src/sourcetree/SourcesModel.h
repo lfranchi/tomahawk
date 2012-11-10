@@ -22,12 +22,11 @@
 #ifndef SOURCESMODEL_H
 #define SOURCESMODEL_H
 
-#include <QModelIndex>
-#include <QStringList>
-
 #include "Typedefs.h"
 #include "Source.h"
 
+#include <QModelIndex>
+#include <QStringList>
 #include <QList>
 #include <QAction>
 
@@ -109,7 +108,7 @@ public:
 
     QModelIndex indexFromItem( SourceTreeItem* item ) const;
 
-    QList< Tomahawk::source_ptr > sourcesWithViewPage() const { return m_sourcesWithViewPage; }
+    QList< Tomahawk::source_ptr > sourcesWithViewPage() const;
 
 public slots:
     void loadSources();

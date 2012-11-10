@@ -142,6 +142,11 @@ macro_log_feature(LIBLASTFM_FOUND "liblastfm" "Qt library for the Last.fm webser
 macro_optional_find_package(OpenSSL)
 macro_log_feature(OPENSSL_FOUND "OpenSSL" "OpenSSL Crypto Library" "" TRUE "" "OpenSSL is required in order to enable wss:/ support.")
 
+IF( WIN32 )
+    macro_optional_find_package(QtSparkle)
+    macro_log_feature(QTSPARKLE_FOUND "qtsparkle" "Library for creating auto updaters written in Qt" "https://github.com/davidsansome/qtsparkle" FALSE "" "")
+ENDIF( WIN32 )
+
 #### submodules start
 # automatically init submodules here, don't delete this code we may add submodules again
 
@@ -188,10 +193,6 @@ IF(KDE4_FOUND)
 ELSE()
     SET( CLEAN_C_FLAGS ${CMAKE_C_FLAGS} )
 ENDIF()
-
-IF( WIN32 )
-  find_library(QTSPARKLE_LIBRARIES qtsparkle)
-ENDIF( WIN32 )
 
 #show dep log
 macro_display_feature_log()

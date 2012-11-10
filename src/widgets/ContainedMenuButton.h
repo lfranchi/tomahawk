@@ -19,8 +19,8 @@
 #ifndef CONTAINEDMENUBUTTON_H
 #define CONTAINEDMENUBUTTON_H
 
-#include <QtGui/QMenu>
-#include <QtGui/QToolButton>
+#include <QMenu>
+#include <QToolButton>
 
 /**
  * @brief The ContainedMenuButton class defines a modified QToolButton that pops
@@ -34,7 +34,7 @@ public:
     explicit ContainedMenuButton( QWidget *parent = 0 );
 
     void setMenu( QMenu *menu );
-    QMenu *menu() const { return m_menu; }
+    QMenu *menu() const;
 
 protected:
     void mousePressEvent( QMouseEvent *event );

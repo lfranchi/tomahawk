@@ -19,7 +19,7 @@
 
 #include "AnimationHelper.h"
 
-#include "QDebug"
+#include <QDebug>
 
 AnimationHelper::AnimationHelper( const QModelIndex& index, QObject *parent )
     :QObject( parent )
@@ -127,4 +127,18 @@ void AnimationHelper::expandAnimationFinished()
 void AnimationHelper::collapseAnimationFinished()
 {
     emit finished( m_index );
+}
+
+
+QSize
+AnimationHelper::originalSize() const
+{
+    return m_startSize;
+}
+
+
+QSize
+AnimationHelper::size() const
+{
+    return m_size;
 }

@@ -22,22 +22,6 @@
 #include "TomahawkWindow.h"
 #include "ui_TomahawkWindow.h"
 
-#include <QAction>
-#include <QCloseEvent>
-#include <QDesktopServices>
-#include <QShowEvent>
-#include <QHideEvent>
-#include <QInputDialog>
-#include <QPixmap>
-#include <QPropertyAnimation>
-#include <QLineEdit>
-#include <QMessageBox>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QTimer>
-#include <QToolBar>
-#include <QToolButton>
-
 #include "accounts/AccountManager.h"
 #include "sourcetree/SourceTreeView.h"
 #include "network/Servent.h"
@@ -75,15 +59,32 @@
 #include "TomahawkApp.h"
 #include "LoadXSPFDialog.h"
 #include "widgets/ContainedMenuButton.h"
+#include "utils/Logger.h"
 
-#ifdef Q_OS_WIN
+#include "config.h"
+
+#include <QAction>
+#include <QCloseEvent>
+#include <QDesktopServices>
+#include <QShowEvent>
+#include <QHideEvent>
+#include <QInputDialog>
+#include <QPixmap>
+#include <QPropertyAnimation>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QTimer>
+#include <QToolBar>
+#include <QToolButton>
+
+#if defined( Q_WS_WIN ) && defined( WITH_QtSparkle )
     #include <qtsparkle/Updater>
     #ifndef THBN_CLICKED
         #define THBN_CLICKED    0x1800
     #endif
 #endif
-
-#include "utils/Logger.h"
 
 using namespace Tomahawk;
 using namespace Accounts;
@@ -250,6 +251,10 @@ TomahawkWindow::setupToolBar()
     m_toolbar->setIconSize( QSize( 22, 22 ) );
     m_toolbar->setToolButtonStyle( Qt::ToolButtonIconOnly );
     m_toolbar->setStyleSheet( "border-bottom: 0px" );
+    // If the toolbar is hidden accidentally it causes trouble on Unity because the user can't
+    // easily bring it back (TWK-1046). So we just prevent the user from hiding the toolbar.
+    // This should not affect Mac users.
+    m_toolbar->setContextMenuPolicy( Qt::PreventContextMenu );
 
 #ifdef Q_OS_MAC
     m_toolbar->installEventFilter( new WidgetDragFilter( m_toolbar ) );
@@ -302,6 +307,7 @@ TomahawkWindow::setupToolBar()
     //      won't be picked up when the menu is hidden.
     //      This must be done for all menu bar actions that have shortcut keys :(
     //      Does not apply to Mac which always shows the menu bar.
+    addAction( ActionCollection::instance()->getAction( "playPause" ) );
     addAction( ActionCollection::instance()->getAction( "toggleMenuBar" ) );
     addAction( ActionCollection::instance()->getAction( "quit" ) );
 #endif
@@ -410,7 +416,7 @@ TomahawkWindow::setupUpdateCheck()
 #if defined( Q_OS_MAC ) && defined( HAVE_SPARKLE )
     connect( ActionCollection::instance()->getAction( "checkForUpdates" ), SIGNAL( triggered( bool ) ),
              SLOT( checkForUpdates() ) );
-#elif defined( Q_WS_WIN )
+    #elif defined( Q_WS_WIN ) && defined( WITH_QtSparkle )
     QUrl updaterUrl;
 
     if ( qApp->arguments().contains( "--debug" ) )
@@ -1315,4 +1321,18 @@ TomahawkWindow::toggleMenuBar() //SLOT
     balanceToolbar();
     saveSettings();
 #endif
+}
+
+
+AudioControls*
+TomahawkWindow::audioControls()
+{
+    return m_audioControls;
+}
+
+
+SourceTreeView*
+TomahawkWindow::sourceTreeView() const
+{
+    return m_sourcetree;
 }

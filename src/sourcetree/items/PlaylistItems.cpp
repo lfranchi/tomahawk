@@ -19,9 +19,6 @@
 
 #include "PlaylistItems.h"
 
-#include <QMimeData>
-#include <QPainter>
-
 #include "Query.h"
 #include "ViewManager.h"
 #include "playlist/dynamic/GeneratorInterface.h"
@@ -33,6 +30,9 @@
 #include "DropJob.h"
 #include "Source.h"
 #include "audio/AudioEngine.h"
+
+#include <QMimeData>
+#include <QPainter>
 
 using namespace Tomahawk;
 
@@ -610,3 +610,23 @@ DynamicPlaylistItem::isBeingPlayed() const
     return false;
 }
 
+
+bool
+PlaylistItem::canSubscribe() const
+{
+    return m_canSubscribe;
+}
+
+
+bool
+PlaylistItem::subscribed() const
+{
+    return m_showSubscribed;
+}
+
+
+QPixmap
+PlaylistItem::subscribedIcon() const
+{
+    return m_showSubscribed ? m_subscribedOnIcon : m_subscribedOffIcon;
+}

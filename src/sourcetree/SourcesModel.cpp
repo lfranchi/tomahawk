@@ -20,11 +20,6 @@
 
 #include "sourcetree/SourcesModel.h"
 
-#include <boost/bind.hpp>
-
-#include <QMimeData>
-#include <QSize>
-
 #include "sourcetree/items/SourceTreeItem.h"
 #include "sourcetree/items/SourceItem.h"
 #include "sourcetree/items/GroupItem.h"
@@ -44,6 +39,11 @@
 #include "playlist/TreeView.h"
 #include "playlist/PlaylistView.h"
 #include "playlist/dynamic/widgets/DynamicWidget.h"
+
+#include <QMimeData>
+#include <QSize>
+
+#include <boost/bind.hpp>
 
 using namespace Tomahawk;
 
@@ -673,4 +673,11 @@ void
 SourcesModel::itemToggleExpandRequest( SourceTreeItem *item )
 {
     emit toggleExpandRequest( QPersistentModelIndex( indexFromItem( item ) ) );
+}
+
+
+QList< source_ptr >
+SourcesModel::sourcesWithViewPage() const
+{
+    return m_sourcesWithViewPage;
 }

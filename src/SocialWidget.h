@@ -20,11 +20,11 @@
 #ifndef SOCIALWIDGET_H
 #define SOCIALWIDGET_H
 
+#include "Query.h"
+
 #include <QWidget>
 #include <QAbstractItemView>
 #include <QTimer>
-
-#include "Query.h"
 
 namespace Ui
 {
@@ -39,10 +39,10 @@ public:
     SocialWidget( QWidget* parent );
     ~SocialWidget();
 
-    Tomahawk::query_ptr query() const { return m_query; }
+    Tomahawk::query_ptr query() const;
     void setQuery( const Tomahawk::query_ptr& query );
 
-    QPoint position() const { return m_position; }
+    QPoint position() const;
     void setPosition( QPoint position );
 
     bool shown() const;
@@ -64,7 +64,7 @@ private slots:
     void accept();
     void onChanged();
     void onShortLinkReady( const QUrl& longUrl, const QUrl& shortUrl, const QVariant& callbackObj );
-    
+
     void onGeometryUpdate();
 
 private:
