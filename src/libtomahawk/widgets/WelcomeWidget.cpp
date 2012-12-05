@@ -21,8 +21,6 @@
 #include "WelcomeWidget.h"
 #include "ui_WelcomeWidget.h"
 
-#include <QtGui/QPainter>
-
 #include "ViewManager.h"
 #include "SourceList.h"
 #include "TomahawkSettings.h"
@@ -35,8 +33,11 @@
 #include "utils/AnimatedSpinner.h"
 #include "utils/TomahawkUtils.h"
 #include "utils/Logger.h"
-#include "dynamic/GeneratorInterface.h"
+#include "playlist/dynamic/GeneratorInterface.h"
 #include "RecentlyPlayedPlaylistsModel.h"
+
+#include <QPainter>
+
 
 #define HISTORY_PLAYLIST_ITEMS 10
 
@@ -59,14 +60,18 @@ public:
     }
     virtual ~WelcomeWidgetInterface() {}
 
-
+    virtual void setCurrentIndex( qint64 index ) { m_w->ui->tracksView->proxyModel()->playlistInterface()->setCurrentIndex( index ); }
     virtual Tomahawk::PlaylistModes::RepeatMode repeatMode() const { return m_w->ui->tracksView->proxyModel()->playlistInterface()->repeatMode(); }
     virtual bool shuffled() const { return m_w->ui->tracksView->proxyModel()->playlistInterface()->shuffled(); }
 
+    virtual Tomahawk::result_ptr resultAt( qint64 index ) const { Q_UNUSED( index ); Q_ASSERT( false ); return Tomahawk::result_ptr(); }
+    virtual Tomahawk::query_ptr queryAt( qint64 index ) const { Q_UNUSED( index ); Q_ASSERT( false ); return Tomahawk::query_ptr(); }
+    virtual qint64 indexOfResult( const Tomahawk::result_ptr& result ) const { Q_UNUSED( result ); Q_ASSERT( false ); return -1; }
+    virtual qint64 indexOfQuery( const Tomahawk::query_ptr& query ) const { Q_UNUSED( query ); Q_ASSERT( false ); return -1; }
     virtual Tomahawk::result_ptr currentItem() const { return m_w->ui->tracksView->proxyModel()->playlistInterface()->currentItem(); }
-    virtual Tomahawk::result_ptr siblingItem( int itemsAway ) { return m_w->ui->tracksView->proxyModel()->playlistInterface()->siblingItem( itemsAway ); }
+    virtual qint64 siblingIndex( int itemsAway, qint64 rootIndex = -1 ) const { return m_w->ui->tracksView->proxyModel()->playlistInterface()->siblingIndex( itemsAway, rootIndex ); }
     virtual int trackCount() const { return m_w->ui->tracksView->proxyModel()->playlistInterface()->trackCount(); }
-    virtual QList< Tomahawk::query_ptr > tracks() { return m_w->ui->tracksView->proxyModel()->playlistInterface()->tracks(); }
+    virtual QList< Tomahawk::query_ptr > tracks() const { return m_w->ui->tracksView->proxyModel()->playlistInterface()->tracks(); }
 
     virtual bool hasChildInterface( Tomahawk::playlistinterface_ptr other )
     {
@@ -96,8 +101,11 @@ WelcomeWidget::WelcomeWidget( QWidget* parent )
     , ui( new Ui::WelcomeWidget )
 {
     ui->setupUi( this );
+
     ui->splitter_2->setStretchFactor( 0, 3 );
     ui->splitter_2->setStretchFactor( 1, 1 );
+    ui->splitter->setChildrenCollapsible( false );
+    ui->splitter_2->setChildrenCollapsible( false );
 
     RecentPlaylistsModel* model = new RecentPlaylistsModel( HISTORY_PLAYLIST_ITEMS, this );
 
@@ -296,16 +304,16 @@ PlaylistDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, 
     figFont.setPointSize( TomahawkUtils::defaultFontSize() - 1 );
 
     QPixmap icon;
-    RecentlyPlayedPlaylistsModel::PlaylistTypes type = (RecentlyPlayedPlaylistsModel::PlaylistTypes)index.data( RecentlyPlayedPlaylistsModel::PlaylistTypeRole ).toInt();
-    if( type == RecentlyPlayedPlaylistsModel::StaticPlaylist )
-        icon = m_playlistIcon;
-    else if( type == RecentlyPlayedPlaylistsModel::AutoPlaylist )
-        icon = m_autoIcon;
-    else if( type == RecentlyPlayedPlaylistsModel::Station )
-        icon = m_stationIcon;
-
     QRect pixmapRect = option.rect.adjusted( 10, 14, -option.rect.width() + option.rect.height() - 18, -14 );
-    icon = icon.scaled( pixmapRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
+    RecentlyPlayedPlaylistsModel::PlaylistTypes type = (RecentlyPlayedPlaylistsModel::PlaylistTypes)index.data( RecentlyPlayedPlaylistsModel::PlaylistTypeRole ).toInt();
+
+    if ( type == RecentlyPlayedPlaylistsModel::StaticPlaylist )
+        icon = TomahawkUtils::defaultPixmap( TomahawkUtils::Playlist, TomahawkUtils::Original, pixmapRect.size() );
+    else if ( type == RecentlyPlayedPlaylistsModel::AutoPlaylist )
+        icon = m_autoIcon;
+    else if ( type == RecentlyPlayedPlaylistsModel::Station )
+        icon = TomahawkUtils::defaultPixmap( TomahawkUtils::Station, TomahawkUtils::Original, pixmapRect.size() );
+
     painter->drawPixmap( pixmapRect, icon );
 
     if ( type != RecentlyPlayedPlaylistsModel::Station )
@@ -330,10 +338,10 @@ PlaylistDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, 
         painter->restore();
     }
 
-    QPixmap avatar = index.data( RecentlyPlayedPlaylistsModel::PlaylistRole ).value< Tomahawk::playlist_ptr >()->author()->avatar( Source::FancyStyle );
+    QRect r( option.rect.width() - option.fontMetrics.height() * 2.5 - 10, option.rect.top() + option.rect.height() / 3 - option.fontMetrics.height(), option.fontMetrics.height() * 2.5, option.fontMetrics.height() * 2.5 );
+    QPixmap avatar = index.data( RecentlyPlayedPlaylistsModel::PlaylistRole ).value< Tomahawk::playlist_ptr >()->author()->avatar( TomahawkUtils::RoundedCorners, r.size() );
     if ( avatar.isNull() )
-        avatar = m_defaultAvatar;
-    QRect r( option.rect.width() - option.fontMetrics.height() * 2.5 - 10, option.rect.top() + option.rect.height()/2.25 - option.fontMetrics.height(), option.fontMetrics.height() * 2.5, option.fontMetrics.height() * 2.2 );
+        avatar = TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultSourceAvatar, TomahawkUtils::RoundedCorners, r.size() );
     painter->drawPixmap( r, avatar );
 
     painter->setFont( font );
@@ -384,7 +392,7 @@ PlaylistWidget::PlaylistWidget( QWidget* parent )
     : QListView( parent )
 {
     m_overlay = new OverlayWidget( this );
-    LoadingSpinner* spinner = new LoadingSpinner( this );
+    /* LoadingSpinner* spinner = */ new LoadingSpinner( this );
 }
 
 

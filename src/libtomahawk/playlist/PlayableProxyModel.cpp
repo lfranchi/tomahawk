@@ -38,14 +38,31 @@ PlayableProxyModel::PlayableProxyModel( QObject* parent )
     , m_maxVisibleItems( -1 )
     , m_style( Detailed )
 {
+    m_playlistInterface = Tomahawk::playlistinterface_ptr( new Tomahawk::PlayableProxyModelPlaylistInterface( this ) );
+
     setFilterCaseSensitivity( Qt::CaseInsensitive );
     setSortCaseSensitivity( Qt::CaseInsensitive );
     setDynamicSortFilter( true );
 
     setSourcePlayableModel( 0 );
 
+    m_headerStyle[ Large ]      << PlayableModel::Name;
     m_headerStyle[ Detailed ]   << PlayableModel::Artist << PlayableModel::Track << PlayableModel::Composer << PlayableModel::Album << PlayableModel::AlbumPos << PlayableModel::Duration << PlayableModel::Bitrate << PlayableModel::Age << PlayableModel::Year << PlayableModel::Filesize << PlayableModel::Origin << PlayableModel::Score;
     m_headerStyle[ Collection ] << PlayableModel::Name << PlayableModel::Composer << PlayableModel::Duration << PlayableModel::Bitrate << PlayableModel::Age << PlayableModel::Year << PlayableModel::Filesize << PlayableModel::Origin;
+}
+
+
+Tomahawk::playlistinterface_ptr
+PlayableProxyModel::playlistInterface() const
+{
+    return m_playlistInterface;
+}
+
+
+void
+PlayableProxyModel::setPlaylistInterface( const Tomahawk::playlistinterface_ptr& playlistInterface )
+{
+    m_playlistInterface = playlistInterface;
 }
 
 
@@ -89,6 +106,8 @@ PlayableProxyModel::setSourcePlayableModel( PlayableModel* sourceModel )
     {
         disconnect( m_model, SIGNAL( loadingStarted() ), this, SIGNAL( loadingStarted() ) );
         disconnect( m_model, SIGNAL( loadingFinished() ), this, SIGNAL( loadingFinished() ) );
+        disconnect( m_model, SIGNAL( itemCountChanged( unsigned int ) ), this, SIGNAL( itemCountChanged( unsigned int ) ) );
+        disconnect( m_model, SIGNAL( indexPlayable( QModelIndex ) ), this, SLOT( onIndexPlayable( QModelIndex ) ) );
     }
 
     m_model = sourceModel;
@@ -97,6 +116,8 @@ PlayableProxyModel::setSourcePlayableModel( PlayableModel* sourceModel )
     {
         connect( m_model, SIGNAL( loadingStarted() ), SIGNAL( loadingStarted() ) );
         connect( m_model, SIGNAL( loadingFinished() ), SIGNAL( loadingFinished() ) );
+        connect( m_model, SIGNAL( itemCountChanged( unsigned int ) ), SIGNAL( itemCountChanged( unsigned int ) ) );
+        connect( m_model, SIGNAL( indexPlayable( QModelIndex ) ), SLOT( onIndexPlayable( QModelIndex ) ) );
     }
 
     QSortFilterProxyModel::setSourceModel( m_model );
@@ -481,18 +502,6 @@ PlayableProxyModel::lessThan( const QModelIndex& left, const QModelIndex& right 
 }
 
 
-Tomahawk::playlistinterface_ptr
-PlayableProxyModel::playlistInterface()
-{
-    if ( m_playlistInterface.isNull() )
-    {
-        m_playlistInterface = Tomahawk::playlistinterface_ptr( new Tomahawk::PlayableProxyModelPlaylistInterface( this ) );
-    }
-
-    return m_playlistInterface;
-}
-
-
 int
 PlayableProxyModel::columnCount( const QModelIndex& parent ) const
 {
@@ -529,6 +538,8 @@ PlayableProxyModel::data( const QModelIndex& index, int role ) const
     if ( !sourceModel() )
         return QVariant();
     if ( !m_headerStyle.contains( m_style ) )
+        return QVariant();
+    if ( index.column() < 0 )
         return QVariant();
 
     PlayableModel::Columns col = m_headerStyle[ m_style ].at( index.column() );
@@ -614,4 +625,20 @@ PlayableProxyModel::setFilter( const QString& pattern )
         setFilterRegExp( pattern );
         emit filterChanged( pattern );
     }
+}
+
+
+void
+PlayableProxyModel::setCurrentIndex( const QModelIndex& index )
+{
+    tDebug() << Q_FUNC_INFO;
+    m_model->setCurrentItem( mapToSource( index ) );
+    emit currentIndexChanged();
+}
+
+
+void
+PlayableProxyModel::onIndexPlayable( const QModelIndex& index )
+{
+    emit indexPlayable( mapFromSource( index ) );
 }

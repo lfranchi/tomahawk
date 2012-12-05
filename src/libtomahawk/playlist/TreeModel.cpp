@@ -118,7 +118,7 @@ TreeModel::fetchMore( const QModelIndex& parent )
     }
     else if ( !parentItem->album().isNull() )
     {
-        tDebug() << Q_FUNC_INFO << "Loading Album:" << parentItem->album()->name();
+        tDebug() << Q_FUNC_INFO << "Loading Album:" << parentItem->album()->artist()->name() << parentItem->album()->name() << parentItem->album()->id();
         addTracks( parentItem->album(), parent );
     }
     else
@@ -261,7 +261,7 @@ TreeModel::addCollection( const collection_ptr& collection )
     connect( collection.data(), SIGNAL( changed() ), SLOT( onCollectionChanged() ), Qt::UniqueConnection );
 
     if ( !collection->source()->avatar().isNull() )
-        setIcon( collection->source()->avatar() );
+        setIcon( collection->source()->avatar( TomahawkUtils::RoundedCorners ) );
 
     if ( collection->source()->isLocal() )
         setTitle( tr( "My Collection" ) );
@@ -379,6 +379,7 @@ TreeModel::onTracksFound( const QList<Tomahawk::query_ptr>& tracks, Tomahawk::Mo
 
     Tomahawk::Album* album = qobject_cast<Tomahawk::Album*>( sender() );
 
+    tDebug() << "Adding album:" << album->artist()->name() << album->name() << album->id();
     QModelIndex idx = indexFromAlbum( album->weakRef().toStrongRef() );
     tDebug() << "Adding tracks" << tracks.count() << "to index:" << idx;
     onTracksAdded( tracks, idx );
@@ -417,6 +418,67 @@ TreeModel::indexFromAlbum( const Tomahawk::album_ptr& album ) const
         }
     }
 
-    tDebug() << "Could not find item for artist:" << album->name() << album->artist()->name();
+    tDebug() << "Could not find item for album:" << album->name() << album->artist()->name();
     return QModelIndex();
+}
+
+
+QModelIndex
+TreeModel::indexFromResult( const Tomahawk::result_ptr& result ) const
+{
+    QModelIndex albumIdx = indexFromAlbum( result->album() );
+    for ( int i = 0; i < rowCount( albumIdx ); i++ )
+    {
+        QModelIndex idx = index( i, 0, albumIdx );
+        PlayableItem* item = itemFromIndex( idx );
+        tDebug() << item->result()->toString();
+        if ( item && item->result() == result )
+        {
+            return idx;
+        }
+    }
+
+    tDebug() << "Could not find item for result:" << result->toString();
+    return QModelIndex();
+}
+
+
+QModelIndex
+TreeModel::indexFromQuery( const Tomahawk::query_ptr& query ) const
+{
+    Tomahawk::artist_ptr artist = Artist::get( query->artist(), false );
+    Tomahawk::album_ptr album = Album::get( artist, query->album(), false );
+
+    QModelIndex albumIdx = indexFromAlbum( album );
+    for ( int i = 0; i < rowCount( albumIdx ); i++ )
+    {
+        QModelIndex idx = index( i, 0, albumIdx );
+        PlayableItem* item = itemFromIndex( idx );
+        if ( item && item->result() && item->result()->toQuery()->equals( query ) )
+        {
+            return idx;
+        }
+    }
+
+    tDebug() << "Could not find item for query:" << query->toString();
+    return QModelIndex();
+}
+
+
+PlayableItem*
+TreeModel::itemFromResult( const Tomahawk::result_ptr& result ) const
+{
+    QModelIndex albumIdx = indexFromAlbum( result->album() );
+    for ( int i = 0; i < rowCount( albumIdx ); i++ )
+    {
+        QModelIndex idx = index( i, 0, albumIdx );
+        PlayableItem* item = itemFromIndex( idx );
+        if ( item && item->result() == result )
+        {
+            return item;
+        }
+    }
+
+    tDebug() << "Could not find item for result:" << result->toString();
+    return 0;
 }

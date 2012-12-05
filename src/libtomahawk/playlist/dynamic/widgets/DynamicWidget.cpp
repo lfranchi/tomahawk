@@ -19,20 +19,12 @@
 
 #include "DynamicWidget.h"
 
-#include <QVBoxLayout>
-#include <QLabel>
-#include <QComboBox>
-#include <QPushButton>
-#include <QSpinBox>
-#include <QEvent>
-#include <QPainter>
-
 #include "DynamicControlList.h"
-#include "dynamic/DynamicModel.h"
-#include "PlayableProxyModel.h"
-#include "PlayableItem.h"
-#include "dynamic/GeneratorInterface.h"
-#include "dynamic/GeneratorFactory.h"
+#include "playlist/dynamic/DynamicModel.h"
+#include "playlist/PlayableProxyModel.h"
+#include "playlist/PlayableItem.h"
+#include "playlist/dynamic/GeneratorInterface.h"
+#include "playlist/dynamic/GeneratorFactory.h"
 #include "Pipeline.h"
 #include "Source.h"
 #include "audio/AudioEngine.h"
@@ -40,10 +32,19 @@
 #include "CollapsibleControls.h"
 #include "DynamicControlWrapper.h"
 #include "ViewManager.h"
-#include "dynamic/DynamicView.h"
+#include "playlist/dynamic/DynamicView.h"
 #include "DynamicSetupWidget.h"
 #include "utils/AnimatedSpinner.h"
+#include "utils/TomahawkUtilsGui.h"
 #include "utils/Logger.h"
+
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QComboBox>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QEvent>
+#include <QPainter>
 
 using namespace Tomahawk;
 
@@ -107,6 +108,7 @@ DynamicWidget::~DynamicWidget()
 {
 }
 
+
 dynplaylist_ptr
 DynamicWidget::playlist()
 {
@@ -153,7 +155,6 @@ DynamicWidget::loadDynamicPlaylist( const Tomahawk::dynplaylist_ptr& playlist )
         disconnect( m_playlist.data(), SIGNAL( deleted( Tomahawk::dynplaylist_ptr ) ), this, SLOT( onDeleted() ) );
         disconnect( m_playlist.data(), SIGNAL( changed() ), this, SLOT( onChanged() ) );
     }
-
 
     m_playlist = playlist;
     m_view->setOnDemand( m_playlist->mode() == OnDemand );
@@ -414,6 +415,7 @@ DynamicWidget::controlChanged( const Tomahawk::dyncontrol_ptr& control )
     emit descriptionChanged( m_playlist->generator()->sentenceSummary() );
 }
 
+
 void
 DynamicWidget::steeringChanged()
 {
@@ -497,11 +499,13 @@ DynamicWidget::paintRoundedFilledRect( QPainter& p, QPalette& /* pal */, QRect& 
     p.drawRoundedRect( r, 10, 10 );
 }
 
+
 QString
 DynamicWidget::description() const
 {
     return m_model->description();
 }
+
 
 QString
 DynamicWidget::title() const
@@ -509,11 +513,12 @@ DynamicWidget::title() const
     return m_model->title();
 }
 
+
 QPixmap
 DynamicWidget::pixmap() const
 {
     if ( m_playlist->mode() == OnDemand )
-        return QPixmap( RESPATH "images/station.png" );
+        return TomahawkUtils::defaultPixmap( TomahawkUtils::Station );
     else if ( m_playlist->mode() == Static )
         return QPixmap( RESPATH "images/automatic-playlist.png" );
     else

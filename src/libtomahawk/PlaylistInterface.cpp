@@ -30,6 +30,9 @@ PlaylistInterface::PlaylistInterface ()
     : QObject()
     , m_latchMode( PlaylistModes::StayOnSong )
     , m_finished( false )
+    , m_prevAvail( false )
+    , m_nextAvail( false )
+    , m_currentIndex( -1 )
 {
     m_id = uuid();
 }
@@ -41,16 +44,77 @@ PlaylistInterface::~PlaylistInterface()
 
 
 result_ptr
-PlaylistInterface::previousItem()
+PlaylistInterface::previousResult() const
 {
-     return siblingItem( -1 );
+     return siblingResult( -1 );
 }
 
 
 result_ptr
-PlaylistInterface::nextItem()
+PlaylistInterface::nextResult() const
 {
-     return siblingItem( 1 );
+     return siblingResult( 1 );
+}
+
+
+Tomahawk::result_ptr
+PlaylistInterface::siblingResult( int itemsAway, qint64 rootIndex ) const
+{
+    qint64 idx = siblingIndex( itemsAway, rootIndex );
+    QList< qint64 > safetyCheck;
+
+    // If safetyCheck contains idx, this means the interface keeps returning the same items and we won't discover anything new - abort
+    // This can happen in repeat / random mode e.g.
+    while ( idx >= 0 && !safetyCheck.contains( idx ) )
+    {
+        safetyCheck << idx;
+        Tomahawk::query_ptr query = queryAt( idx );
+
+        if ( query && query->playable() )
+        {
+            return query->results().first();
+        }
+
+        idx = siblingIndex( itemsAway < 0 ? -1 : 1, idx );
+    }
+
+    return Tomahawk::result_ptr();
+}
+
+
+int
+PlaylistInterface::posOfResult( const Tomahawk::result_ptr& result ) const
+{
+    const QList< Tomahawk::query_ptr > queries = tracks();
+
+    int res = 0;
+    foreach ( const Tomahawk::query_ptr& query, queries )
+    {
+        if ( query && query->numResults() && query->results().contains( result ) )
+            return res;
+
+        res++;
+    }
+
+    return -1;
+}
+
+
+int
+PlaylistInterface::posOfQuery( const Tomahawk::query_ptr& query ) const
+{
+    const QList< Tomahawk::query_ptr > queries = tracks();
+
+    int res = 0;
+    foreach ( const Tomahawk::query_ptr& q, queries )
+    {
+        if ( query == q )
+            return res;
+
+        res++;
+    }
+
+    return -1;
 }
 
 
@@ -88,4 +152,70 @@ PlaylistInterface::filterTracks( const QList<Tomahawk::query_ptr>& queries )
 
     Pipeline::instance()->resolve( result );
     return result;
+}
+
+
+bool
+PlaylistInterface::hasNextResult() const
+{
+    return ( siblingResult( 1 ) );
+}
+
+
+bool
+PlaylistInterface::hasPreviousResult() const
+{
+    return ( siblingResult( -1 ) );
+}
+
+
+void
+PlaylistInterface::onItemsChanged()
+{
+    if ( QThread::currentThread() != thread() )
+    {
+        QMetaObject::invokeMethod( this, "onItemsChanged", Qt::QueuedConnection );
+        return;
+    }
+
+    Tomahawk::result_ptr prevResult = siblingResult( -1, m_currentIndex );
+    Tomahawk::result_ptr nextResult = siblingResult( 1, m_currentIndex );
+
+    if ( prevResult )
+    {
+        bool avail = prevResult->toQuery()->playable();
+        if ( avail != m_prevAvail )
+        {
+            m_prevAvail = avail;
+            emit previousTrackAvailable();
+        }
+    }
+    else if ( m_prevAvail )
+    {
+        m_prevAvail = false;
+        emit previousTrackAvailable();
+    }
+
+    if ( nextResult )
+    {
+        bool avail = nextResult->toQuery()->playable();
+        if ( avail != m_nextAvail )
+        {
+            m_nextAvail = avail;
+            emit nextTrackAvailable();
+        }
+    }
+    else if ( m_nextAvail )
+    {
+        m_nextAvail = false;
+        emit nextTrackAvailable();
+    }
+}
+
+
+void
+PlaylistInterface::setCurrentIndex( qint64 index )
+{
+    m_currentIndex = index;
+    onItemsChanged();
 }

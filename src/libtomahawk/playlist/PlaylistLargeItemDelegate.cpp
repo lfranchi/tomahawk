@@ -113,10 +113,7 @@ PlaylistLargeItemDelegate::drawRichText( QPainter* painter, const QStyleOptionVi
 
     QAbstractTextDocumentLayout::PaintContext context;
 
-    if ( option.state & QStyle::State_Selected )
-        context.palette.setColor( QPalette::Text, option.palette.color( QPalette::HighlightedText ) );
-    else
-        context.palette.setColor( QPalette::Text, painter->pen().color() );
+    context.palette.setColor( QPalette::Text, painter->pen().color() );
 
     painter->save();
     painter->translate( rect.x(), y );
@@ -141,9 +138,10 @@ PlaylistLargeItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem&
         return;
 
     const query_ptr q = item->query()->displayQuery();
-    QString artist = q->artist();
-    QString track = q->track();
-    unsigned int duration = q->duration();
+    const QString artist = q->artist();
+    const QString album = q->album();
+    const QString track = q->track();
+    int duration = q->duration();
     QPixmap avatar;
     QString lowerText;
 
@@ -151,7 +149,7 @@ PlaylistLargeItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem&
     source_ptr source = item->query()->playedBy().first;
     if ( m_mode == RecentlyPlayed && !source.isNull() )
     {
-        avatar = source->avatar( Source::FancyStyle, avatarSize );
+        avatar = source->avatar( TomahawkUtils::RoundedCorners, avatarSize );
         QString playtime = TomahawkUtils::ageToString( QDateTime::fromTime_t( item->query()->playedBy().second ), true );
 
         if ( source == SourceList::instance()->getLocal() )
@@ -190,7 +188,6 @@ PlaylistLargeItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem&
         QRect avatarRect = r.adjusted( option.rect.width() - r.left() - 12 - avatarSize.width(), ( option.rect.height() - avatarSize.height() ) / 2 - 5, 0, 0 );
         avatarRect.setSize( avatarSize );
 
-
         if ( !m_pixmaps.contains( index ) )
         {
             m_pixmaps.insert( index, QSharedPointer< Tomahawk::PixmapDelegateFader >( new Tomahawk::PixmapDelegateFader( item->query(), pixmapRect.size(), TomahawkUtils::ScaledCover, false ) ) );
@@ -216,7 +213,7 @@ PlaylistLargeItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem&
         QFontMetrics smallBoldFontMetrics( smallBoldFont );
 
         QFont smallFont = opt.font;
-        smallFont.setPointSize( TomahawkUtils::defaultFontSize() - 2 );
+        smallFont.setPointSize( TomahawkUtils::defaultFontSize() - 1 );
 
         r.adjust( pixmapRect.width() + 12, 1, - 16 - avatar.width(), 0 );
         QRect leftRect = r.adjusted( 0, 0, -48, 0 );
@@ -226,13 +223,21 @@ PlaylistLargeItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem&
         QString text = painter->fontMetrics().elidedText( track, Qt::ElideRight, leftRect.width() );
         painter->drawText( leftRect, text, m_topOption );
 
-        painter->setFont( smallBoldFont );
-        text = painter->fontMetrics().elidedText( artist, Qt::ElideRight, leftRect.width() );
-        painter->drawText( leftRect.adjusted( 0, boldFontMetrics.height(), 0, 0 ), text, m_topOption );
-
         painter->setFont( smallFont );
-        painter->setPen( Qt::gray );
         QTextDocument textDoc;
+        if ( album.isEmpty() )
+            textDoc.setHtml( tr( "by <b>%1</b>" ).arg( artist ) );
+        else
+            textDoc.setHtml( tr( "by <b>%1</b> on <b>%2</b>" ).arg( artist ).arg( album ) );
+        textDoc.setDocumentMargin( 0 );
+        textDoc.setDefaultFont( painter->font() );
+        textDoc.setDefaultTextOption( m_topOption );
+
+        drawRichText( painter, opt, leftRect.adjusted( 0, boldFontMetrics.height() + 1, 0, 0 ), Qt::AlignTop, textDoc );
+
+        if ( !( option.state & QStyle::State_Selected || item->isPlaying() ) )
+            painter->setPen( Qt::gray );
+
         textDoc.setHtml( lowerText );
         textDoc.setDocumentMargin( 0 );
         textDoc.setDefaultFont( painter->font() );
@@ -241,15 +246,15 @@ PlaylistLargeItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem&
         if ( textDoc.idealWidth() > leftRect.width() )
             textDoc.setHtml( item->query()->socialActionDescription( "Love", Query::Short ) );
 
-        drawRichText( painter, option, leftRect, Qt::AlignBottom, textDoc );
+        drawRichText( painter, opt, leftRect, Qt::AlignBottom, textDoc );
 
         const int sourceIconSize = avatarRect.width() - 6;
-        if ( !q->results().isEmpty() && !q->results().first()->sourceIcon( Result::DropShadow, QSize( sourceIconSize, sourceIconSize ) ).isNull() )
+        if ( q->numResults() && !q->results().first()->sourceIcon( TomahawkUtils::RoundedCorners, QSize( sourceIconSize, sourceIconSize ) ).isNull() )
         {
-            const QPixmap sourceIcon = q->results().first()->sourceIcon( Result::DropShadow, QSize( sourceIconSize, sourceIconSize ) );
+            const QPixmap sourceIcon = q->results().first()->sourceIcon( TomahawkUtils::RoundedCorners, QSize( sourceIconSize, sourceIconSize ) );
             painter->setOpacity( 0.8 );
-            painter->drawPixmap( QRect( rightRect.right() - sourceIconSize, r.center().y() - sourceIconSize/2, sourceIcon.width(), sourceIcon.height() ), sourceIcon );
-            painter->setOpacity( 1. );
+            painter->drawPixmap( QRect( rightRect.right() - sourceIconSize, r.center().y() - sourceIconSize / 2, sourceIcon.width(), sourceIcon.height() ), sourceIcon );
+            painter->setOpacity( 1.0 );
             rightRect.moveLeft( rightRect.left() - sourceIcon.width() - 8 );
         }
 
@@ -257,8 +262,7 @@ PlaylistLargeItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem&
         {
             painter->setPen( opt.palette.text().color() );
             painter->setFont( smallBoldFont );
-            text = painter->fontMetrics().elidedText( TomahawkUtils::timeToString( duration ), Qt::ElideRight, rightRect.width() );
-            painter->drawText( rightRect, text, m_centerRightOption );
+            painter->drawText( rightRect, TomahawkUtils::timeToString( duration ), m_centerRightOption );
         }
     }
     painter->restore();

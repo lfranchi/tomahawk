@@ -19,6 +19,14 @@
 
 #include "QtScriptResolver.h"
 
+#include <QtGui/QMessageBox>
+
+#include <QtNetwork/QNetworkRequest>
+#include <QtNetwork/QNetworkReply>
+
+#include <QtCore/QMetaProperty>
+#include <QtCore/QCryptographicHash>
+
 #include "Artist.h"
 #include "Album.h"
 #include "config.h"
@@ -27,17 +35,8 @@
 
 #include "network/Servent.h"
 
-#include "utils/TomahawkUtils.h"
+#include "utils/TomahawkUtilsGui.h"
 #include "utils/Logger.h"
-
-
-#include <QtGui/QMessageBox>
-
-#include <QtNetwork/QNetworkRequest>
-#include <QtNetwork/QNetworkReply>
-
-#include <QtCore/QMetaProperty>
-#include <QtCore/QCryptographicHash>
 
 // FIXME: bloody hack, remove this for 0.3
 // this one adds new functionality to old resolvers
@@ -232,8 +231,7 @@ QtScriptResolver::QtScriptResolver( const QString& scriptPath )
     m_name = QFileInfo( filePath() ).baseName();
 
     // set the icon, if we launch properly we'll get the icon the resolver reports
-    m_icon.load( RESPATH "images/resolver-default.png" );
-
+    m_icon = TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultResolver, TomahawkUtils::Original, QSize( 128, 128 ) );
 
     if ( !QFile::exists( filePath() ) )
     {

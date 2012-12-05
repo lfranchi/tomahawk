@@ -18,6 +18,10 @@
 
 #include "DynamicControlWrapper.h"
 
+#include "playlist/dynamic/DynamicControl.h"
+#include "utils/TomahawkUtilsGui.h"
+#include "utils/Logger.h"
+
 #include <QHBoxLayout>
 #include <QComboBox>
 #include <QLayout>
@@ -25,10 +29,6 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QStackedLayout>
-
-#include "dynamic/DynamicControl.h"
-#include "utils/TomahawkUtils.h"
-#include "utils/Logger.h"
 
 using namespace Tomahawk;
 
@@ -42,15 +42,13 @@ DynamicControlWrapper::DynamicControlWrapper( const Tomahawk::dyncontrol_ptr& co
      , m_typeSelector( 0 )
      , m_layout( QWeakPointer< QGridLayout >( layout ) )
 {
-    qDebug() << "CREATING DYNAMIC CONTROL WRAPPER WITH ROW:" << row << layout;
-
     m_typeSelector = new QComboBox( m_parent );
 
     m_matchSelector = QWeakPointer<QWidget>( control->matchSelector() );
     m_entryWidget = QWeakPointer<QWidget>( control->inputField() );
 
     m_minusButton = initButton( m_parent );
-    m_minusButton->setIcon( QIcon( RESPATH "images/list-remove.png" ) );
+    m_minusButton->setIcon( TomahawkUtils::defaultPixmap( TomahawkUtils::ListRemove ) );
     connect( m_minusButton, SIGNAL( clicked( bool ) ), this, SIGNAL( removeControl() ) );
 
     m_plusL = new QStackedLayout();

@@ -23,9 +23,6 @@
 #include "WhatsHotWidget_p.h"
 #include "ui_WhatsHotWidget.h"
 
-#include <QPainter>
-#include <QStandardItemModel>
-#include <QStandardItem>
 
 #include "ViewManager.h"
 #include "SourceList.h"
@@ -34,7 +31,7 @@
 #include "ChartDataLoader.h"
 
 #include "audio/AudioEngine.h"
-#include "dynamic/GeneratorInterface.h"
+#include "playlist/dynamic/GeneratorInterface.h"
 #include "playlist/PlayableModel.h"
 #include "playlist/PlaylistModel.h"
 #include "playlist/TreeProxyModel.h"
@@ -43,6 +40,11 @@
 #include "utils/Logger.h"
 #include "Pipeline.h"
 #include "utils/AnimatedSpinner.h"
+
+#include <QPainter>
+#include <QStandardItemModel>
+#include <QStandardItem>
+
 
 #define HISTORY_TRACK_ITEMS 25
 #define HISTORY_PLAYLIST_ITEMS 10
@@ -73,7 +75,7 @@ WhatsHotWidget::WhatsHotWidget( QWidget* parent )
     m_sortedProxy->setDynamicSortFilter( true );
     m_sortedProxy->setFilterCaseSensitivity( Qt::CaseInsensitive );
 
-    ui->breadCrumbLeft->setRootIcon( QPixmap( RESPATH "images/charts.png" ) );
+    ui->breadCrumbLeft->setRootIcon( TomahawkUtils::defaultPixmap( TomahawkUtils::Charts, TomahawkUtils::Original ) );
 
     connect( ui->breadCrumbLeft, SIGNAL( activateIndex( QModelIndex ) ), SLOT( leftCrumbIndexChanged( QModelIndex ) ) );
 
@@ -173,12 +175,12 @@ void
 WhatsHotWidget::fetchData()
 {
 
-    Tomahawk::InfoSystem::InfoStringHash artistInfo;
+    Tomahawk::InfoSystem::InfoStringHash criteria;
 
     Tomahawk::InfoSystem::InfoRequestData requestData;
     requestData.caller = s_whatsHotIdentifier;
     requestData.customData = QVariantMap();
-    requestData.input = QVariant::fromValue< Tomahawk::InfoSystem::InfoStringHash >( artistInfo );
+    requestData.input = QVariant::fromValue< Tomahawk::InfoSystem::InfoStringHash >( criteria );
     requestData.type = Tomahawk::InfoSystem::InfoChartCapabilities;
     requestData.timeoutMillis = 20000;
     requestData.allSources = true;
@@ -275,9 +277,32 @@ WhatsHotWidget::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData requestDat
 
         case InfoSystem::InfoChart:
         {
+
+            if( returnedData.contains( "chart_error") )
+            {
+                tDebug( LOGVERBOSE ) << Q_FUNC_INFO << "Info came back with error!!";
+
+                Tomahawk::InfoSystem::InfoStringHash criteria;
+                criteria.insert( "chart_refetch", returnedData[ "chart_source" ].value< QString >() );
+
+                Tomahawk::InfoSystem::InfoRequestData requestData;
+                requestData.caller = s_whatsHotIdentifier;
+                requestData.customData = QVariantMap();
+                requestData.input = QVariant::fromValue< Tomahawk::InfoSystem::InfoStringHash >( criteria );
+                requestData.type = Tomahawk::InfoSystem::InfoChartCapabilities;
+                requestData.timeoutMillis = 20000;
+                requestData.allSources = false;
+                Tomahawk::InfoSystem::InfoSystem::instance()->getInfo( requestData );
+
+                tDebug( LOGVERBOSE ) << "WhatsHot: re-requesting InfoChartCapabilities";
+                break;
+            }
+
             if ( !returnedData.contains( "type" ) )
                 break;
+
             const QString type = returnedData[ "type" ].toString();
+
             if ( !returnedData.contains( type ) )
                 break;
 
@@ -359,8 +384,7 @@ void
 WhatsHotWidget::leftCrumbIndexChanged( QModelIndex index )
 {
 
-    tDebug( LOGVERBOSE ) << "WhatsHot:: left crumb changed" << index.data();
-
+    tDebug( LOGVERBOSE ) << "WhatsHot: left crumb changed" << index.data();
     QStandardItem* item = m_crumbModelLeft->itemFromIndex( m_sortedProxy->mapToSource( index ) );
     if ( !item )
         return;
@@ -380,6 +404,7 @@ WhatsHotWidget::leftCrumbIndexChanged( QModelIndex index )
         curr.prepend( index.data().toString().toLower() );
     }
     const QString chartId = item->data( Breadcrumb::ChartIdRole ).toString();
+    const qlonglong chartExpires = item->data( Breadcrumb::ChartExpireRole ).toLongLong();
     const QString chartSource = curr.takeFirst().toLower();
     curr.append( chartSource );
     curr.append( chartId );
@@ -411,9 +436,9 @@ WhatsHotWidget::leftCrumbIndexChanged( QModelIndex index )
 
     Tomahawk::InfoSystem::InfoStringHash criteria;
     criteria.insert( "chart_id", chartId );
+    criteria.insert( "chart_expires", QString::number( chartExpires ) );
     /// Remember to lower the source!
     criteria.insert( "chart_source",  index.data().toString().toLower() );
-
     Tomahawk::InfoSystem::InfoRequestData requestData;
     QVariantMap customData;
     customData.insert( "whatshot_side", "left" );
@@ -452,7 +477,7 @@ QStandardItem*
 WhatsHotWidget::parseNode( QStandardItem* parentItem, const QString &label, const QVariant &data )
 {
     Q_UNUSED( parentItem );
-//     tDebug( LOGVERBOSE ) << "WhatsHot:: parsing " << label;
+//     tDebug( LOGVERBOSE ) << "WhatsHot: parsing " << label;
 
     QStandardItem *sourceItem = new QStandardItem( label );
 
@@ -464,6 +489,7 @@ WhatsHotWidget::parseNode( QStandardItem* parentItem, const QString &label, cons
         {
             QStandardItem *childItem= new QStandardItem( chart[ "label" ] );
             childItem->setData( chart[ "id" ], Breadcrumb::ChartIdRole );
+            childItem->setData( chart[ "expires" ], Breadcrumb::ChartExpireRole );
 
             if ( m_currentVIds.contains( chart.value( "id" ).toLower() ) )
             {

@@ -19,6 +19,8 @@ SET( TOMAHAWK_VERSION_PATCH 99 )
 
 # enforce proper symbol exporting on all platforms
 add_definitions( "-fvisibility=hidden" )
+# enforce using constBegin, constEnd for const-iterators
+add_definitions( "-DQT_STRICT_ITERATORS" )
 
 # build options
 option(BUILD_GUI "Build Tomahawk with GUI" ON)
@@ -39,6 +41,7 @@ IF( WITH_BREAKPAD )
     message(STATUS "Build with support for breakpad.")
     IF( CMAKE_COMPILER_IS_GNUCXX )
         ADD_DEFINITIONS( -DSTDC_HEADERS -std=gnu++98 )
+#        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSTDC_HEADERS -std=gnu++98" )
     ENDIF()
 ENDIF()
 
@@ -215,8 +218,9 @@ IF( NOT APPLE )
     SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--no-undefined" )
 ENDIF( NOT APPLE )
 
-ADD_SUBDIRECTORY( thirdparty )
-ADD_SUBDIRECTORY( src/libtomahawk )
 SET( TOMAHAWK_LIBRARIES tomahawklib )
+
+ADD_SUBDIRECTORY( thirdparty )
 ADD_SUBDIRECTORY( src )
+ADD_SUBDIRECTORY( src/libtomahawk )
 ADD_SUBDIRECTORY( admin )

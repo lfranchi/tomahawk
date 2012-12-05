@@ -232,12 +232,15 @@ TreeView::onItemActivated( const QModelIndex& index )
     if ( item )
     {
         if ( !item->artist().isNull() )
+        {
             ViewManager::instance()->show( item->artist() );
+        }
         else if ( !item->album().isNull() )
+        {
             ViewManager::instance()->show( item->album() );
+        }
         else if ( !item->result().isNull() && item->result()->isOnline() )
         {
-            m_model->setCurrentItem( item->index );
             AudioEngine::instance()->playItem( m_proxyModel->playlistInterface(), item->result() );
         }
     }
@@ -385,6 +388,7 @@ TreeView::onCustomContextMenu( const QPoint& pos )
     m_contextMenu->setQueries( queries );
     m_contextMenu->setArtists( artists );
     m_contextMenu->setAlbums( albums );
+    m_contextMenu->setPlaylistInterface( playlistInterface() );
 
     m_contextMenu->exec( viewport()->mapToGlobal( pos ) );
 }

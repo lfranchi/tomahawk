@@ -45,8 +45,8 @@ public:
     explicit TrackView( QWidget* parent = 0 );
     ~TrackView();
 
-    virtual QString guid() const { return m_guid; }
-    virtual void setGuid( const QString& guid );
+    virtual QString guid() const;
+    virtual void setGuid( const QString& newguid );
 
     virtual void setPlayableModel( PlayableModel* model );
     virtual void setModel( QAbstractItemModel* model );
@@ -146,7 +146,6 @@ private:
 
     bool m_updateContextView;
 
-    Tomahawk::playlistinterface_ptr m_playlistInterface;
     QModelIndex m_hoveredIndex;
     QModelIndex m_contextMenuIndex;
 

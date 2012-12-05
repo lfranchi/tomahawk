@@ -22,6 +22,7 @@
 
 #include <QtCore/QModelIndex>
 
+#include "playlist/PlayableItem.h"
 #include "Typedefs.h"
 #include "DllMacro.h"
 #include "utils/Logger.h"
@@ -37,22 +38,33 @@ public:
     explicit PlaylistInterface();
     virtual ~PlaylistInterface();
 
-    const QString id() { return m_id; }
+    const QString id() const { return m_id; }
 
-    virtual QList< Tomahawk::query_ptr > tracks() = 0;
+    virtual QList< Tomahawk::query_ptr > tracks() const = 0;
     virtual bool isFinished() const { return m_finished; }
 
     virtual int trackCount() const = 0;
 
     virtual Tomahawk::result_ptr currentItem() const = 0;
-    virtual Tomahawk::result_ptr previousItem();
-    virtual bool hasNextItem() { return true; }
-    virtual bool hasPreviousItem() { return true; }
-    virtual Tomahawk::result_ptr nextItem();
-    virtual Tomahawk::result_ptr siblingItem( int itemsAway ) = 0;
+    virtual void setCurrentIndex( qint64 index );
+
+    virtual bool hasNextResult() const;
+    virtual bool hasPreviousResult() const;
+    virtual Tomahawk::result_ptr nextResult() const;
+    virtual Tomahawk::result_ptr previousResult() const;
+
+    virtual qint64 siblingIndex( int itemsAway, qint64 rootIndex = -1 ) const = 0;
+    virtual Tomahawk::result_ptr siblingResult( int itemsAway, qint64 rootIndex = -1 ) const;
+
+    virtual Tomahawk::result_ptr resultAt( qint64 index ) const = 0;
+    virtual Tomahawk::query_ptr queryAt( qint64 index ) const = 0;
+    virtual qint64 indexOfResult( const Tomahawk::result_ptr& result ) const = 0;
+    virtual qint64 indexOfQuery( const Tomahawk::query_ptr& query ) const = 0;
+
+    virtual int posOfResult( const Tomahawk::result_ptr& result ) const;
+    virtual int posOfQuery( const Tomahawk::query_ptr& query ) const;
 
     virtual PlaylistModes::RepeatMode repeatMode() const = 0;
-
     virtual bool shuffled() const = 0;
 
     virtual PlaylistModes::ViewMode viewMode() const { return PlaylistModes::Unknown; }
@@ -80,17 +92,25 @@ public slots:
     virtual void setShuffled( bool enabled ) = 0;
 
 signals:
-    void trackCountChanged( unsigned int tracks );
+    void itemCountChanged( unsigned int tracks );
     void repeatModeChanged( Tomahawk::PlaylistModes::RepeatMode mode );
     void shuffleModeChanged( bool enabled );
     void latchModeChanged( Tomahawk::PlaylistModes::LatchMode mode );
-    void nextTrackReady();
+
+    void previousTrackAvailable();
+    void nextTrackAvailable();
+
+protected slots:
+    virtual void onItemsChanged();
 
 protected:
     virtual QList<Tomahawk::query_ptr> filterTracks( const QList<Tomahawk::query_ptr>& queries );
 
     PlaylistModes::LatchMode m_latchMode;
     bool m_finished;
+    mutable bool m_prevAvail;
+    mutable bool m_nextAvail;
+    mutable qint64 m_currentIndex;
 
 private:
     Q_DISABLE_COPY( PlaylistInterface )

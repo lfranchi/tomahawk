@@ -84,10 +84,9 @@ AccountsToolButton::AccountsToolButton( QWidget* parent )
     wMainLayout->addSpacing( 6 );
 
     QPushButton *settingsButton = new QPushButton( w );
-    settingsButton->setIcon( QIcon( RESPATH "images/account-settings.png" ) );
+    settingsButton->setIcon( TomahawkUtils::defaultPixmap( TomahawkUtils::AccountSettings ) );
     settingsButton->setText( tr( "Configure Accounts" ) );
-    connect( settingsButton, SIGNAL( clicked() ),
-             window(), SLOT( showSettingsDialog() ) );
+    connect( settingsButton, SIGNAL( clicked() ), window(), SLOT( showSettingsDialog() ) );
 
     QHBoxLayout *bottomLayout = new QHBoxLayout( w );
     TomahawkUtils::unmarginLayout( bottomLayout );
@@ -95,12 +94,8 @@ AccountsToolButton::AccountsToolButton( QWidget* parent )
     bottomLayout->addWidget( settingsButton );
     wMainLayout->addLayout( bottomLayout );
 
-
     //ToolButton stuff
-    m_defaultPixmap = QPixmap( RESPATH "images/account-none.png" )
-                        .scaled( iconSize(),
-                                 Qt::KeepAspectRatio,
-                                 Qt::SmoothTransformation );
+    m_defaultPixmap = QPixmap( RESPATH "images/account-none.png" ).scaled( iconSize(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
 
     connect( m_proxy, SIGNAL( dataChanged( QModelIndex, QModelIndex ) ),
              this, SLOT( updateIcons() ) );
@@ -115,15 +110,18 @@ AccountsToolButton::AccountsToolButton( QWidget* parent )
 void
 AccountsToolButton::mousePressEvent( QMouseEvent* event )
 {
+    QToolButton::mousePressEvent( event );
     if( m_popup )
     {
         QPoint myPos = mapToGlobal( rect().bottomRight() );
         m_popup->anchorAt( myPos );
         m_popup->setArrowOffset( rect().width() / 2 );
-        m_popup->show();
+        if ( !m_popup->isVisible() )
+            m_popup->show();
+        else
+            m_popup->hide();
         event->accept();
     }
-    QToolButton::mousePressEvent( event );
 }
 
 void
@@ -160,6 +158,8 @@ AccountsToolButton::paintEvent( QPaintEvent* event )
 void
 AccountsToolButton::moveEvent( QMoveEvent* event )
 {
+    Q_UNUSED( event );
+
     if ( m_popup )
     {
         if ( isDown() )

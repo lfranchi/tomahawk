@@ -75,16 +75,16 @@ JreenMessageHandler( QtMsgType type, const char *msg )
     switch ( type )
     {
         case QtDebugMsg:
-            tDebug( LOGTHIRDPARTY ).nospace() << JREEN_LOG_INFIX << ": " << "Debug: " <<  msg;
+            tDebug( LOGTHIRDPARTY ).nospace() << JREEN_LOG_INFIX << ":" << "Debug:" << msg;
             break;
         case QtWarningMsg:
-            tDebug( LOGTHIRDPARTY ).nospace() << JREEN_LOG_INFIX << ": " << "Warning: " <<  msg;
+            tDebug( LOGTHIRDPARTY ).nospace() << JREEN_LOG_INFIX << ":" << "Warning:" << msg;
             break;
         case QtCriticalMsg:
-            tDebug( LOGTHIRDPARTY ).nospace() << JREEN_LOG_INFIX << ": " << "Critical: " <<  msg;
+            tDebug( LOGTHIRDPARTY ).nospace() << JREEN_LOG_INFIX << ":" << "Critical:" << msg;
             break;
         case QtFatalMsg:
-            tDebug( LOGTHIRDPARTY ).nospace() << JREEN_LOG_INFIX << ": " << "Fatal: " <<  msg;
+            tDebug( LOGTHIRDPARTY ).nospace() << JREEN_LOG_INFIX << ":" << "Fatal:" << msg;
             abort();
     }
 }
@@ -453,12 +453,6 @@ XmppSipPlugin::sendMsg( const QString& to, const SipInfo& info )
     Jreen::IQReply *reply = m_client->send( iq );
     reply->setData( SipMessageSent );
     connect( reply, SIGNAL( received( Jreen::IQ ) ), SLOT( onNewIq( Jreen::IQ ) ) );
-}
-
-
-void
-XmppSipPlugin::broadcastMsg( const QString& msg )
-{
 }
 
 

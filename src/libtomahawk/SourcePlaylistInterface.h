@@ -36,17 +36,23 @@ class DLLEXPORT SourcePlaylistInterface : public Tomahawk::PlaylistInterface
 Q_OBJECT
 
 public:
-    SourcePlaylistInterface( Tomahawk::Source *source, Tomahawk::PlaylistModes::LatchMode latchMode = PlaylistModes::StayOnSong );
+    SourcePlaylistInterface( Tomahawk::Source* source, Tomahawk::PlaylistModes::LatchMode latchMode = PlaylistModes::StayOnSong );
     virtual ~SourcePlaylistInterface();
 
-    QList<Tomahawk::query_ptr> tracks();
+    QList<Tomahawk::query_ptr> tracks() const;
 
     virtual int trackCount() const { return 1; }
 
-    virtual Tomahawk::result_ptr siblingItem( int itemsAway );
-    virtual bool sourceValid();
-    virtual bool hasNextItem();
-    virtual Tomahawk::result_ptr nextItem();
+    virtual void setCurrentIndex( qint64 index );
+    virtual Tomahawk::result_ptr resultAt( qint64 index ) const;
+    virtual Tomahawk::query_ptr queryAt( qint64 index ) const;
+    virtual qint64 indexOfResult( const Tomahawk::result_ptr& result ) const;
+    virtual qint64 indexOfQuery( const Tomahawk::query_ptr& query ) const { Q_UNUSED( query ); Q_ASSERT( false ); return -1; }
+
+    virtual qint64 siblingIndex( int itemsAway, qint64 rootIndex = -1 ) const;
+    virtual bool sourceValid() const;
+    virtual bool hasNextResult() const;
+    virtual Tomahawk::result_ptr nextResult() const;
     virtual Tomahawk::result_ptr currentItem() const;
 
     virtual PlaylistModes::RepeatMode repeatMode() const { return PlaylistModes::NoRepeat; }
@@ -74,8 +80,8 @@ private slots:
 
 private:
     QWeakPointer< Tomahawk::Source > m_source;
-    Tomahawk::result_ptr m_currentItem;
-    bool m_gotNextItem;
+    mutable Tomahawk::result_ptr m_currentItem;
+    mutable bool m_gotNextItem;
 };
 
 }; // ns

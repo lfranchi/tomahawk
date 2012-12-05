@@ -24,6 +24,7 @@
 
 #include "playlist/FlexibleHeader.h"
 #include "playlist/PlayableModel.h"
+#include "playlist/PlaylistModel.h"
 #include "playlist/TrackView.h"
 #include "playlist/GridView.h"
 #include "playlist/PlaylistLargeItemDelegate.h"
@@ -32,38 +33,6 @@
 #include "utils/Logger.h"
 
 using namespace Tomahawk;
-
-
-class FlexibleViewInterface : public PlayableProxyModelPlaylistInterface
-{
-    Q_OBJECT
-public:
-    explicit FlexibleViewInterface( PlayableProxyModel* proxy, FlexibleView* view )
-        : PlayableProxyModelPlaylistInterface( proxy )
-        , m_view( view )
-    {
-    }
-
-    virtual bool hasChildInterface( playlistinterface_ptr playlistInterface )
-    {
-        if ( m_view.isNull() )
-            return false;
-
-        if ( m_view.data()->detailedView() && m_view.data()->detailedView()->proxyModel()->playlistInterface() == playlistInterface )
-            return true;
-
-        if ( m_view.data()->gridView() && m_view.data()->gridView()->playlistInterface()->hasChildInterface( playlistInterface ) )
-            return true;
-
-        if ( m_view.data()->trackView() && m_view.data()->trackView()->proxyModel()->playlistInterface() == playlistInterface )
-            return true;
-
-        return false;
-    }
-
-private:
-    QWeakPointer<FlexibleView> m_view;
-};
 
 
 FlexibleView::FlexibleView( QWidget* parent )
@@ -76,11 +45,11 @@ FlexibleView::FlexibleView( QWidget* parent )
 {
     qRegisterMetaType< FlexibleViewMode >( "FlexibleViewMode" );
 
-    m_playlistInterface = playlistinterface_ptr( new FlexibleViewInterface( m_trackView->proxyModel(), this ) );
-    m_trackView->setPlaylistInterface( m_playlistInterface );
-    m_detailedView->setPlaylistInterface( m_playlistInterface );
+//    m_trackView->setPlaylistInterface( m_playlistInterface );
+    m_detailedView->setPlaylistInterface( m_trackView->proxyModel()->playlistInterface() );
 
     m_detailedView->setColumnHidden( PlayableModel::Age, true ); // Hide age column per default
+    m_detailedView->setColumnHidden( PlayableModel::Filesize, true ); // Hide filesize column per default
     m_detailedView->setColumnHidden( PlayableModel::Composer, true ); // Hide composer column per default
 
     PlaylistLargeItemDelegate* del = new PlaylistLargeItemDelegate( PlaylistLargeItemDelegate::LovedTracks, m_trackView, m_trackView->proxyModel() );
@@ -128,7 +97,7 @@ FlexibleView::setTrackView( TrackView* view )
         delete m_trackView;
     }
 
-    view->setPlaylistInterface( m_playlistInterface );
+//    view->setPlaylistInterface( m_playlistInterface );
 
     m_trackView = view;
     m_stack->addWidget( view );
@@ -144,7 +113,9 @@ FlexibleView::setDetailedView( TrackView* view )
         delete m_detailedView;
     }
 
-    view->setPlaylistInterface( m_playlistInterface );
+    connect( view, SIGNAL( destroyed( QWidget* ) ), SLOT( onWidgetDestroyed( QWidget* ) ), Qt::UniqueConnection );
+
+    view->setPlaylistInterface( m_trackView->proxyModel()->playlistInterface() );
 
     m_detailedView = view;
     m_stack->addWidget( view );
@@ -185,9 +156,21 @@ FlexibleView::setPlayableModel( PlayableModel* model )
     m_detailedView->proxyModel()->sort( -1 );
     m_gridView->proxyModel()->sort( -1 );
 
-    m_header->setPixmap( m_pixmap );
-    m_header->setCaption( model->title() );
-    m_header->setDescription( model->description() );
+    onModelChanged();
+}
+
+
+void
+FlexibleView::setPlaylistModel( PlaylistModel* model )
+{
+    if ( m_model )
+    {
+        disconnect( m_model, SIGNAL( changed() ), this, SLOT( onModelChanged() ) );
+    }
+
+    setPlayableModel( model );
+
+    connect( model, SIGNAL( changed() ), SLOT( onModelChanged() ), Qt::UniqueConnection );
 }
 
 
@@ -225,7 +208,7 @@ FlexibleView::setCurrentMode( FlexibleViewMode mode )
 Tomahawk::playlistinterface_ptr
 FlexibleView::playlistInterface() const
 {
-    return m_playlistInterface;
+    return m_trackView->proxyModel()->playlistInterface();
 }
 
 
@@ -253,10 +236,16 @@ FlexibleView::pixmap() const
 bool
 FlexibleView::jumpToCurrentTrack()
 {
-    m_trackView->jumpToCurrentTrack();
-    m_detailedView->jumpToCurrentTrack();
-    m_gridView->jumpToCurrentTrack();
-    return true;
+    tDebug() << Q_FUNC_INFO;
+
+    bool b = false;
+
+    // note: the order of comparison is important here, if we'd write "b || foo" then foo will not be executed if b is already true!
+    b = m_trackView->jumpToCurrentTrack() || b;
+    b = m_detailedView->jumpToCurrentTrack() || b;
+    b = m_gridView->jumpToCurrentTrack() || b;
+
+    return b;
 }
 
 
@@ -288,5 +277,28 @@ FlexibleView::setPixmap( const QPixmap& pixmap )
     m_pixmap = pixmap;
     m_header->setPixmap( pixmap );
 }
+
+
+void
+FlexibleView::onModelChanged()
+{
+    m_header->setPixmap( m_pixmap );
+    m_header->setCaption( m_model->title() );
+    m_header->setDescription( m_model->description() );
+
+    if ( m_model->isReadOnly() )
+        setEmptyTip( tr( "This playlist is currently empty." ) );
+    else
+        setEmptyTip( tr( "This playlist is currently empty. Add some tracks to it and enjoy the music!" ) );
+}
+
+
+void
+FlexibleView::onWidgetDestroyed( QWidget* widget )
+{
+    Q_UNUSED( widget );
+    emit destroyed( this );
+}
+
 
 #include "FlexibleView.moc"

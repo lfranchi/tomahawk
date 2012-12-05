@@ -28,8 +28,8 @@ class QStackedWidget;
 class GridView;
 class TrackView;
 class PlayableModel;
+class PlaylistModel;
 class FlexibleHeader;
-class FlexibleViewInterface;
 
 class DLLEXPORT FlexibleView : public QWidget, public Tomahawk::ViewPage
 {
@@ -62,8 +62,10 @@ public:
     void setDetailedView( TrackView* view );
     void setGridView( GridView* view );
 
-    void setPixmap( const QPixmap& pixmap );
     void setPlayableModel( PlayableModel* model );
+    void setPlaylistModel( PlaylistModel* model );
+
+    void setPixmap( const QPixmap& pixmap );
     void setEmptyTip( const QString& tip );
 
 public slots:
@@ -72,8 +74,11 @@ public slots:
 
 signals:
     void modeChanged( FlexibleViewMode mode );
+    void destroyed( QWidget* widget );
 
 private slots:
+    void onModelChanged();
+    void onWidgetDestroyed( QWidget* widget );
 
 private:
     FlexibleHeader* m_header;
@@ -83,14 +88,10 @@ private:
     TrackView* m_detailedView;
     GridView* m_gridView;
 
-    Tomahawk::playlistinterface_ptr m_playlistInterface;
-
     PlayableModel* m_model;
     QStackedWidget* m_stack;
 
     FlexibleViewMode m_mode;
-
-    friend class ::FlexibleViewInterface;
 };
 
 Q_DECLARE_METATYPE( FlexibleView::FlexibleViewMode );

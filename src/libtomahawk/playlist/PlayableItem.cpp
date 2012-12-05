@@ -43,7 +43,7 @@ PlayableItem::~PlayableItem()
 }
 
 
-PlayableItem::PlayableItem( PlayableItem* parent, QAbstractItemModel* model )
+PlayableItem::PlayableItem( PlayableItem* parent )
 {
     init( parent );
 }
@@ -74,6 +74,9 @@ PlayableItem::PlayableItem( const Tomahawk::result_ptr& result, PlayableItem* pa
     , m_result( result )
 {
     init( parent, row );
+
+    connect( result.data(), SIGNAL( updated() ),
+                            SIGNAL( dataChanged() ) );
 }
 
 
@@ -130,8 +133,6 @@ PlayableItem::init( PlayableItem* parent, int row )
         {
             parent->children.insert( row, this );
         }
-
-        this->model = parent->model;
     }
 
     if ( !m_query.isNull() )

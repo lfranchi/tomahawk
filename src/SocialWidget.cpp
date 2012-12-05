@@ -23,6 +23,7 @@
 #include "GlobalActionManager.h"
 #include "Source.h"
 
+#include "utils/ImageRegistry.h"
 #include "utils/TomahawkUtilsGui.h"
 #include "utils/Logger.h"
 
@@ -40,8 +41,10 @@ SocialWidget::SocialWidget( QWidget* parent )
     , m_parentRect( parent->rect() )
 {
     ui->setupUi( this );
-    setWindowFlags( Qt::FramelessWindowHint );
+#ifndef Q_OS_WIN
+    setWindowFlags( Qt::FramelessWindowHint ); //this causes ugly black shadows on Windows
     setWindowFlags( Qt::Popup );
+#endif
     setAttribute( Qt::WA_TranslucentBackground, true );
 
     TomahawkUtils::unmarginLayout( layout() );
@@ -64,8 +67,8 @@ SocialWidget::SocialWidget( QWidget* parent )
     ui->charsLeftLabel->setForegroundRole( QPalette::Text );
     ui->charsLeftLabel->setStyleSheet( "text: black" );
     ui->buttonBox->button( QDialogButtonBox::Ok )->setText( tr( "Tweet" ) );
-    ui->buttonBox->button( QDialogButtonBox::Ok )->setIcon( QIcon( RESPATH "images/ok.png" ) );
-    ui->buttonBox->button( QDialogButtonBox::Cancel )->setIcon( QIcon( RESPATH "images/cancel.png" ) );
+    ui->buttonBox->button( QDialogButtonBox::Ok )->setIcon( ImageRegistry::instance()->icon( RESPATH "images/ok.png" ) );
+    ui->buttonBox->button( QDialogButtonBox::Cancel )->setIcon( ImageRegistry::instance()->icon( RESPATH "images/cancel.svg" ) );
 
     ui->textEdit->setStyleSheet( "border: 1px solid " + TomahawkUtils::Colors::BORDER_LINE.name() );
 
@@ -248,6 +251,9 @@ SocialWidget::onGeometryUpdate()
 
     QPoint position( m_position - QPoint( size().width(), size().height() )
                      + QPoint( 2 + ARROW_HEIGHT * 3, 0 ) );
+#ifdef Q_OS_WIN
+    position.ry() -= 18/*margins I guess*/ + ARROW_HEIGHT;
+#endif
     if ( position != pos() )
     {
         move( position );

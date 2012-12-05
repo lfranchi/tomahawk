@@ -40,6 +40,7 @@ public:
     virtual QString text() const;
     virtual QString tooltip() const;
     virtual QIcon icon() const;
+    virtual QPixmap pixmap( const QSize& size = QSize( 0, 0 ) ) const;
     virtual int peerSortValue() const;
     virtual int IDValue() const;
 
@@ -91,7 +92,6 @@ private:
     void playlistDeletedInternal( SourceTreeItem* parent, const T& playlists );
 
     Tomahawk::source_ptr m_source;
-    QPixmap m_superCol, m_defaultAvatar;
     CategoryItem* m_playlists;
     CategoryItem* m_stations;
 

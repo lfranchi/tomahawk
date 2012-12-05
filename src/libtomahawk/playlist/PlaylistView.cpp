@@ -20,12 +20,12 @@
 #include "PlaylistView.h"
 
 #include <QKeyEvent>
-#include <QPainter>
 
 #include "ViewManager.h"
-#include "utils/Logger.h"
 #include "PlaylistUpdaterInterface.h"
 #include "Source.h"
+#include "utils/TomahawkUtilsGui.h"
+#include "utils/Logger.h"
 
 using namespace Tomahawk;
 
@@ -60,6 +60,7 @@ PlaylistView::setPlaylistModel( PlaylistModel* model )
 
     TrackView::setPlayableModel( m_model );
     setColumnHidden( PlayableModel::Age, true ); // Hide age column per default
+    setColumnHidden( PlayableModel::Filesize, true ); // Hide filesize column per default
     setColumnHidden( PlayableModel::Composer, true ); // Hide composer column per default
 
     connect( m_model, SIGNAL( playlistDeleted() ), SLOT( onDeleted() ) );
@@ -73,9 +74,6 @@ void
 PlaylistView::keyPressEvent( QKeyEvent* event )
 {
     TrackView::keyPressEvent( event );
-
-    if ( !model() )
-        return;
 }
 
 
@@ -124,7 +122,6 @@ PlaylistView::updaters() const
 void
 PlaylistView::onDeleted()
 {
-    qDebug() << Q_FUNC_INFO;
     emit destroyed( widget() );
 }
 
@@ -139,6 +136,8 @@ PlaylistView::onChanged()
         else
             setEmptyTip( tr( "This playlist is currently empty. Add some tracks to it and enjoy the music!" ) );
         m_model->finishLoading();
+
+        setGuid( proxyModel()->guid() );
 
         if ( !m_model->playlist().isNull() && ViewManager::instance()->currentPage() == this )
             emit nameChanged( m_model->playlist()->title() );
@@ -161,4 +160,11 @@ PlaylistView::onMenuTriggered( int action )
         default:
             break;
     }
+}
+
+
+QPixmap
+PlaylistView::pixmap() const
+{
+    return TomahawkUtils::defaultPixmap( TomahawkUtils::Playlist );
 }

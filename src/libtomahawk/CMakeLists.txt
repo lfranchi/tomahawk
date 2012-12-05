@@ -4,6 +4,7 @@ SET( QT_USE_QTGUI TRUE )
 SET( QT_USE_QTSQL TRUE )
 SET( QT_USE_QTNETWORK TRUE )
 SET( QT_USE_QTXML TRUE )
+SET( QT_USE_QTSVG TRUE )
 SET( QT_USE_QTUITOOLS TRUE )
 
 IF( UNIX AND NOT APPLE )
@@ -16,6 +17,11 @@ add_definitions( ${QT_DEFINITIONS} )
 add_definitions( -DQT_SHARED )
 add_definitions( -DDLLEXPORT_PRO )
 add_definitions( -DQT_SHAREDPOINTER_TRACK_POINTERS )
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../Config.h.in
+               ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../TomahawkVersion.h.in
+               ${CMAKE_CURRENT_BINARY_DIR}/TomahawkVersion.h)
 
 set( libGuiSources
     ActionCollection.cpp
@@ -94,6 +100,7 @@ set( libGuiSources
     resolvers/ScriptResolver.cpp
     resolvers/QtScriptResolver.cpp
 
+    utils/ImageRegistry.cpp
     utils/WidgetDragFilter.cpp
     utils/XspfGenerator.cpp
     utils/JspfLoader.cpp
@@ -117,6 +124,7 @@ set( libGuiSources
     utils/SharedTimeLine.cpp
     utils/WebResultHintChecker.cpp
     utils/WebSocketWrapper.cpp
+    utils/NetworkReply.cpp
 
     widgets/AnimatedCounterLabel.cpp
     widgets/BasicHeader.cpp
@@ -144,6 +152,7 @@ set( libGuiSources
     widgets/ComboBox.cpp
     widgets/ToggleButton.cpp
     widgets/FadingPixmap.cpp
+    widgets/PlayableCover.cpp
     widgets/SocialPlaylistWidget.cpp
     widgets/SourceTreePopupDialog.cpp
     widgets/infowidgets/SourceInfoWidget.cpp
@@ -172,6 +181,7 @@ set( libSources
     Album.cpp
     AlbumPlaylistInterface.cpp
     Collection.cpp
+    CountryUtils.cpp
     FuncTimeout.cpp
     Playlist.cpp
     PlaylistPlaylistInterface.cpp
@@ -261,6 +271,7 @@ set( libSources
     database/DatabaseCommand_CollectionAttributes.cpp
     database/DatabaseCommand_TrackAttributes.cpp
     database/DatabaseCommand_SetTrackAttributes.cpp
+    database/DatabaseCommand_PlaybackCharts.cpp
     database/Database.cpp
     database/TomahawkSqlQuery.cpp
     database/IdThreadWorker.cpp
@@ -334,18 +345,17 @@ set( libUI ${libUI}
     accounts/lastfm/LastFmConfig.ui
 )
 
-include_directories( . ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/.. ..
+include_directories(
+    ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
+
     ${QT_INCLUDE_DIR}
     ${QJSON_INCLUDE_DIR}
     ${ECHONEST_INCLUDE_DIR}
     ${LIBLASTFM_INCLUDE_DIRS}
-    ${LIBLASTFM_INCLUDE_DIRS}/..
     ${CLUCENE_INCLUDE_DIRS}
     ${PHONON_INCLUDES}
     ${WEBSOCKETPP_INCLUDE_DIR}
-
-    playlist
 
     ${LIBPORTFWD_INCLUDE_DIR}
     ${THIRDPARTY_DIR}/qxt/qxtweb-standalone/qxtweb
@@ -462,6 +472,7 @@ TARGET_LINK_LIBRARIES( tomahawklib
     ${QT_QTSCRIPT_LIBRARY}
     ${QT_QTNETWORK_LIBRARY}
     ${QT_QTXML_LIBRARY}
+    ${QT_QTSVG_LIBRARY}
     ${QT_QTCORE_LIBRARY}
     ${OS_SPECIFIC_LINK_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}

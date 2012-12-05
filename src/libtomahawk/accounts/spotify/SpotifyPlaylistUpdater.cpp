@@ -22,7 +22,9 @@
 #include "accounts/AccountManager.h"
 #include "SpotifyAccount.h"
 #include "utils/TomahawkUtils.h"
+
 #include <QMessageBox>
+#include <QApplication>
 
 using namespace Tomahawk;
 using namespace Accounts;
@@ -83,8 +85,8 @@ SpotifyPlaylistUpdater::SpotifyPlaylistUpdater( SpotifyAccount* acct, const QStr
     , m_spotifyId( spotifyId )
     , m_blockUpdatesForNextRevision( false )
     , m_sync( false )
-    , m_canSubscribe( false )
     , m_subscribed( false )
+    , m_canSubscribe( false )
     , m_isOwner( false )
     , m_collaborative( false )
     , m_subscribers( 0 )

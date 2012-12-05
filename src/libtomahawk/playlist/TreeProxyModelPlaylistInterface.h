@@ -36,17 +36,20 @@ class DLLEXPORT TreeProxyModelPlaylistInterface : public Tomahawk::PlaylistInter
 Q_OBJECT
 
 public:
-    explicit TreeProxyModelPlaylistInterface( TreeProxyModel *proxyModel );
+    explicit TreeProxyModelPlaylistInterface( TreeProxyModel* proxyModel );
     virtual ~TreeProxyModelPlaylistInterface();
 
-    virtual QList< Tomahawk::query_ptr > tracks() { Q_ASSERT( FALSE ); QList< Tomahawk::query_ptr > queries; return queries; }
-
+    virtual QList< Tomahawk::query_ptr > tracks() const;
     virtual int trackCount() const;
 
-    virtual bool hasNextItem();
+    virtual Tomahawk::result_ptr resultAt( qint64 index ) const;
+    virtual Tomahawk::query_ptr queryAt( qint64 index ) const;
+    virtual qint64 indexOfResult( const Tomahawk::result_ptr& result ) const;
+    virtual qint64 indexOfQuery( const Tomahawk::query_ptr& query ) const;
+
+    virtual void setCurrentIndex( qint64 index );
     virtual Tomahawk::result_ptr currentItem() const;
-    virtual Tomahawk::result_ptr siblingItem( int direction );
-    virtual Tomahawk::result_ptr siblingItem( int direction, bool readOnly );
+    virtual qint64 siblingIndex( int itemsAway, qint64 rootIndex = -1 ) const;
 
     virtual QString filter() const;
 
@@ -55,17 +58,9 @@ public:
     virtual PlaylistModes::ViewMode viewMode() const { return PlaylistModes::Tree; }
 
 signals:
-    void repeatModeChanged( Tomahawk::PlaylistModes::RepeatMode mode );
-    void shuffleModeChanged( bool enabled );
-
-    void trackCountChanged( unsigned int tracks );
-    void sourceTrackCountChanged( unsigned int tracks );
-
     void filterChanged( const QString& filter );
     void filteringStarted();
     void filteringFinished();
-
-    void nextTrackReady();
 
 public slots:
     virtual void setRepeatMode( Tomahawk::PlaylistModes::RepeatMode mode ) { m_repeatMode = mode; emit repeatModeChanged( mode ); }

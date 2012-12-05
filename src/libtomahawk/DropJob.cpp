@@ -551,6 +551,8 @@ DropJob::handleXspfs( const QString& fileUrls )
 void
 DropJob::handleSpotifyUrls( const QString& urlsRaw )
 {
+    // Todo: Allow search querys, and split these in a better way.
+    // Example: spotify:search:artist:Madonna year:<1970 year:>1990
     QStringList urls = urlsRaw.split( QRegExp( "\\s+" ), QString::SkipEmptyParts );
     qDebug() << "Got spotify browse uris!" << urls;
 
@@ -850,6 +852,7 @@ DropJob::removeRemoteSources()
 QList< query_ptr >
 DropJob::getArtist( const QString &artist, Tomahawk::ModelMode mode )
 {
+    Q_UNUSED( mode );
     artist_ptr artistPtr = Artist::get( artist );
     if ( artistPtr->playlistInterface( Mixed )->tracks().isEmpty() )
     {

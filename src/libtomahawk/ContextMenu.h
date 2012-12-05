@@ -43,6 +43,9 @@ public:
        ActionLove =         16,
        ActionStopAfter =    32,
        ActionPage =         64,
+       ActionTrackPage =    65,
+       ActionArtistPage =   66,
+       ActionAlbumPage =    67,
        ActionEditMetadata = 128
     };
 
@@ -51,6 +54,8 @@ public:
 
     int supportedActions() const { return m_supportedActions; }
     void setSupportedActions( int actions ) { m_supportedActions = actions; }
+
+    void setPlaylistInterface( const Tomahawk::playlistinterface_ptr& plInterface );
 
     void setQuery( const Tomahawk::query_ptr& query );
     void setQueries( const QList<Tomahawk::query_ptr>& queries );
@@ -71,7 +76,7 @@ signals:
 private slots:
     void onTriggered( int action );
     void copyLink();
-    void openPage();
+    void openPage( MenuActions action );
     void addToQueue();
 
     void onSocialActionsLoaded();
@@ -82,9 +87,11 @@ private:
 
     QAction* m_loveAction;
 
-    QList<Tomahawk::query_ptr> m_queries;
-    QList<Tomahawk::artist_ptr> m_artists;
-    QList<Tomahawk::album_ptr> m_albums;
+    QList< Tomahawk::query_ptr > m_queries;
+    QList< Tomahawk::artist_ptr > m_artists;
+    QList< Tomahawk::album_ptr > m_albums;
+
+    Tomahawk::playlistinterface_ptr m_interface;
 };
 
 }; // ns

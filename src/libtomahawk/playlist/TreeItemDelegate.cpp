@@ -34,7 +34,6 @@
 
 #include "PlayableItem.h"
 #include "TreeProxyModel.h"
-#include "Source.h"
 #include "TreeView.h"
 
 
@@ -43,14 +42,6 @@ TreeItemDelegate::TreeItemDelegate( TreeView* parent, TreeProxyModel* proxy )
     , m_view( parent )
     , m_model( proxy )
 {
-}
-
-
-QSize
-TreeItemDelegate::sizeHint( const QStyleOptionViewItem& option, const QModelIndex& index ) const
-{
-    QSize size = QStyledItemDelegate::sizeHint( option, index );
-    return size;
 }
 
 
@@ -109,8 +100,7 @@ TreeItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, 
             if ( oldX > 0 )
                 o.rect.setX( oldX );
 
-            if ( m_view->hoveredIndex().row() == index.row() && m_view->hoveredIndex().column() == index.column() &&
-                 !index.data().toString().isEmpty() && index.column() == 0 )
+            if ( m_view->hoveredIndex() == index && !index.data().toString().isEmpty() && index.column() == 0 )
             {
                 o.rect.setWidth( o.rect.width() - 16 );
                 QRect arrowRect( o.rect.x() + o.rect.width(), o.rect.y() + 1, o.rect.height() - 2, o.rect.height() - 2 );

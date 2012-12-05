@@ -35,7 +35,6 @@ using namespace Tomahawk;
 ArtistPlaylistInterface::ArtistPlaylistInterface( Tomahawk::Artist* artist, Tomahawk::ModelMode mode, const Tomahawk::collection_ptr& collection )
     : Tomahawk::PlaylistInterface()
     , m_currentItem( 0 )
-    , m_currentTrack( 0 )
     , m_infoSystemLoaded( false )
     , m_databaseLoaded( false )
     , m_mode( mode )
@@ -51,36 +50,31 @@ ArtistPlaylistInterface::~ArtistPlaylistInterface()
 }
 
 
-Tomahawk::result_ptr
-ArtistPlaylistInterface::siblingItem( int itemsAway )
+void
+ArtistPlaylistInterface::setCurrentIndex( qint64 index )
 {
-    int p = m_currentTrack;
-    p += itemsAway;
+    PlaylistInterface::setCurrentIndex( index );
 
-    if ( p < 0 )
-        return Tomahawk::result_ptr();
-
-    if ( p >= m_queries.count() )
-        return Tomahawk::result_ptr();
-
-    if ( !m_queries.at( p )->numResults() )
-        return siblingItem( itemsAway + 1 );
-
-    m_currentTrack = p;
-    m_currentItem = m_queries.at( p )->results().first();
-    return m_currentItem;
+   m_currentItem = m_queries.at( index )->results().first();
 }
 
 
-bool
-ArtistPlaylistInterface::hasNextItem()
+qint64
+ArtistPlaylistInterface::siblingIndex( int itemsAway, qint64 rootIndex ) const
 {
-    int p = m_currentTrack;
-    p++;
-    if ( p < 0 || p >= m_queries.count() )
-        return false;
+    qint64 p = m_currentIndex;
+    if ( rootIndex >= 0 )
+        p = rootIndex;
 
-    return true;
+    p += itemsAway;
+
+    if ( p < 0 )
+        return -1;
+
+    if ( p >= m_queries.count() )
+        return -1;
+
+    return p;
 }
 
 
@@ -92,7 +86,7 @@ ArtistPlaylistInterface::currentItem() const
 
 
 QList<Tomahawk::query_ptr>
-ArtistPlaylistInterface::tracks()
+ArtistPlaylistInterface::tracks() const
 {
     if ( m_queries.isEmpty() && m_artist )
     {
@@ -168,6 +162,7 @@ ArtistPlaylistInterface::infoSystemInfo( Tomahawk::InfoSystem::InfoRequestData r
                 Pipeline::instance()->resolve( ql );
 
                 m_queries << ql;
+                checkQueries();
             }
 
             break;
@@ -229,6 +224,73 @@ ArtistPlaylistInterface::onTracksLoaded( const QList< query_ptr >& tracks )
     else
         m_queries << tracks;
 
+    checkQueries();
+
     m_finished = true;
     emit tracksLoaded( m_mode, m_collection );
+}
+
+
+qint64
+ArtistPlaylistInterface::indexOfResult( const Tomahawk::result_ptr& result ) const
+{
+    int i = 0;
+    foreach ( const Tomahawk::query_ptr& query, m_queries )
+    {
+        if ( query->numResults() && query->results().contains( result ) )
+            return i;
+
+        i++;
+    }
+
+    return -1;
+}
+
+
+qint64
+ArtistPlaylistInterface::indexOfQuery( const Tomahawk::query_ptr& query ) const
+{
+    int i = 0;
+    foreach ( const Tomahawk::query_ptr& q, m_queries )
+    {
+        if ( q->equals( query ) )
+            return i;
+
+        i++;
+    }
+
+    return -1;
+}
+
+
+query_ptr
+ArtistPlaylistInterface::queryAt( qint64 index ) const
+{
+    if ( index >= 0 && index < m_queries.count() )
+    {
+        return m_queries.at( index );
+    }
+
+    return Tomahawk::query_ptr();
+}
+
+
+result_ptr
+ArtistPlaylistInterface::resultAt( qint64 index ) const
+{
+    Tomahawk::query_ptr query = queryAt( index );
+    if ( query && query->numResults() )
+        return query->results().first();
+
+    return Tomahawk::result_ptr();
+}
+
+
+void
+ArtistPlaylistInterface::checkQueries()
+{
+    foreach ( const Tomahawk::query_ptr& query, m_queries )
+    {
+        connect( query.data(), SIGNAL( playableStateChanged( bool ) ), SLOT( onItemsChanged() ), Qt::UniqueConnection );
+    }
 }

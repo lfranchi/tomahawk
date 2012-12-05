@@ -20,21 +20,21 @@
 #ifndef AUDIOENGINE_H
 #define AUDIOENGINE_H
 
-#include <QtCore/QObject>
-#include <QtCore/QTimer>
-#include <QtCore/QQueue>
-
-#include <phonon/MediaObject>
-#include <phonon/AudioOutput>
-#include <phonon/BackendCapabilities>
-
-#include "libtomahawk/infosystem/InfoSystem.h"
-
+#include "infosystem/InfoSystem.h"
 #include "Typedefs.h"
 #include "Result.h"
 #include "PlaylistInterface.h"
 
 #include "DllMacro.h"
+
+#include <phonon/MediaObject>
+#include <phonon/AudioOutput>
+#include <phonon/BackendCapabilities>
+
+#include <QtCore/QObject>
+#include <QtCore/QTimer>
+#include <QtCore/QQueue>
+
 
 class DLLEXPORT AudioEngine : public QObject
 {
@@ -64,7 +64,6 @@ public:
     Tomahawk::playlistinterface_ptr playlist() const { return m_playlist; }
 
     Tomahawk::result_ptr currentTrack() const { return m_currentTrack; }
-
     Tomahawk::query_ptr stopAfterTrack() const  { return m_stopAfterTrack; }
 
     qint64 currentTime() const { return m_mediaObject->currentTime(); }
@@ -95,7 +94,7 @@ public slots:
     void playItem( const Tomahawk::artist_ptr& artist );
     void playItem( const Tomahawk::album_ptr& album );
     void setPlaylist( Tomahawk::playlistinterface_ptr playlist );
-    void setQueue( Tomahawk::playlistinterface_ptr queue ) { m_queue = queue; }
+    void setQueue( const Tomahawk::playlistinterface_ptr& queue );
 
     void setStopAfterTrack( const Tomahawk::query_ptr& query );
 
@@ -111,6 +110,7 @@ signals:
 
     void seeked( qint64 ms );
 
+    void controlStateChanged();
     void stateChanged( AudioState newState, AudioState oldState );
     void volumeChanged( int volume /* in percent */ );
 
@@ -134,7 +134,7 @@ private slots:
 
     void setCurrentTrack( const Tomahawk::result_ptr& result );
     void onNowPlayingInfoReady( const Tomahawk::InfoSystem::InfoType type );
-    void onPlaylistNextTrackReady();
+    void onPlaylistNextTrackAvailable();
 
     void sendNowPlayingNotification( const Tomahawk::InfoSystem::InfoType type );
     void sendWaitingNotification() const;

@@ -104,19 +104,13 @@ SET( tomahawkUI ${tomahawkUI}
 INCLUDE_DIRECTORIES(
     .
     ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/libtomahawk
 
-    audio
-    database
-    playlist
-    network
     sourcetree
-    topbar
     libtomahawk
     mac
 
     ${THIRDPARTY_DIR}/qxt/qxtweb-standalone/qxtweb
-    ${THIRDPARTY_DIR}/qtweetlib/qtweetlib/src
-    ${THIRDPARTY_DIR}/qtweetlib/tomahawk-custom
     ${THIRDPARTY_DIR}/breakpad
 
     ${TAGLIB_INCLUDES}
@@ -125,7 +119,6 @@ INCLUDE_DIRECTORIES(
     ${LIBATTICA_INCLUDE_DIR}
     ${ECHONEST_INCLUDE_DIR}
     ${LIBLASTFM_INCLUDE_DIRS}
-    ${LIBLASTFM_INCLUDE_DIRS}/..
 )
 
 SET( OS_SPECIFIC_LINK_LIBRARIES "" )
@@ -153,10 +146,12 @@ IF(QCA2_FOUND)
 ENDIF(QCA2_FOUND)
 
 INCLUDE(GNUInstallDirs)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.h.in
-               ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TomahawkVersion.h.in
-               ${CMAKE_CURRENT_BINARY_DIR}/TomahawkVersion.h)
+
+# currently only in libtomahawk, we might want to properly split what's in which config file
+# configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.h.in
+#                ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+# configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TomahawkVersion.h.in
+#                ${CMAKE_CURRENT_BINARY_DIR}/TomahawkVersion.h)
 
 # translations
 include( ${CMAKE_SOURCE_DIR}/lang/translations.cmake )

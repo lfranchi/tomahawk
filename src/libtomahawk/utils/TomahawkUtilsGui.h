@@ -48,7 +48,7 @@ namespace TomahawkUtils
 
     DLLEXPORT void openUrl( const QUrl& url );
 
-    DLLEXPORT QPixmap createAvatarFrame( const QPixmap &avatar );
+    DLLEXPORT QPixmap createRoundedImage( const QPixmap& avatar, const QSize& size, float frameWidthPct = 0.20 );
 
     DLLEXPORT QColor alphaBlend( const QColor& colorFrom, const QColor& colorTo, float opacity );
     DLLEXPORT QPixmap createDragPixmap( MediaType type, int itemCount = 1 );
@@ -58,9 +58,10 @@ namespace TomahawkUtils
 
     DLLEXPORT void unmarginLayout( QLayout* layout );
 
+    DLLEXPORT void setDefaultFontSize( int points );
     DLLEXPORT int defaultFontSize();
     DLLEXPORT int defaultFontHeight();
-    DLLEXPORT void setDefaultFontSize( int points );
+    DLLEXPORT QSize defaultIconSize();
 
     DLLEXPORT QPixmap defaultPixmap( ImageType type, ImageMode mode = TomahawkUtils::Original, const QSize& size = QSize( 0, 0 ) );
 
@@ -73,6 +74,8 @@ namespace TomahawkUtils
     DLLEXPORT QPixmap createTiledPixmap( int width, int height, const QImage& src );
 
     DLLEXPORT QPixmap addDropShadow( const QPixmap& sourceImage, const QSize& targetSize );
+
+    DLLEXPORT void drawCompositedPopup( QWidget* widget, const QPainterPath& outline, const QColor& lineColor, const QBrush& backgroundBrush, qreal opacity );
 
     namespace Colors
     {

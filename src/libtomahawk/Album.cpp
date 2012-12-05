@@ -52,7 +52,7 @@ Album::~Album()
 inline QString
 albumCacheKey( const Tomahawk::artist_ptr& artist, const QString& albumName )
 {
-    return QString( "%1\t\t%2" ).arg( artist->name() ).arg( albumName );
+    return QString( "%1\t\t%2" ).arg( artist->name().toLower() ).arg( albumName.toLower() );
 }
 
 
@@ -67,15 +67,13 @@ Album::get( const Tomahawk::artist_ptr& artist, const QString& name, bool autoCr
     const QString key = albumCacheKey( artist, name );
     if ( s_albumsByName.contains( key ) )
     {
-        return s_albumsByName[ key ];
+        return s_albumsByName.value( key );
     }
 
-//     qDebug() << "LOOKING UP ALBUM:" << artist->name() << name;
-    album_ptr album = album_ptr( new  Album( name, artist ) );
+    album_ptr album = album_ptr( new Album( name, artist ) );
     album->setWeakRef( album.toWeakRef() );
     album->loadId( autoCreate );
-
-    s_albumsByName[ key ] = album;
+    s_albumsByName.insert( key, album );
 
     return album;
 }
@@ -88,6 +86,12 @@ Album::get( unsigned int id, const QString& name, const Tomahawk::artist_ptr& ar
     static QMutex s_mutex;
 
     QMutexLocker lock( &s_idCacheMutex );
+
+    const QString key = albumCacheKey( artist, name );
+    if ( s_albumsByName.contains( key ) )
+    {
+        return s_albumsByName.value( key );
+    }
     if ( s_albumsById.contains( id ) )
     {
         return s_albumsById.value( id );
@@ -95,9 +99,12 @@ Album::get( unsigned int id, const QString& name, const Tomahawk::artist_ptr& ar
 
     album_ptr a = album_ptr( new Album( id, name, artist ), &QObject::deleteLater );
     a->setWeakRef( a.toWeakRef() );
+    s_albumsByName.insert( key, a );
 
     if ( id > 0 )
+    {
         s_albumsById.insert( id, a );
+    }
 
     return a;
 }
@@ -180,8 +187,8 @@ Album::id() const
 
         if ( m_id > 0 )
             s_albumsById[ m_id ] = m_ownRef.toStrongRef();
-        s_idMutex.unlock();
 
+        s_idMutex.unlock();
     }
 
     return finalId;

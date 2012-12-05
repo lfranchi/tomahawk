@@ -82,7 +82,7 @@ PlaybackLog::PlaybackLog( const PlaybackLog& other )
 query_ptr
 Query::get( const QString& artist, const QString& track, const QString& album, const QID& qid, bool autoResolve )
 {
-    if (  artist.trimmed().isEmpty() || track.trimmed().isEmpty() )
+    if ( artist.trimmed().isEmpty() || track.trimmed().isEmpty() )
         return query_ptr();
 
     if ( qid.isEmpty() )
@@ -494,9 +494,19 @@ QString
 Query::toString() const
 {
     if ( !isFullTextQuery() )
-        return QString( "Query(%1, %2 - %3)" ).arg( id() ).arg( artist() ).arg( track() );
+    {
+        return QString( "Query(%1, %2 - %3%4)" )
+                  .arg( id() )
+                  .arg( artist() )
+                  .arg( track() )
+                  .arg( album().isEmpty() ? "" : QString( " on %1" ).arg( album() ) );
+    }
     else
-        return QString( "Query(%1, Fulltext: %2)" ).arg( id() ).arg( fullTextQuery() );
+    {
+        return QString( "Query(%1, Fulltext: %2)" )
+                  .arg( id() )
+                  .arg( fullTextQuery() );
+    }
 }
 
 

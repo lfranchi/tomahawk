@@ -132,14 +132,21 @@ Source::friendlyName() const
 void
 Source::setAvatar( const QPixmap& avatar )
 {
-    delete m_avatar;
-    m_avatar = new QPixmap( avatar );
-    m_fancyAvatar = 0;
-
     QByteArray ba;
     QBuffer buffer( &ba );
     buffer.open( QIODevice::WriteOnly );
     avatar.save( &buffer, "PNG" );
+
+    // Check if the avatar is different by comparing a hash of the first 4096 bytes
+    const QByteArray hash = QCryptographicHash::hash( ba.left( 4096 ), QCryptographicHash::Sha1 );
+    if ( m_avatarHash == hash )
+        return;
+    else
+        m_avatarHash = hash;
+
+    delete m_avatar;
+    m_avatar = new QPixmap( avatar );
+    m_fancyAvatar = 0;
 
     TomahawkUtils::Cache::instance()->putData( "Sources", 7776000000 /* 90 days */, m_username, ba );
     m_avatarUpdated = true;
@@ -147,7 +154,7 @@ Source::setAvatar( const QPixmap& avatar )
 
 
 QPixmap
-Source::avatar( AvatarStyle style, const QSize& size )
+Source::avatar( TomahawkUtils::ImageMode style, const QSize& size )
 {
     if ( !m_avatar && m_avatarUpdated )
     {
@@ -156,6 +163,7 @@ Source::avatar( AvatarStyle style, const QSize& size )
 
         if ( ba.count() )
             m_avatar->loadFromData( ba );
+
         if ( m_avatar->isNull() )
         {
             delete m_avatar;
@@ -164,25 +172,33 @@ Source::avatar( AvatarStyle style, const QSize& size )
         m_avatarUpdated = false;
     }
 
-    if ( style == FancyStyle && m_avatar && !m_fancyAvatar )
-        m_fancyAvatar = new QPixmap( TomahawkUtils::createAvatarFrame( QPixmap( *m_avatar ) ) );
+    if ( style == TomahawkUtils::RoundedCorners && m_avatar && !m_avatar->isNull() && !m_fancyAvatar )
+        m_fancyAvatar = new QPixmap( TomahawkUtils::createRoundedImage( QPixmap( *m_avatar ), QSize( 0, 0 ) ) );
 
     QPixmap pixmap;
-    if ( style == Original && m_avatar )
-        pixmap = *m_avatar;
-    else if ( style == FancyStyle && m_fancyAvatar )
+    if ( style == TomahawkUtils::RoundedCorners && m_fancyAvatar )
+    {
         pixmap = *m_fancyAvatar;
+    }
+    else if ( m_avatar )
+    {
+        pixmap = *m_avatar;
+    }
 
     if ( !pixmap.isNull() && !size.isEmpty() )
     {
-        if ( m_coverCache.contains( size.width() ) )
+        if ( m_coverCache[ style ].contains( size.width() ) )
         {
-            return m_coverCache.value( size.width() );
+            return m_coverCache[ style ].value( size.width() );
         }
 
         QPixmap scaledCover;
         scaledCover = pixmap.scaled( size, Qt::KeepAspectRatio, Qt::SmoothTransformation );
-        m_coverCache.insert( size.width(), scaledCover );
+
+        QHash< int, QPixmap > innerCache = m_coverCache[ style ];
+        innerCache.insert( size.width(), scaledCover );
+        m_coverCache[ style ] = innerCache;
+
         return scaledCover;
     }
 
@@ -290,7 +306,7 @@ Source::scanningProgress( unsigned int files )
 
 
 void
-Source::scanningFinished()
+Source::scanningFinished( bool updateGUI )
 {
     m_textStatus = QString();
 
@@ -301,7 +317,9 @@ Source::scanningFinished()
     }
 
     emit stateChanged();
-    emit synced();
+
+    if ( updateGUI )
+        emit synced();
 }
 
 

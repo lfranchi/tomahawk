@@ -31,7 +31,7 @@
 
 #include "database/DatabaseCommand_UpdateSearchIndex.h"
 #include "database/Database.h"
-#include "PlaylistUpdaterInterface.h"
+#include "playlist/PlaylistUpdaterInterface.h"
 
 using namespace Tomahawk;
 
@@ -727,6 +727,20 @@ TomahawkSettings::setCrashReporterEnabled( bool enable )
 }
 
 
+bool
+TomahawkSettings::songChangeNotificationEnabled() const
+{
+    return value( "ui/songChangeNotification", true ).toBool();
+}
+
+
+void
+TomahawkSettings::setSongChangeNotificationEnabled(bool enable)
+{
+    setValue( "ui/songChangeNotification", enable );
+}
+
+
 unsigned int
 TomahawkSettings::volume() const
 {
@@ -972,6 +986,9 @@ TomahawkSettings::playlistColumnSizes( const QString& playlistid ) const
 void
 TomahawkSettings::setPlaylistColumnSizes( const QString& playlistid, const QByteArray& state )
 {
+    if ( playlistid.isEmpty() )
+        return;
+
     setValue( QString( "ui/playlist/%1/columnSizes" ).arg( playlistid ), state );
 }
 
@@ -979,7 +996,7 @@ TomahawkSettings::setPlaylistColumnSizes( const QString& playlistid, const QByte
 bool
 TomahawkSettings::shuffleState( const QString& playlistid ) const
 {
-    return value( QString( "ui/playlist/%1/shuffleState" ).arg( playlistid )).toBool();
+    return value( QString( "ui/playlist/%1/shuffleState" ).arg( playlistid ) ).toBool();
 }
 
 
@@ -1008,7 +1025,7 @@ TomahawkSettings::setRepeatMode( const QString& playlistid, Tomahawk::PlaylistMo
 Tomahawk::PlaylistModes::RepeatMode
 TomahawkSettings::repeatMode( const QString& playlistid )
 {
-    return (PlaylistModes::RepeatMode)value( QString( "ui/playlist/%1/repeatMode" ).arg( playlistid )).toInt();
+    return (PlaylistModes::RepeatMode)value( QString( "ui/playlist/%1/repeatMode" ).arg( playlistid ) ).toInt();
 }
 
 

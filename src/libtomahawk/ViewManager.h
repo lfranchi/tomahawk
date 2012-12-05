@@ -147,6 +147,7 @@ public slots:
     void historyBack();
     void historyForward();
 
+    QList< Tomahawk::ViewPage* > allPages() const;
     QList< Tomahawk::ViewPage* > historyPages() const;
     void destroyPage( Tomahawk::ViewPage* page );
 
@@ -174,8 +175,6 @@ private:
     void setPage( Tomahawk::ViewPage* page, bool trackHistory = true );
     void updateView();
     void unlinkPlaylist();
-    void saveCurrentPlaylistSettings();
-    void loadCurrentPlaylistSettings();
 
     Tomahawk::playlist_ptr playlistForInterface( Tomahawk::playlistinterface_ptr plInterface ) const;
     Tomahawk::dynplaylist_ptr dynamicPlaylistForInterface( Tomahawk::playlistinterface_ptr plInterface ) const;

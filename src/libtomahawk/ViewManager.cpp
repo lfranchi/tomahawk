@@ -20,28 +20,25 @@
 
 #include "ViewManager.h"
 
-#include <QVBoxLayout>
-#include <QMetaMethod>
-
 #include "audio/AudioEngine.h"
 #include "context/ContextWidget.h"
 #include "infobar/InfoBar.h"
 
-#include "FlexibleView.h"
-#include "TreeModel.h"
-#include "PlaylistModel.h"
-#include "PlaylistView.h"
-#include "PlayableProxyModel.h"
-#include "PlayableModel.h"
-#include "TreeView.h"
-#include "GridView.h"
-#include "AlbumModel.h"
+#include "playlist/FlexibleView.h"
+#include "playlist/TreeModel.h"
+#include "playlist/PlaylistModel.h"
+#include "playlist/PlaylistView.h"
+#include "playlist/PlayableProxyModel.h"
+#include "playlist/PlayableModel.h"
+#include "playlist/TreeView.h"
+#include "playlist/GridView.h"
+#include "playlist/AlbumModel.h"
 #include "SourceList.h"
 #include "TomahawkSettings.h"
 
-#include "PlaylistLargeItemDelegate.h"
-#include "RecentlyPlayedModel.h"
-#include "dynamic/widgets/DynamicWidget.h"
+#include "playlist/PlaylistLargeItemDelegate.h"
+#include "playlist/RecentlyPlayedModel.h"
+#include "playlist/dynamic/widgets/DynamicWidget.h"
 
 #include "widgets/NewReleasesWidget.h"
 #include "widgets/WelcomeWidget.h"
@@ -54,6 +51,10 @@
 #include "widgets/AnimatedSplitter.h"
 
 #include "utils/Logger.h"
+
+#include <QVBoxLayout>
+#include <QMetaMethod>
+
 
 #define FILTER_TIMEOUT 280
 
@@ -120,7 +121,6 @@ ViewManager::ViewManager( QObject* parent )
 
 ViewManager::~ViewManager()
 {
-    saveCurrentPlaylistSettings();
     delete m_whatsHotWidget;
     delete m_newReleasesWidget;
     delete m_welcomeWidget;
@@ -139,11 +139,13 @@ ViewManager::createPageForPlaylist( const playlist_ptr& playlist )
     PlaylistView* pv = new PlaylistView();
     view->setDetailedView( pv );
     view->setPixmap( pv->pixmap() );
+    view->setEmptyTip( tr( "This playlist is empty!" ) );
 
-    model->loadPlaylist( playlist );
-    view->setPlayableModel( model );
+    // We need to set the model on the view before loading the playlist, so spinners & co are connected
+    view->setPlaylistModel( model );
     pv->setPlaylistModel( model );
 
+    model->loadPlaylist( playlist );
     playlist->resolve();
 
     return view;
@@ -473,6 +475,16 @@ ViewManager::historyForward()
 
 
 QList<ViewPage*>
+ViewManager::allPages() const
+{
+    QList< ViewPage* > pages = m_pageHistoryBack + m_pageHistoryFwd;
+    pages << m_currentPage;
+
+    return pages;
+}
+
+
+QList<ViewPage*>
 ViewManager::historyPages() const
 {
     return m_pageHistoryBack + m_pageHistoryFwd;
@@ -493,8 +505,6 @@ ViewManager::destroyPage( ViewPage* page )
 
         emit historyBackAvailable( m_pageHistoryBack.count() );
         emit historyForwardAvailable( m_pageHistoryFwd.count() );
-
-        delete page;
     }
 
     if ( m_currentPage == page )
@@ -514,8 +524,6 @@ ViewManager::setPage( ViewPage* page, bool trackHistory )
     if ( page == m_currentPage )
         return;
 
-    // save the old playlist shuffle state in config before we change playlists
-    saveCurrentPlaylistSettings();
     unlinkPlaylist();
 
     if ( m_stack->indexOf( page->widget() ) < 0 )
@@ -596,29 +604,6 @@ ViewManager::unlinkPlaylist()
 
 
 void
-ViewManager::saveCurrentPlaylistSettings()
-{
-    TomahawkSettings* s = TomahawkSettings::instance();
-    Tomahawk::playlist_ptr pl = playlistForInterface( currentPlaylistInterface() );
-
-    if ( !pl.isNull() )
-    {
-        s->setShuffleState( pl->guid(), currentPlaylistInterface()->shuffled() );
-        s->setRepeatMode( pl->guid(), currentPlaylistInterface()->repeatMode() );
-    }
-    else
-    {
-        Tomahawk::dynplaylist_ptr dynPl = dynamicPlaylistForInterface( currentPlaylistInterface() );
-        if ( !dynPl.isNull() )
-        {
-            s->setShuffleState( dynPl->guid(), currentPlaylistInterface()->shuffled() );
-            s->setRepeatMode( dynPl->guid(), currentPlaylistInterface()->repeatMode() );
-        }
-    }
-}
-
-
-void
 ViewManager::updateView()
 {
     if ( currentPlaylistInterface() )
@@ -661,31 +646,6 @@ ViewManager::updateView()
     }
     m_infobar->setLongDescription( currentPage()->longDescription() );
     m_infobar->setPixmap( currentPage()->pixmap() );
-
-    // turn on shuffle/repeat mode for the new playlist view if specified in config
-    loadCurrentPlaylistSettings();
-}
-
-
-void
-ViewManager::loadCurrentPlaylistSettings()
-{
-    TomahawkSettings* s = TomahawkSettings::instance();
-    Tomahawk::playlist_ptr pl = playlistForInterface( currentPlaylistInterface() );
-
-    if ( !pl.isNull() )
-    {
-        currentPlaylistInterface()->setShuffled( s->shuffleState( pl->guid() ));
-        currentPlaylistInterface()->setRepeatMode( s->repeatMode( pl->guid() ));
-    }
-    else
-    {
-        Tomahawk::dynplaylist_ptr dynPl = dynamicPlaylistForInterface( currentPlaylistInterface() );
-        if ( !dynPl.isNull() )
-        {
-            currentPlaylistInterface()->setShuffled( s->shuffleState( dynPl->guid() ));
-        }
-    }
 }
 
 
@@ -787,7 +747,7 @@ ViewManager::pageForPlaylist(const playlist_ptr& pl) const
 ViewPage*
 ViewManager::pageForInterface( Tomahawk::playlistinterface_ptr interface ) const
 {
-    QList< Tomahawk::ViewPage* > pages = historyPages();
+    QList< Tomahawk::ViewPage* > pages = allPages();
 
     for ( int i = 0; i < pages.count(); i++ )
     {

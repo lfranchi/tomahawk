@@ -138,7 +138,7 @@ GridItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, 
     qreal opacity = -1.;
     if ( m_hoverFaders.contains( index ) )
     {
-        const qreal pct = ( m_hoverFaders[ index ]->currentFrame() / 100. );
+        const qreal pct = ( m_hoverFaders[ index ]->currentFrame() / 100.0 );
         opacity = 0.35 - pct * 0.35;
     }
     else if ( m_hoverIndex == index )
@@ -146,28 +146,18 @@ GridItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, 
         opacity = 0.35;
     }
 
-    if ( opacity > -1. )
+    if ( opacity > -1.0 )
     {
         painter->save();
 
-        painter->setPen( QColor( 33, 33, 33 ) );
-        painter->setBrush( QColor( 33, 33, 33 ) );
+        painter->setPen( QColor( "dddddd" ) );
+        painter->setBrush( QColor( "#dddddd" ) );
         painter->setOpacity( opacity );
         painter->drawRect( r );
 
         painter->restore();
     }
 
-    painter->save();
-
-    painter->setPen( Qt::black );
-    painter->setBrush( Qt::black );
-    painter->setOpacity( 0.5 );
-    painter->drawRoundedRect( r.adjusted( 4, +r.height() - 36, -4, -4 ), 3, 3 );
-
-    painter->restore();
-
-    painter->setPen( opt.palette.color( QPalette::HighlightedText ) );
     QTextOption to;
     to.setWrapMode( QTextOption::NoWrap );
 
@@ -178,18 +168,38 @@ GridItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, 
     boldFont.setBold( true );
     boldFont.setPointSize( TomahawkUtils::defaultFontSize() + 1 );
 
-    QRect textRect = option.rect.adjusted( 6, option.rect.height() - 36, -4, -6 );
-    painter->setFont( font );
-    int bottomHeight = painter->fontMetrics().boundingRect( bottom ).height();
-    painter->setFont( boldFont );
-    int topHeight = painter->fontMetrics().boundingRect( top ).height();
+    int bottomHeight = QFontMetrics( font ).boundingRect( bottom ).height();
+    int topHeight = QFontMetrics( boldFont ).boundingRect( top ).height();
+    int frameHeight = bottomHeight + topHeight + 10;
 
+    QColor c1;
+    c1.setRgb( 0, 0, 0 );
+    c1.setAlphaF( 0.00 );
+    QColor c2;
+    c2.setRgb( 0, 0, 0 );
+    c2.setAlphaF( 0.88 );
+
+    QRect gradientRect = r.adjusted( 0, r.height() - frameHeight * 2, 0, 0 );
+    QLinearGradient gradient( QPointF( 0, 0 ), QPointF( 0, 1 ) );
+    gradient.setCoordinateMode( QGradient::ObjectBoundingMode );
+    gradient.setColorAt( 0.0, c1 );
+    gradient.setColorAt( 0.6, c2 );
+    gradient.setColorAt( 1.0, c2 );
+
+    painter->save();
+    painter->setPen( Qt::transparent );
+    painter->setBrush( gradient );
+    painter->drawRect( gradientRect );
+    painter->restore();
+
+    painter->setPen( opt.palette.color( QPalette::HighlightedText ) );
+
+    QRect textRect = option.rect.adjusted( 6, option.rect.height() - frameHeight, -4, -6 );
     bool oneLiner = false;
     if ( bottom.isEmpty() )
         oneLiner = true;
-    else
-        oneLiner = ( textRect.height() < topHeight + bottomHeight );
 
+    painter->setFont( boldFont );
     if ( oneLiner )
     {
         to.setAlignment( Qt::AlignHCenter | Qt::AlignVCenter );
@@ -310,8 +320,8 @@ GridItemDelegate::editorEvent( QEvent* event, QAbstractItemModel* model, const Q
             m_playButton.clear();
 
             ImageButton* button = new ImageButton( m_view );
-            button->setPixmap( RESPATH "images/play-rest.png" );
-            button->setPixmap( RESPATH "images/play-pressed.png", QIcon::Off, QIcon::Active );
+            button->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::PlayButton, TomahawkUtils::Original, QSize( 48, 48 ) ) );
+            button->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::PlayButtonPressed, TomahawkUtils::Original, QSize( 48, 48 ) ), QIcon::Off, QIcon::Active );
             button->setFixedSize( 48, 48 );
             button->move( option.rect.center() - QPoint( 23, 23 ) );
             button->setContentsMargins( 0, 0, 0, 0 );
@@ -524,8 +534,8 @@ GridItemDelegate::onPlaybackStarted( const QPersistentModelIndex& index )
     m_spinner.clear();
 
     ImageButton* button = new ImageButton( m_view );
-    button->setPixmap( RESPATH "images/pause-rest.png" );
-    button->setPixmap( RESPATH "images/pause-pressed.png", QIcon::Off, QIcon::Active );
+    button->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::PauseButton, TomahawkUtils::Original, QSize( 48, 48 ) ) );
+    button->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::PauseButtonPressed, TomahawkUtils::Original, QSize( 48, 48 ) ), QIcon::Off, QIcon::Active );
     button->setFixedSize( 48, 48 );
     button->move( pos );
     button->setContentsMargins( 0, 0, 0, 0 );

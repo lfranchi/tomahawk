@@ -31,7 +31,8 @@
 
 using namespace Tomahawk;
 
-TreeProxyModelPlaylistInterface::TreeProxyModelPlaylistInterface( TreeProxyModel *proxyModel )
+
+TreeProxyModelPlaylistInterface::TreeProxyModelPlaylistInterface( TreeProxyModel* proxyModel )
     : PlaylistInterface()
     , m_proxyModel( proxyModel )
     , m_repeatMode( PlaylistModes::NoRepeat )
@@ -66,30 +67,46 @@ TreeProxyModelPlaylistInterface::trackCount() const
 }
 
 
-bool
-TreeProxyModelPlaylistInterface::hasNextItem()
+void
+TreeProxyModelPlaylistInterface::setCurrentIndex( qint64 index )
 {
-    return !( siblingItem( 1, true ).isNull() );
+    PlaylistInterface::setCurrentIndex( index );
+
+    PlayableItem* item = static_cast<PlayableItem*>( (void*)index );
+    if ( index < 0 || !item )
+    {
+        m_proxyModel.data()->setCurrentIndex( QModelIndex() );
+    }
+    else
+    {
+        m_proxyModel.data()->setCurrentIndex( m_proxyModel.data()->mapFromSource( item->index ) );
+    }
 }
 
 
-Tomahawk::result_ptr
-TreeProxyModelPlaylistInterface::siblingItem( int itemsAway )
-{
-    return siblingItem( itemsAway, false );
-}
-
-
-Tomahawk::result_ptr
-TreeProxyModelPlaylistInterface::siblingItem( int itemsAway, bool readOnly )
+qint64
+TreeProxyModelPlaylistInterface::siblingIndex( int itemsAway, qint64 rootIndex ) const
 {
     if ( m_proxyModel.isNull() )
-        return Tomahawk::result_ptr();
-    TreeProxyModel* proxyModel = m_proxyModel.data();
+        return -1;
 
-    QModelIndex idx = proxyModel->currentIndex();
+    TreeProxyModel* proxyModel = m_proxyModel.data();
+    QModelIndex idx;
+
+    if ( rootIndex == -1 )
+    {
+        idx = proxyModel->currentIndex();
+    }
+    else
+    {
+        PlayableItem* pitem = static_cast<PlayableItem*>( (void*)rootIndex );
+        if ( !pitem )
+            return -1;
+
+        idx = proxyModel->mapFromSource( pitem->index );
+    }
     if ( !idx.isValid() )
-        return Tomahawk::result_ptr();
+        return -1;
 
     if ( m_shuffled )
     {
@@ -119,20 +136,15 @@ TreeProxyModelPlaylistInterface::siblingItem( int itemsAway, bool readOnly )
     while ( idx.isValid() )
     {
         PlayableItem* item = proxyModel->itemFromIndex( proxyModel->mapToSource( idx ) );
-        if ( item && !item->result().isNull() && item->result()->isOnline() )
+        if ( item )
         {
-            qDebug() << "Next PlaylistItem found:" << item->result()->url();
-            if ( !readOnly )
-                proxyModel->setCurrentIndex( idx );
-            return item->result();
+            return (qint64)( item->index.internalPointer() );
         }
 
         idx = proxyModel->index( idx.row() + ( itemsAway > 0 ? 1 : -1 ), 0, idx.parent() );
     }
 
-    if ( !readOnly )
-        proxyModel->setCurrentIndex( QModelIndex() );
-    return Tomahawk::result_ptr();
+    return -1;
 }
 
 
@@ -146,5 +158,77 @@ TreeProxyModelPlaylistInterface::currentItem() const
     PlayableItem* item = proxyModel->itemFromIndex( proxyModel->mapToSource( proxyModel->currentIndex() ) );
     if ( item && !item->result().isNull() && item->result()->isOnline() )
         return item->result();
+
     return Tomahawk::result_ptr();
+}
+
+
+QList< Tomahawk::query_ptr >
+TreeProxyModelPlaylistInterface::tracks() const
+{
+    Q_ASSERT( false );
+    QList< Tomahawk::query_ptr > queries;
+    return queries;
+}
+
+
+qint64
+TreeProxyModelPlaylistInterface::indexOfResult( const result_ptr& result ) const
+{
+    if ( m_proxyModel.isNull() )
+        return -1;
+
+    PlayableItem* item = m_proxyModel.data()->itemFromResult( result );
+    if ( item )
+    {
+        return (qint64)( item->index.internalPointer() );
+    }
+
+    return -1;
+}
+
+
+qint64
+TreeProxyModelPlaylistInterface::indexOfQuery( const query_ptr& query ) const
+{
+    if ( m_proxyModel.isNull() )
+        return -1;
+
+    PlayableItem* item = m_proxyModel.data()->itemFromQuery( query );
+    if ( item )
+    {
+        return (qint64)( item->index.internalPointer() );
+    }
+
+    return -1;
+}
+
+
+Tomahawk::query_ptr
+TreeProxyModelPlaylistInterface::queryAt( qint64 index ) const
+{
+    if ( m_proxyModel.isNull() )
+        return query_ptr();
+
+    PlayableItem* item = static_cast<PlayableItem*>( (void*)index );
+    if ( item && item->query() )
+        return item->query();
+    if ( item && item->result() )
+        return item->result()->toQuery();
+
+    return query_ptr();
+}
+
+
+Tomahawk::result_ptr
+TreeProxyModelPlaylistInterface::resultAt( qint64 index ) const
+{
+    if ( m_proxyModel.isNull() )
+        return result_ptr();
+
+    PlayableItem* item = static_cast<PlayableItem*>( (void*)index );
+    if ( item && item->result() )
+        return item->result();
+
+    return result_ptr();
 }

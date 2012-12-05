@@ -41,14 +41,23 @@ public:
     query_ptr track() const { return m_track; }
     void setQuery( const query_ptr& track ) { m_track = track; }
 
+    virtual void setCurrentIndex( qint64 index ) { Q_UNUSED( index ); }
     virtual result_ptr currentItem() const { return result_ptr(); }
+
+    virtual Tomahawk::result_ptr resultAt( qint64 index ) const { Q_UNUSED( index ); Q_ASSERT( false ); return Tomahawk::result_ptr(); }
+    virtual Tomahawk::query_ptr queryAt( qint64 index ) const { Q_UNUSED( index ); Q_ASSERT( false ); return Tomahawk::query_ptr(); }
+    virtual qint64 indexOfResult( const Tomahawk::result_ptr& result ) const { Q_UNUSED( result ); Q_ASSERT( false ); return -1; }
+    virtual qint64 indexOfQuery( const Tomahawk::query_ptr& query ) const { Q_UNUSED( query ); Q_ASSERT( false ); return -1; }
+
     virtual PlaylistModes::RepeatMode repeatMode() const { return PlaylistModes::NoRepeat; }
     virtual void setRepeatMode( PlaylistModes::RepeatMode ) {}
-    virtual void setShuffled( bool ) {}
+
     virtual bool shuffled() const { return false; }
-    virtual result_ptr siblingItem( int itemsAway ) { return result_ptr(); }
+    virtual void setShuffled( bool ) {}
+
+    virtual qint64 siblingIndex( int, qint64 rootIndex = -1 ) const { Q_UNUSED( rootIndex ); return -1; }
     virtual int trackCount() const { return 1; }
-    virtual QList< query_ptr > tracks() { return QList< query_ptr >(); }
+    virtual QList< query_ptr > tracks() const { return QList< query_ptr >(); }
 
 private:
     query_ptr m_track;

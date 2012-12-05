@@ -66,12 +66,12 @@ ArtistInfoWidget::ArtistInfoWidget( const Tomahawk::artist_ptr& artist, QWidget*
 
     m_albumsModel = new PlayableModel( ui->albums );
     ui->albums->setPlayableModel( m_albumsModel );
-    ui->topHits->setEmptyTip( tr( "Sorry, we could not find any albums for this artist!" ) );
+    ui->albums->setEmptyTip( tr( "Sorry, we could not find any albums for this artist!" ) );
 
     m_relatedModel = new PlayableModel( ui->relatedArtists );
     ui->relatedArtists->setPlayableModel( m_relatedModel );
     ui->relatedArtists->proxyModel()->sort( -1 );
-    ui->topHits->setEmptyTip( tr( "Sorry, we could not find any related artists!" ) );
+    ui->relatedArtists->setEmptyTip( tr( "Sorry, we could not find any related artists!" ) );
 
     m_topHitsModel = new PlaylistModel( ui->topHits );
     ui->topHits->proxyModel()->setStyle( PlayableProxyModel::Short );
@@ -159,6 +159,7 @@ ArtistInfoWidget::ArtistInfoWidget( const Tomahawk::artist_ptr& artist, QWidget*
 
 ArtistInfoWidget::~ArtistInfoWidget()
 {
+    tDebug() << Q_FUNC_INFO;
     delete ui;
 }
 
@@ -240,6 +241,7 @@ ArtistInfoWidget::load( const artist_ptr& artist )
                                 SLOT( onTracksFound( QList<Tomahawk::query_ptr>, Tomahawk::ModelMode ) ) );
 
     ui->artistLabel->setText( artist->name() );
+    ui->cover->setArtist( artist );
 
     m_topHitsModel->startLoading();
 
@@ -304,7 +306,7 @@ ArtistInfoWidget::onArtistImageUpdated()
     m_pixmap = m_artist->cover( QSize( 0, 0 ) );
     emit pixmapChanged( m_pixmap );
 
-    ui->cover->setPixmap( m_artist->cover( ui->cover->sizeHint() ) );
+    ui->cover->setPixmap( TomahawkUtils::createRoundedImage( m_artist->cover( ui->cover->sizeHint() ), QSize( 0, 0 ) ) );
 }
 
 

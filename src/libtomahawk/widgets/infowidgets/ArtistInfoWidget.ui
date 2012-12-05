@@ -266,8 +266,17 @@
        <property name="leftMargin">
         <number>16</number>
        </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
-        <widget class="QLabel" name="cover">
+        <widget class="PlayableCover" name="cover">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -359,12 +368,17 @@
   <customwidget>
    <class>GridView</class>
    <extends>QListView</extends>
-   <header location="global">GridView.h</header>
+   <header location="global">playlist/GridView.h</header>
   </customwidget>
   <customwidget>
    <class>PlaylistView</class>
    <extends>QTreeView</extends>
    <header>playlist/PlaylistView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PlayableCover</class>
+   <extends>QLabel</extends>
+   <header>widgets/PlayableCover.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

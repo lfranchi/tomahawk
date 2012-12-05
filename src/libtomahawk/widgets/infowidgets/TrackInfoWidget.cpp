@@ -64,15 +64,15 @@ TrackInfoWidget::TrackInfoWidget( const Tomahawk::query_ptr& query, QWidget* par
 
     QFont f = font();
     f.setBold( true );
-    f.setPointSize( TomahawkUtils::defaultFontSize() + 8 );
+    f.setPointSize( TomahawkUtils::defaultFontSize() + 7 );
     ui->trackLabel->setFont( f );
 //    ui->similarTracksLabel->setFont( f );
 
-    f.setPointSize( TomahawkUtils::defaultFontSize() + 5 );
+    f.setPointSize( TomahawkUtils::defaultFontSize() + 4 );
     ui->artistLabel->setFont( f );
     ui->albumLabel->setFont( f );
 
-    f.setPointSize( TomahawkUtils::defaultFontSize() + 3 );
+    f.setPointSize( TomahawkUtils::defaultFontSize() + 2 );
     ui->statsLabel->setFont( f );
 
 //    ui->similarTracksView->setStyleSheet( "QListView { background-color: transparent; } QListView::item { background-color: transparent; }" );
@@ -128,6 +128,7 @@ TrackInfoWidget::TrackInfoWidget( const Tomahawk::query_ptr& query, QWidget* par
 
 TrackInfoWidget::~TrackInfoWidget()
 {
+    tDebug() << Q_FUNC_INFO;
     delete ui;
 }
 
@@ -201,6 +202,7 @@ TrackInfoWidget::load( const query_ptr& query )
     ui->artistLabel->setQuery( query );
     ui->albumLabel->setQuery( query );
     ui->albumLabel->setVisible( !query->album().isEmpty() );
+    ui->cover->setQuery( query );
 
     m_relatedTracksModel->clear();
     m_relatedTracksModel->startLoading();
@@ -217,7 +219,7 @@ TrackInfoWidget::onCoverUpdated()
         return;
 
     m_pixmap = m_query->cover( ui->cover->size() );
-    ui->cover->setPixmap( m_pixmap );
+    ui->cover->setPixmap( TomahawkUtils::createRoundedImage( m_pixmap, QSize( 0, 0 ) ) );
 }
 
 

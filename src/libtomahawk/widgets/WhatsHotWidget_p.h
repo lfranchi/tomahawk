@@ -23,8 +23,8 @@
 #include "WhatsHotWidget.h"
 #include "PlaylistInterface.h"
 #include "ui_WhatsHotWidget.h"
-#include "TreeProxyModel.h"
-#include "PlaylistView.h"
+#include "playlist/TreeProxyModel.h"
+#include "playlist/PlaylistView.h"
 #include "Result.h"
 
 #include <QObject>
@@ -57,10 +57,15 @@ public:
     virtual bool shuffled() const { return m_w->ui->tracksViewLeft->proxyModel()->playlistInterface()->shuffled(); }
 
     // Do nothing
+    virtual void setCurrentIndex( qint64 index ) { Q_UNUSED( index ); }
+    virtual Tomahawk::result_ptr resultAt( qint64 index ) const { Q_UNUSED( index ); Q_ASSERT( false ); return Tomahawk::result_ptr(); }
+    virtual Tomahawk::query_ptr queryAt( qint64 index ) const { Q_UNUSED( index ); Q_ASSERT( false ); return Tomahawk::query_ptr(); }
+    virtual qint64 indexOfResult( const Tomahawk::result_ptr& result ) const { Q_UNUSED( result ); Q_ASSERT( false ); return -1; }
+    virtual qint64 indexOfQuery( const Tomahawk::query_ptr& query ) const { Q_UNUSED( query ); Q_ASSERT( false ); return -1; }
     virtual Tomahawk::result_ptr currentItem() const { return Tomahawk::result_ptr(); }
-    virtual Tomahawk::result_ptr siblingItem( int ) { return Tomahawk::result_ptr(); }
+    virtual qint64 siblingIndex( int, qint64 rootIndex = -1 ) const { Q_UNUSED( rootIndex ); return -1; }
     virtual int trackCount() const { return 0; }
-    virtual QList< Tomahawk::query_ptr > tracks() { return QList< Tomahawk::query_ptr >(); }
+    virtual QList< Tomahawk::query_ptr > tracks() const { return QList< Tomahawk::query_ptr >(); }
 
     virtual bool hasChildInterface( Tomahawk::playlistinterface_ptr other )
     {
@@ -82,14 +87,6 @@ public slots:
         m_w->ui->tracksViewLeft->proxyModel()->playlistInterface()->setShuffled( enabled );
         m_w->ui->artistsViewLeft->proxyModel()->playlistInterface()->setShuffled( enabled );
     }
-
-signals:
-    void repeatModeChanged( Tomahawk::PlaylistModes::RepeatMode mode );
-    void shuffleModeChanged( bool enabled );
-
-    void trackCountChanged( unsigned int tracks );
-    void sourceTrackCountChanged( unsigned int tracks );
-    void nextTrackReady();
 
 private slots:
     void anyRepeatModeChanged( Tomahawk::PlaylistModes::RepeatMode mode )

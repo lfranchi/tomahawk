@@ -20,18 +20,19 @@
 #include "AudioControls.h"
 #include "ui_AudioControls.h"
 
-#include "audio/AudioEngine.h"
-#include "playlist/PlaylistView.h"
-#include "database/Database.h"
-#include "widgets/ImageButton.h"
-#include "utils/TomahawkUtilsGui.h"
-#include "utils/Logger.h"
 #include "Album.h"
 #include "DropJob.h"
 #include "SocialWidget.h"
 #include "GlobalActionManager.h"
 #include "ViewManager.h"
 #include "Source.h"
+
+#include "audio/AudioEngine.h"
+#include "playlist/PlaylistView.h"
+#include "database/Database.h"
+#include "widgets/ImageButton.h"
+#include "utils/TomahawkUtilsGui.h"
+#include "utils/Logger.h"
 
 #include <QNetworkReply>
 #include <QDropEvent>
@@ -70,26 +71,24 @@ AudioControls::AudioControls( QWidget* parent )
 
     font.setPointSize( TomahawkUtils::defaultFontSize() - 2 );
 
-    m_defaultSourceIcon = QPixmap( RESPATH "images/resolver-default.png" );
-
-    ui->prevButton->setPixmap( RESPATH "images/back-rest.png" );
-    ui->prevButton->setPixmap( RESPATH "images/back-pressed.png", QIcon::Off, QIcon::Active );
-    ui->playPauseButton->setPixmap( RESPATH "images/play-rest.png" );
-    ui->playPauseButton->setPixmap( RESPATH "images/play-pressed.png", QIcon::Off, QIcon::Active );
-    ui->pauseButton->setPixmap( RESPATH "images/pause-rest.png" );
-    ui->pauseButton->setPixmap( RESPATH "images/pause-pressed.png", QIcon::Off, QIcon::Active );
-    ui->nextButton->setPixmap( RESPATH "images/skip-rest.png" );
-    ui->nextButton->setPixmap( RESPATH "images/skip-pressed.png", QIcon::Off, QIcon::Active );
-    ui->shuffleButton->setPixmap( RESPATH "images/shuffle-off-rest.png" );
-    ui->shuffleButton->setPixmap( RESPATH "images/shuffle-off-pressed.png", QIcon::Off, QIcon::Active );
-    ui->repeatButton->setPixmap( RESPATH "images/repeat-off-rest.png" );
-    ui->repeatButton->setPixmap( RESPATH "images/repeat-off-pressed.png", QIcon::Off, QIcon::Active );
-    ui->volumeLowButton->setPixmap( RESPATH "images/volume-icon-muted.png" );
-    ui->volumeHighButton->setPixmap( RESPATH "images/volume-icon-full.png" );
-    ui->socialButton->setPixmap( RESPATH "images/share.png" );
-    ui->loveButton->setPixmap( RESPATH "images/not-loved.png" );
+    ui->ownerButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultResolver, TomahawkUtils::Original, QSize( 34, 34 ) ) );
+    ui->prevButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::PrevButton, TomahawkUtils::Original, QSize( 35, 35 ) ) );
+    ui->prevButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::PrevButtonPressed, TomahawkUtils::Original, QSize( 35, 35 ) ), QIcon::Off, QIcon::Active );
+    ui->playPauseButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::PlayButton, TomahawkUtils::Original, QSize( 48, 48 ) ) );
+    ui->playPauseButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::PlayButtonPressed, TomahawkUtils::Original, QSize( 48, 48 ) ), QIcon::Off, QIcon::Active );
+    ui->pauseButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::PauseButton, TomahawkUtils::Original, QSize( 48, 48 ) ) );
+    ui->pauseButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::PauseButtonPressed, TomahawkUtils::Original, QSize( 48, 48 ) ), QIcon::Off, QIcon::Active );
+    ui->nextButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::NextButton, TomahawkUtils::Original, QSize( 35, 35 ) ) );
+    ui->nextButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::NextButtonPressed, TomahawkUtils::Original, QSize( 35, 35 ) ), QIcon::Off, QIcon::Active );
+    ui->shuffleButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::ShuffleOff, TomahawkUtils::Original, QSize( 34, 21 ) ) );
+    ui->shuffleButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::ShuffleOffPressed, TomahawkUtils::Original, QSize( 34, 21 ) ), QIcon::Off, QIcon::Active );
+    ui->repeatButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::RepeatOff, TomahawkUtils::Original, QSize( 34, 21 ) ) );
+    ui->repeatButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::RepeatOffPressed, TomahawkUtils::Original, QSize( 34, 21 ) ), QIcon::Off, QIcon::Active );
+    ui->volumeLowButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::VolumeMuted, TomahawkUtils::Original, QSize( 18, 18 ) ) );
+    ui->volumeHighButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::VolumeFull, TomahawkUtils::Original, QSize( 22, 18 ) ) );
+    ui->socialButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::Share, TomahawkUtils::Original, QSize( 20, 20 ) ) );
+    ui->loveButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::NotLoved, TomahawkUtils::Original, QSize( 20, 20 ) ) );
     ui->loveButton->setCheckable( true );
-    ui->ownerButton->setPixmap( m_defaultSourceIcon );
 
     ui->socialButton->setFixedSize( QSize( 20, 20 ) );
     ui->loveButton->setFixedSize( QSize( 20, 20 ) );
@@ -138,6 +137,7 @@ AudioControls::AudioControls( QWidget* parent )
     connect( AudioEngine::instance(), SIGNAL( seeked( qint64 ) ), SLOT( onPlaybackSeeked( qint64 ) ) );
     connect( AudioEngine::instance(), SIGNAL( timerMilliSeconds( qint64 ) ), SLOT( onPlaybackTimer( qint64 ) ) );
     connect( AudioEngine::instance(), SIGNAL( volumeChanged( int ) ), SLOT( onVolumeChanged( int ) ) );
+    connect( AudioEngine::instance(), SIGNAL( controlStateChanged() ), SLOT( onControlStateChanged() ) );
 
     ui->buttonAreaLayout->setSpacing( 0 );
     ui->stackedLayout->setSpacing( 0 );
@@ -186,6 +186,22 @@ AudioControls::onVolumeChanged( int volume )
     ui->volumeSlider->blockSignals( true );
     ui->volumeSlider->setValue( volume );
     ui->volumeSlider->blockSignals( false );
+}
+
+
+void
+AudioControls::onControlStateChanged()
+{
+    tDebug() << Q_FUNC_INFO;
+
+    if ( QThread::currentThread() != thread() )
+    {
+        tDebug() << Q_FUNC_INFO << "Reinvoking in correct thread!";
+        QMetaObject::invokeMethod( this, "onControlStateChanged", Qt::QueuedConnection );
+    }
+
+    ui->prevButton->setEnabled( AudioEngine::instance()->canGoPrevious() );
+    ui->nextButton->setEnabled( AudioEngine::instance()->canGoNext() );
 }
 
 
@@ -264,13 +280,20 @@ AudioControls::onPlaybackLoading( const Tomahawk::result_ptr& result )
     ui->loveButton->setToolTip( tr( "Love" ) );
     ui->ownerButton->setToolTip( QString( tr( "Playing from %1" ) ).arg( result->friendlySource() ) );
 
-    QPixmap sourceIcon = result->sourceIcon( Result::Plain, ui->ownerButton->size() );
+    // If the ViewManager doesn't know a page for the current interface, we can't offer the jump link
+    ui->artistTrackLabel->setJumpLinkVisible( ( ViewManager::instance()->pageForInterface( AudioEngine::instance()->currentTrackPlaylist() ) ) );
+
+    onControlStateChanged();
+
+    QPixmap sourceIcon = result->sourceIcon( TomahawkUtils::RoundedCorners, ui->ownerButton->size() );
     if ( !sourceIcon.isNull() )
+    {
         ui->ownerButton->setPixmap( sourceIcon );
+    }
     else
     {
         ui->ownerButton->clear();
-        ui->ownerButton->setPixmap( m_defaultSourceIcon );
+        ui->ownerButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultResolver, TomahawkUtils::Original, QSize( 34, 34 ) ) );
     }
 
     if ( QUrl( result->linkUrl() ).isValid() || !result->collection().isNull() )
@@ -301,7 +324,7 @@ AudioControls::setCover()
     {
         QPixmap cover;
         cover = m_currentTrack->toQuery()->cover( ui->coverImage->size() );
-        ui->coverImage->setPixmap( cover, false );
+        ui->coverImage->setPixmap( TomahawkUtils::createRoundedImage( cover, QSize( 0, 0 ) ), false );
     }
     else
         ui->coverImage->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultAlbumCover, TomahawkUtils::ScaledCover, ui->coverImage->size() ), true );
@@ -324,12 +347,12 @@ AudioControls::setSocialActions()
 {
     if ( m_currentTrack->toQuery()->loved() )
     {
-        ui->loveButton->setPixmap( RESPATH "images/loved.png" );
+        ui->loveButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::Loved, TomahawkUtils::Original, QSize( 20, 20 ) ) );
         ui->loveButton->setChecked( true );
     }
     else
     {
-        ui->loveButton->setPixmap( RESPATH "images/not-loved.png" );
+        ui->loveButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::NotLoved, TomahawkUtils::Original, QSize( 20, 20 ) ) );
         ui->loveButton->setChecked( false );
     }
 }
@@ -378,7 +401,7 @@ AudioControls::onPlaybackStopped()
     m_sliderTimeLine.stop();
     m_sliderTimeLine.setCurrentTime( 0 );
     m_phononTickCheckTimer.stop();
-    ui->ownerButton->setPixmap( m_defaultSourceIcon );
+    ui->ownerButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultResolver, TomahawkUtils::Original, QSize( 34, 34 ) ) );
 
     ui->stackedLayout->setCurrentWidget( ui->playPauseButton );
     ui->loveButton->setEnabled( false );
@@ -395,6 +418,8 @@ AudioControls::onPlaybackStopped()
     ui->socialButton->setToolTip( "" );
     ui->loveButton->setToolTip( "" );
     ui->ownerButton->setToolTip( "" );
+
+    onControlStateChanged();
 }
 
 
@@ -497,30 +522,32 @@ AudioControls::onRepeatModeChanged( PlaylistModes::RepeatMode mode )
         case PlaylistModes::NoRepeat:
         {
             // switch to RepeatOne
-            ui->repeatButton->setPixmap( RESPATH "images/repeat-off-rest.png" );
-            ui->repeatButton->setPixmap( RESPATH "images/repeat-off-pressed.png", QIcon::Off, QIcon::Active );
+            ui->repeatButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::RepeatOff, TomahawkUtils::Original, QSize( 34, 21 ) ) );
+            ui->repeatButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::RepeatOffPressed, TomahawkUtils::Original, QSize( 34, 21 ) ), QIcon::Off, QIcon::Active );
         }
         break;
 
         case PlaylistModes::RepeatOne:
         {
             // switch to RepeatAll
-            ui->repeatButton->setPixmap( RESPATH "images/repeat-1-on-rest.png" );
-            ui->repeatButton->setPixmap( RESPATH "images/repeat-1-on-pressed.png", QIcon::Off, QIcon::Active );
+            ui->repeatButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::RepeatOne, TomahawkUtils::Original, QSize( 34, 21 ) ) );
+            ui->repeatButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::RepeatOnePressed, TomahawkUtils::Original, QSize( 34, 21 ) ), QIcon::Off, QIcon::Active );
         }
         break;
 
         case PlaylistModes::RepeatAll:
         {
             // switch to NoRepeat
-            ui->repeatButton->setPixmap( RESPATH "images/repeat-all-on-rest.png" );
-            ui->repeatButton->setPixmap( RESPATH "images/repeat-all-on-pressed.png", QIcon::Off, QIcon::Active );
+            ui->repeatButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::RepeatAll, TomahawkUtils::Original, QSize( 34, 21 ) ) );
+            ui->repeatButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::RepeatAllPressed, TomahawkUtils::Original, QSize( 34, 21 ) ), QIcon::Off, QIcon::Active );
         }
         break;
 
         default:
             break;
     }
+
+    onControlStateChanged();
 }
 
 
@@ -563,18 +590,20 @@ AudioControls::onShuffleModeChanged( bool enabled )
 
     if ( m_shuffled )
     {
-        ui->shuffleButton->setPixmap( RESPATH "images/shuffle-on-rest.png" );
-        ui->shuffleButton->setPixmap( RESPATH "images/shuffle-on-pressed.png", QIcon::Off, QIcon::Active );
+        ui->shuffleButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::ShuffleOn, TomahawkUtils::Original, QSize( 34, 21 ) ) );
+        ui->shuffleButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::ShuffleOnPressed, TomahawkUtils::Original, QSize( 34, 21 ) ), QIcon::Off, QIcon::Active );
 
         ui->repeatButton->setEnabled( false );
     }
     else
     {
-        ui->shuffleButton->setPixmap( RESPATH "images/shuffle-off-rest.png" );
-        ui->shuffleButton->setPixmap( RESPATH "images/shuffle-off-pressed.png", QIcon::Off, QIcon::Active );
+        ui->shuffleButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::ShuffleOff, TomahawkUtils::Original, QSize( 34, 21 ) ) );
+        ui->shuffleButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::ShuffleOffPressed, TomahawkUtils::Original, QSize( 34, 21 ) ), QIcon::Off, QIcon::Active );
 
         ui->repeatButton->setEnabled( true );
     }
+
+    onControlStateChanged();
 }
 
 
@@ -660,7 +689,8 @@ AudioControls::onSocialButtonClicked()
     QPoint socialWidgetPos = ui->socialButton->pos();
     socialWidgetPos.rx() += ui->socialButton->width() / 2;
     socialWidgetPos.ry() += 6;
-    m_socialWidget.data()->setPosition( m_socialWidget.data()->mapFromGlobal( ui->socialButton->parentWidget()->mapToGlobal( socialWidgetPos ) ) );
+
+    m_socialWidget.data()->setPosition( ui->metaDataArea->mapToGlobal( socialWidgetPos ) );
     m_socialWidget.data()->setQuery( m_currentTrack->toQuery() );
     m_socialWidget.data()->show();
 }
@@ -671,13 +701,13 @@ AudioControls::onLoveButtonClicked( bool checked )
 {
     if ( checked )
     {
-        ui->loveButton->setPixmap( RESPATH "images/loved.png" );
+        ui->loveButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::Loved, TomahawkUtils::Original, QSize( 20, 20 ) ) );
 
         m_currentTrack->toQuery()->setLoved( true );
     }
     else
     {
-        ui->loveButton->setPixmap( RESPATH "images/not-loved.png" );
+        ui->loveButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::NotLoved, TomahawkUtils::Original, QSize( 20, 20 ) ) );
 
         m_currentTrack->toQuery()->setLoved( false );
     }

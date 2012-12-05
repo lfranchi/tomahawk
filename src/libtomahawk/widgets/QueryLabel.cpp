@@ -89,12 +89,10 @@ QueryLabel::init()
     setMouseTracking( true );
 
     m_useCustomPen = false;
-    m_useCustomFont = false;
     m_align = Qt::AlignLeft | Qt::AlignVCenter;
     m_mode = Qt::ElideMiddle;
 
     m_jumpLinkVisible = false;
-    m_jumpPixmap = QPixmap( RESPATH "images/jump-link.png" ).scaled( QSize( fontMetrics().height(), fontMetrics().height() ), Qt::KeepAspectRatio, Qt::SmoothTransformation );
 }
 
 
@@ -181,6 +179,19 @@ QueryLabel::setText( const QString& text )
 
 
 void
+QueryLabel::onResultChanged()
+{
+    m_query = m_result->toQuery();
+    m_artist = m_result->artist();
+    m_album = m_result->album();
+
+    updateLabel();
+
+    emit textChanged( text() );
+}
+
+
+void
 QueryLabel::setResult( const Tomahawk::result_ptr& result )
 {
     if ( result.isNull() )
@@ -194,13 +205,9 @@ QueryLabel::setResult( const Tomahawk::result_ptr& result )
     if ( m_result.isNull() || m_result.data() != result.data() )
     {
         m_result = result;
-        m_query = m_result->toQuery();
-        m_artist = result->artist();
-        m_album = result->album();
+        connect( m_result.data(), SIGNAL( updated() ), SLOT( onResultChanged() ) );
 
-        updateLabel();
-
-        emit textChanged( text() );
+        onResultChanged();
         emit resultChanged( m_result );
     }
 }
@@ -308,21 +315,6 @@ QueryLabel::setElideMode( Qt::TextElideMode mode )
 }
 
 
-QFont
-QueryLabel::font() const
-{
-    return m_font;
-}
-
-
-void
-QueryLabel::setFont( const QFont& font )
-{
-    m_useCustomFont = true;
-    m_font = font;
-}
-
-
 void
 QueryLabel::updateLabel()
 {
@@ -381,16 +373,10 @@ QueryLabel::paintEvent( QPaintEvent* event )
     QRect r = contentsRect();
     QString s = text();
     const QString elidedText = fontMetrics().elidedText( s, m_mode, r.width() );
+    const QFontMetrics& fm = fontMetrics();
 
     p.save();
     p.setRenderHint( QPainter::Antialiasing );
-
-    QFontMetrics fm = fontMetrics();
-    if ( m_useCustomFont )
-    {
-        p.setFont( m_font );
-        fm = QFontMetrics( m_font );
-    }
 
     if ( m_hoverArea.width() )
     {
@@ -488,7 +474,7 @@ QueryLabel::paintEvent( QPaintEvent* event )
         {
             r.adjust( 6, 0, 0, 0 );
             r.setWidth( r.height() );
-            p.drawPixmap( r, m_jumpPixmap.scaled( r.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation ) );
+            p.drawPixmap( r, TomahawkUtils::defaultPixmap( TomahawkUtils::JumpLink, TomahawkUtils::Original, r.size() ) );
         }
     }
 
@@ -601,8 +587,6 @@ QueryLabel::mouseMoveEvent( QMouseEvent* event )
     }
 
     QFontMetrics fm = fontMetrics();
-    if ( m_useCustomFont )
-        fm = QFontMetrics( m_font );
 
     int dashX = fm.width( DASH );
     int artistX = m_type & Artist ? fm.width( artist()->name() ) : 0;
@@ -650,7 +634,7 @@ QueryLabel::mouseMoveEvent( QMouseEvent* event )
             hoverArea.setLeft( albumX + spacing );
             hoverArea.setRight( trackX + contentsMargins().left() - 1 );
         }
-        else if ( m_jumpLinkVisible && x < trackX + 6 + m_jumpPixmap.width() && x > trackX + 6 )
+        else if ( m_jumpLinkVisible && x < trackX + 6 + fm.height() && x > trackX + 6 )
         {
             m_hoverType = Complete;
         }
