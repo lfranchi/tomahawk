@@ -38,6 +38,7 @@
 #include <QDropEvent>
 #include <QMouseEvent>
 #include <QDesktopServices>
+#include <QGraphicsDropShadowEffect>
 
 const static int ALLOWED_MAX_DIVERSION = 300;
 
@@ -56,20 +57,21 @@ AudioControls::AudioControls( QWidget* parent )
     setAcceptDrops( true );
 
     QFont font( ui->artistTrackLabel->font() );
-    font.setPointSize( TomahawkUtils::defaultFontSize() );
+    font.setPointSize( TomahawkUtils::defaultFontSize() + 1 );
+    font.setWeight( QFont::Bold );
 
     ui->artistTrackLabel->setFont( font );
     ui->artistTrackLabel->setElideMode( Qt::ElideMiddle );
-    ui->artistTrackLabel->setType( QueryLabel::ArtistAndTrack );
+    ui->artistTrackLabel->setType( QueryLabel::Track );
     ui->artistTrackLabel->setJumpLinkVisible( true );
 
+    font.setPointSize( TomahawkUtils::defaultFontSize() );
     ui->albumLabel->setFont( font );
-    ui->albumLabel->setType( QueryLabel::Album );
+    ui->albumLabel->setType( QueryLabel::ArtistAndAlbum );
 
+    font.setWeight( QFont::Normal );
     ui->timeLabel->setFont( font );
     ui->timeLeftLabel->setFont( font );
-
-    font.setPointSize( TomahawkUtils::defaultFontSize() - 2 );
 
     ui->ownerButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultResolver, TomahawkUtils::Original, QSize( 34, 34 ) ) );
     ui->prevButton->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::PrevButton, TomahawkUtils::Original, QSize( 35, 35 ) ) );
@@ -121,7 +123,7 @@ AudioControls::AudioControls( QWidget* parent )
     connect( ui->repeatButton,     SIGNAL( clicked() ), SLOT( onRepeatClicked() ) );
     connect( ui->shuffleButton,    SIGNAL( clicked() ), SLOT( onShuffleClicked() ) );
 
-    connect( ui->artistTrackLabel, SIGNAL( clickedArtist() ), SLOT( onArtistClicked() ) );
+    connect( ui->albumLabel,       SIGNAL( clickedArtist() ), SLOT( onArtistClicked() ) );
     connect( ui->artistTrackLabel, SIGNAL( clickedTrack() ),  SLOT( onTrackClicked() ) );
     connect( ui->albumLabel,       SIGNAL( clickedAlbum() ),  SLOT( onAlbumClicked() ) );
     connect( ui->socialButton,     SIGNAL( clicked() ),       SLOT( onSocialButtonClicked() ) );
@@ -138,6 +140,8 @@ AudioControls::AudioControls( QWidget* parent )
     connect( AudioEngine::instance(), SIGNAL( timerMilliSeconds( qint64 ) ), SLOT( onPlaybackTimer( qint64 ) ) );
     connect( AudioEngine::instance(), SIGNAL( volumeChanged( int ) ), SLOT( onVolumeChanged( int ) ) );
     connect( AudioEngine::instance(), SIGNAL( controlStateChanged() ), SLOT( onControlStateChanged() ) );
+    connect( AudioEngine::instance(), SIGNAL( repeatModeChanged( Tomahawk::PlaylistModes::RepeatMode ) ), SLOT( onRepeatModeChanged( Tomahawk::PlaylistModes::RepeatMode ) ) );
+    connect( AudioEngine::instance(), SIGNAL( shuffleModeChanged( bool ) ), SLOT( onShuffleModeChanged( bool ) ) );
 
     ui->buttonAreaLayout->setSpacing( 0 );
     ui->stackedLayout->setSpacing( 0 );
@@ -327,7 +331,7 @@ AudioControls::setCover()
         ui->coverImage->setPixmap( TomahawkUtils::createRoundedImage( cover, QSize( 0, 0 ) ), false );
     }
     else
-        ui->coverImage->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultAlbumCover, TomahawkUtils::ScaledCover, ui->coverImage->size() ), true );
+        ui->coverImage->setPixmap( TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultAlbumCover, TomahawkUtils::Original, ui->coverImage->size() ), true );
 }
 
 
@@ -559,21 +563,21 @@ AudioControls::onRepeatClicked()
         case PlaylistModes::NoRepeat:
         {
             // switch to RepeatOne
-            ViewManager::instance()->setRepeatMode( PlaylistModes::RepeatOne );
+            AudioEngine::instance()->setRepeatMode( PlaylistModes::RepeatOne );
         }
         break;
 
         case PlaylistModes::RepeatOne:
         {
             // switch to RepeatAll
-            ViewManager::instance()->setRepeatMode( PlaylistModes::RepeatAll );
+            AudioEngine::instance()->setRepeatMode( PlaylistModes::RepeatAll );
         }
         break;
 
         case PlaylistModes::RepeatAll:
         {
             // switch to NoRepeat
-            ViewManager::instance()->setRepeatMode( PlaylistModes::NoRepeat );
+            AudioEngine::instance()->setRepeatMode( PlaylistModes::NoRepeat );
         }
         break;
 
@@ -610,7 +614,7 @@ AudioControls::onShuffleModeChanged( bool enabled )
 void
 AudioControls::onShuffleClicked()
 {
-    ViewManager::instance()->setShuffled( m_shuffled ^ true );
+    AudioEngine::instance()->setShuffled( m_shuffled ^ true );
 }
 
 

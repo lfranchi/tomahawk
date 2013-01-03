@@ -1,5 +1,6 @@
 /* === This file is part of Tomahawk Player - <http://tomahawk-player.org> ===
  *
+ *   Copyright 2010-2012, Christian Muehlhaeuser <muesli@tomahawk-player.org>
  *   Copyright 2011, Leo Franchi <lfranchi@kde.org>
  *   Copyright 2010-2012, Jeff Mitchell <jeff@tomahawk-player.org>
  *
@@ -18,15 +19,15 @@
  */
 
 #include "PlaylistInterface.h"
-#include "utils/Logger.h"
 #include "Result.h"
 #include "Pipeline.h"
 #include "Source.h"
+#include "utils/Logger.h"
 
 using namespace Tomahawk;
 
 
-PlaylistInterface::PlaylistInterface ()
+PlaylistInterface::PlaylistInterface()
     : QObject()
     , m_latchMode( PlaylistModes::StayOnSong )
     , m_finished( false )
@@ -158,14 +159,16 @@ PlaylistInterface::filterTracks( const QList<Tomahawk::query_ptr>& queries )
 bool
 PlaylistInterface::hasNextResult() const
 {
-    return ( siblingResult( 1 ) );
+    Tomahawk::result_ptr r = siblingResult( 1 );
+    return ( r && r->isOnline() );
 }
 
 
 bool
 PlaylistInterface::hasPreviousResult() const
 {
-    return ( siblingResult( -1 ) );
+    Tomahawk::result_ptr r = siblingResult( -1 );
+    return ( r && r->isOnline() );
 }
 
 
@@ -181,34 +184,22 @@ PlaylistInterface::onItemsChanged()
     Tomahawk::result_ptr prevResult = siblingResult( -1, m_currentIndex );
     Tomahawk::result_ptr nextResult = siblingResult( 1, m_currentIndex );
 
-    if ( prevResult )
     {
-        bool avail = prevResult->toQuery()->playable();
+        bool avail = prevResult && prevResult->toQuery()->playable();
         if ( avail != m_prevAvail )
         {
             m_prevAvail = avail;
-            emit previousTrackAvailable();
+            emit previousTrackAvailable( avail );
         }
     }
-    else if ( m_prevAvail )
-    {
-        m_prevAvail = false;
-        emit previousTrackAvailable();
-    }
 
-    if ( nextResult )
     {
-        bool avail = nextResult->toQuery()->playable();
+        bool avail = nextResult && nextResult->toQuery()->playable();
         if ( avail != m_nextAvail )
         {
             m_nextAvail = avail;
-            emit nextTrackAvailable();
+            emit nextTrackAvailable( avail );
         }
-    }
-    else if ( m_nextAvail )
-    {
-        m_nextAvail = false;
-        emit nextTrackAvailable();
     }
 }
 
@@ -217,5 +208,7 @@ void
 PlaylistInterface::setCurrentIndex( qint64 index )
 {
     m_currentIndex = index;
+
+    emit currentIndexChanged();
     onItemsChanged();
 }

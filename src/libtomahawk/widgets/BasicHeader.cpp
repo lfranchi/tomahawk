@@ -24,6 +24,7 @@
 #include <QtGui/QPaintEvent>
 #include <QtGui/QPainter>
 #include <QtGui/QBoxLayout>
+#include <QGraphicsDropShadowEffect>
 
 #include "utils/TomahawkUtilsGui.h"
 #include "ElidedLabel.h"
@@ -74,18 +75,22 @@ BasicHeader::BasicHeader( QWidget* parent )
     m_descriptionLabel->setAlignment( Qt::AlignTop | Qt::AlignLeft );
 
     m_captionLabel->setMargin( 2 );
-    m_descriptionLabel->setMargin( 1 );
+    m_descriptionLabel->setMargin( 2 );
+
+/*    QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect();
+    effect->setBlurRadius( 4 );
+    effect->setXOffset( 0 );
+    effect->setYOffset( 0 );
+    effect->setColor( Qt::white );
+    m_captionLabel->setGraphicsEffect( effect );*/
+//    m_descriptionLabel->setGraphicsEffect( effect );
 
     TomahawkUtils::unmarginLayout( layout() );
     layout()->setContentsMargins( 8, 4, 8, 4 );
     setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
     setFixedHeight( 80 );
 
-    pal = palette();
-    pal.setColor( QPalette::Window, QColor( "#454e59" ) );
-
     setPalette( pal );
-    setAutoFillBackground( true );
 }
 
 
@@ -112,4 +117,22 @@ void
 BasicHeader::setPixmap( const QPixmap& p )
 {
     m_imageLabel->setPixmap( p.scaledToHeight( m_imageLabel->height(), Qt::SmoothTransformation ) );
+}
+
+
+void
+BasicHeader::paintEvent( QPaintEvent* event )
+{
+    QWidget::paintEvent( event );
+
+    QPainter painter( this );
+    painter.setRenderHint( QPainter::Antialiasing );
+
+    QLinearGradient gradient( QPoint( 0, 0 ), QPoint( 0, 1 ) );
+    gradient.setCoordinateMode( QGradient::ObjectBoundingMode );
+    gradient.setColorAt( 0.0, QColor( "#707070" ) );
+    gradient.setColorAt( 1.0, QColor( "#25292c" ) );
+
+    painter.setBrush( gradient );
+    painter.fillRect( rect(), gradient );
 }

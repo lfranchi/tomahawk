@@ -3,9 +3,9 @@
     <title>automatic-playlist</title>
     <description>Created with Sketch (http://www.bohemiancoding.com/sketch)</description>
     <defs>
-        <radialGradient cx="50%" cy="50%" fx="50%" fy="50%" r="100%" id="radialGradient-1">
-            <stop stop-color="rgb(98,156,210)" offset="0%"></stop>
-            <stop stop-color="rgb(19,67,172)" offset="100%"></stop>
+        <radialGradient cx="55.1087141%" cy="29.5365341%" fx="55.1087141%" fy="29.5365341%" r="100%" id="radialGradient-1">
+            <stop stop-color="rgb(149,198,243)" offset="0%"></stop>
+            <stop stop-color="rgb(124,142,212)" offset="100%"></stop>
         </radialGradient>
     </defs>
     <g id="Page 1" fill="rgb(215,215,215)" fill-rule="evenodd">

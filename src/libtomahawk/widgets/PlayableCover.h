@@ -40,14 +40,25 @@ public:
     PlayableCover( QWidget* parent = 0 );
     virtual ~PlayableCover();
 
+    bool showText() const { return m_showText; }
+    void setShowText( bool b ) { m_showText = b; }
+
+    QPixmap pixmap() const { return m_pixmap; }
+
 public slots:
     virtual void setArtist( const Tomahawk::artist_ptr& artist );
     virtual void setAlbum( const Tomahawk::album_ptr& album );
     virtual void setQuery( const Tomahawk::query_ptr& query );
 
+    void setPixmap( const QPixmap& pixmap );
+
 protected:
     virtual void resizeEvent( QResizeEvent* event );
+    virtual void paintEvent( QPaintEvent* event );
 
+    virtual void mouseMoveEvent( QMouseEvent* event );
+    virtual void mouseReleaseEvent( QMouseEvent* event );
+    
     void leaveEvent( QEvent* event );
     void enterEvent( QEvent* event );
 
@@ -61,6 +72,11 @@ private:
     Tomahawk::artist_ptr m_artist;
     Tomahawk::album_ptr m_album;
     Tomahawk::query_ptr m_query;
+
+    QList< QRect > m_itemRects;
+    QRect m_hoveredRect;
+
+    bool m_showText;
 };
 
 #endif

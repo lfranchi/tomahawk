@@ -167,7 +167,7 @@ AudioEngine::pause()
 void
 AudioEngine::stop( AudioErrorCode errorCode )
 {
-    tDebug( LOGEXTRA ) << Q_FUNC_INFO << errorCode;
+    tDebug() << Q_FUNC_INFO << errorCode;
 
     if ( isStopped() )
         return;
@@ -471,6 +471,8 @@ AudioEngine::loadTrack( const Tomahawk::result_ptr& result )
                         furl = QUrl( m_currentTrack->url().left( m_currentTrack->url().indexOf( '?' ) ) );
                         furl.setEncodedQuery( QString( m_currentTrack->url().mid( m_currentTrack->url().indexOf( '?' ) + 1 ) ).toLocal8Bit() );
                     }
+
+                    tLog( LOGVERBOSE ) << "Passing to Phonon:" << furl;
                     m_mediaObject->setCurrentSource( furl );
                 }
                 else
@@ -837,16 +839,16 @@ AudioEngine::setQueue( const playlistinterface_ptr& queue )
 {
     if ( m_queue )
     {
-        disconnect( m_queue.data(), SIGNAL( previousTrackAvailable() ), this, SIGNAL( controlStateChanged() ) );
-        disconnect( m_queue.data(), SIGNAL( nextTrackAvailable() ), this, SIGNAL( controlStateChanged() ) );
+        disconnect( m_queue.data(), SIGNAL( previousTrackAvailable( bool ) ), this, SIGNAL( controlStateChanged() ) );
+        disconnect( m_queue.data(), SIGNAL( nextTrackAvailable( bool ) ), this, SIGNAL( controlStateChanged() ) );
     }
 
     m_queue = queue;
 
     if ( m_queue )
     {
-        connect( m_queue.data(), SIGNAL( previousTrackAvailable() ), SIGNAL( controlStateChanged() ) );
-        connect( m_queue.data(), SIGNAL( nextTrackAvailable() ), SIGNAL( controlStateChanged() ) );
+        connect( m_queue.data(), SIGNAL( previousTrackAvailable( bool ) ), SIGNAL( controlStateChanged() ) );
+        connect( m_queue.data(), SIGNAL( nextTrackAvailable( bool ) ), SIGNAL( controlStateChanged() ) );
     }
 }
 
@@ -861,8 +863,10 @@ AudioEngine::setPlaylist( Tomahawk::playlistinterface_ptr playlist )
     {
         if ( m_playlist.data() )
         {
-            disconnect( m_playlist.data(), SIGNAL( previousTrackAvailable() ) );
-            disconnect( m_playlist.data(), SIGNAL( nextTrackAvailable() ) );
+            disconnect( m_playlist.data(), SIGNAL( previousTrackAvailable( bool ) ) );
+            disconnect( m_playlist.data(), SIGNAL( nextTrackAvailable( bool ) ) );
+            disconnect( m_playlist.data(), SIGNAL( shuffleModeChanged( bool ) ) );
+            disconnect( m_playlist.data(), SIGNAL( repeatModeChanged( Tomahawk::PlaylistModes::RepeatMode ) ) );
         }
 
         m_playlist.data()->reset();
@@ -880,13 +884,39 @@ AudioEngine::setPlaylist( Tomahawk::playlistinterface_ptr playlist )
 
     if ( !m_playlist.isNull() )
     {
-        connect( m_playlist.data(), SIGNAL( nextTrackAvailable() ), SLOT( onPlaylistNextTrackAvailable() ) );
+        connect( m_playlist.data(), SIGNAL( nextTrackAvailable( bool ) ), SLOT( onPlaylistNextTrackAvailable() ) );
 
-        connect( m_playlist.data(), SIGNAL( previousTrackAvailable() ), SIGNAL( controlStateChanged() ) );
-        connect( m_playlist.data(), SIGNAL( nextTrackAvailable() ), SIGNAL( controlStateChanged() ) );
+        connect( m_playlist.data(), SIGNAL( previousTrackAvailable( bool ) ), SIGNAL( controlStateChanged() ) );
+        connect( m_playlist.data(), SIGNAL( nextTrackAvailable( bool ) ), SIGNAL( controlStateChanged() ) );
+
+        connect( m_playlist.data(), SIGNAL( shuffleModeChanged( bool ) ), SIGNAL( shuffleModeChanged( bool ) ) );
+        connect( m_playlist.data(), SIGNAL( repeatModeChanged( Tomahawk::PlaylistModes::RepeatMode mode ) ), SIGNAL( repeatModeChanged( Tomahawk::PlaylistModes::RepeatMode mode ) ) );
+        
+        emit shuffleModeChanged( m_playlist.data()->shuffled() );
+        emit repeatModeChanged( m_playlist.data()->repeatMode() );
     }
 
     emit playlistChanged( playlist );
+}
+
+
+void
+AudioEngine::setRepeatMode( Tomahawk::PlaylistModes::RepeatMode mode )
+{
+    if ( !m_playlist.isNull() )
+    {
+        m_playlist.data()->setRepeatMode( mode );
+    }
+}
+
+
+void
+AudioEngine::setShuffled( bool enabled )
+{
+    if ( !m_playlist.isNull() )
+    {
+        m_playlist.data()->setShuffled( enabled );
+    }
 }
 
 

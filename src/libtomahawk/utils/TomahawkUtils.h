@@ -94,14 +94,32 @@ namespace TomahawkUtils
         LovedPlaylist,
         NewReleases,
         NewAdditions,
+        RecentlyPlayed,
+        AutomaticPlaylist,
         Charts,
         Station,
         Playlist,
+        Search,
         ListRemove,
         ListAdd,
         AdvancedSettings,
         AccountSettings,
         MusicSettings,
+        Add,
+        DropSong,
+        DropAlbum,
+        DropAllSongs,
+        DropLocalSongs,
+        DropTopSongs,
+        LastfmIcon,
+        SpotifyIcon,
+        SoundcloudIcon,
+        AccountNone,
+        Starred,
+        Unstarred,
+        StarHovered,
+        SipPluginOnline,
+        SipPluginOffline,
         Invalid
     };
 
@@ -109,7 +127,6 @@ namespace TomahawkUtils
     {
         Original,
         CoverInCase,
-        ScaledCover,
         Grid,
         DropShadow,
         RoundedCorners
@@ -151,6 +168,8 @@ namespace TomahawkUtils
     DLLEXPORT QDir appConfigDir();
     DLLEXPORT QDir appDataDir();
     DLLEXPORT QDir appLogDir();
+
+    DLLEXPORT void installTranslator( QObject* parent );
 
     DLLEXPORT QString timeToString( int seconds );
     DLLEXPORT QString ageToString( const QDateTime& time, bool appendAgoString = false );

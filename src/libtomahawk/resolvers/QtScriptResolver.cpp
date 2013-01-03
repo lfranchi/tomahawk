@@ -20,12 +20,12 @@
 #include "QtScriptResolver.h"
 
 #include <QtGui/QMessageBox>
-
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
-
 #include <QtCore/QMetaProperty>
 #include <QtCore/QCryptographicHash>
+
+#include <boost/bind.hpp>
 
 #include "Artist.h"
 #include "Album.h"
@@ -37,6 +37,8 @@
 
 #include "utils/TomahawkUtilsGui.h"
 #include "utils/Logger.h"
+
+#include "config.h"
 
 // FIXME: bloody hack, remove this for 0.3
 // this one adds new functionality to old resolvers
@@ -212,7 +214,7 @@ void
 ScriptEngine::javaScriptConsoleMessage( const QString& message, int lineNumber, const QString& sourceID )
 {
     tLog() << "JAVASCRIPT:" << m_scriptPath << message << lineNumber << sourceID;
-#ifndef QT_NO_DEBUG
+#ifndef DEBUG_BUILD
     QMessageBox::critical( 0, "Script Resolver Error", QString( "%1 %2 %3 %4" ).arg( m_scriptPath ).arg( message ).arg( lineNumber ).arg( sourceID ) );
 #endif
 }
@@ -527,28 +529,6 @@ QtScriptResolver::saveConfig()
 }
 
 
-QWidget*
-QtScriptResolver::findWidget(QWidget* widget, const QString& objectName)
-{
-    if( !widget || !widget->isWidgetType() )
-        return 0;
-
-    if( widget->objectName() == objectName )
-        return widget;
-
-
-    foreach( QObject* child, widget->children() )
-    {
-        QWidget* found = findWidget(qobject_cast< QWidget* >( child ), objectName);
-
-        if( found )
-            return found;
-    }
-
-    return 0;
-}
-
-
 QVariant
 QtScriptResolver::widgetData(QWidget* widget, const QString& property)
 {
@@ -587,7 +567,7 @@ QtScriptResolver::loadDataFromWidgets()
         QVariantMap data = dataWidget.toMap();
 
         QString widgetName = data["widget"].toString();
-        QWidget* widget= findWidget( m_configWidget.data(), widgetName );
+        QWidget* widget= m_configWidget.data()->findChild<QWidget*>( widgetName );
 
         QVariant value = widgetData( widget, data["property"].toString() );
 
@@ -604,7 +584,7 @@ QtScriptResolver::fillDataInWidgets( const QVariantMap& data )
     foreach(const QVariant& dataWidget, m_dataWidgets)
     {
         QString widgetName = dataWidget.toMap()["widget"].toString();
-        QWidget* widget= findWidget( m_configWidget.data(), widgetName );
+        QWidget* widget= m_configWidget.data()->findChild<QWidget*>( widgetName );
         if( !widget )
         {
             tLog() << Q_FUNC_INFO << "Widget specified in resolver was not found:" << widgetName;

@@ -94,9 +94,6 @@ AccountsToolButton::AccountsToolButton( QWidget* parent )
     bottomLayout->addWidget( settingsButton );
     wMainLayout->addLayout( bottomLayout );
 
-    //ToolButton stuff
-    m_defaultPixmap = QPixmap( RESPATH "images/account-none.png" ).scaled( iconSize(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
-
     connect( m_proxy, SIGNAL( dataChanged( QModelIndex, QModelIndex ) ),
              this, SLOT( updateIcons() ) );
     connect( m_proxy, SIGNAL( rowsInserted ( QModelIndex, int, int ) ),
@@ -105,6 +102,20 @@ AccountsToolButton::AccountsToolButton( QWidget* parent )
              this, SLOT( updateIcons() ) );
     connect( m_proxy, SIGNAL( modelReset() ),
              this, SLOT( updateIcons() ) );
+
+#ifdef Q_WS_MAC
+    setIconSize( QSize( iconSize().width()-4, iconSize().height()-4 ) );
+    setStyleSheet( "AccountsToolButton {"
+                   "    border: 1px solid #7d7d7d;"
+                   "    border-radius: 4px;"
+                   "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,"
+                   "                                      stop: 0 #f5f5f5, stop: 1 #bababa);"
+                   "}"
+                   "AccountsToolButton:pressed {"
+                   "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,"
+                   "                                      stop: 0 #b6b6b6, stop: 1 #dddddd);"
+                   "}" );
+#endif
 }
 
 void
@@ -137,7 +148,8 @@ AccountsToolButton::paintEvent( QPaintEvent* event )
         QRect pixmapRect( QPoint( width() / 2 - iconSize().width() / 2,
                                   height() / 2 - iconSize().height() / 2 ),
                           iconSize() );
-        painter.drawPixmap( pixmapRect, m_defaultPixmap );
+
+        painter.drawPixmap( pixmapRect, TomahawkUtils::defaultPixmap( TomahawkUtils::AccountNone, TomahawkUtils::Original, iconSize() ) );
     }
     else
     {

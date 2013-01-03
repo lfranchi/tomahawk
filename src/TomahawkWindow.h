@@ -148,10 +148,9 @@ private slots:
     void toggleMenuBar();
     void balanceToolbar();
 
-#ifdef Q_OS_WIN
+
     void audioStateChanged( AudioState newState, AudioState oldState );
     void updateWindowsLoveButton();
-#endif
 
 private:
     void loadSettings();
@@ -167,6 +166,7 @@ private:
 #ifdef Q_OS_WIN
     bool setupWindowsButtons();
     const unsigned int m_buttonCreatedID;
+    HICON thumbIcon(TomahawkUtils::ImageType type);
   #ifdef HAVE_THUMBBUTTON
     ITaskbarList3* m_taskbarList;
     THUMBBUTTON m_thumbButtons[5];

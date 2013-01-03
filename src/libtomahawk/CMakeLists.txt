@@ -77,10 +77,11 @@ set( libGuiSources
     playlist/LovedTracksModel.cpp
     playlist/RecentlyAddedModel.cpp
     playlist/RecentlyPlayedModel.cpp
+    playlist/AlbumItemDelegate.cpp
     playlist/PlaylistLargeItemDelegate.cpp
     playlist/PlaylistChartItemDelegate.cpp
     playlist/PlayableItem.cpp
-    playlist/SingleTrackPlaylistInterface.h
+    playlist/SingleTrackPlaylistInterface.cpp
 
     playlist/dynamic/DynamicPlaylist.cpp
     playlist/dynamic/DynamicView.cpp
@@ -185,6 +186,7 @@ set( libSources
     FuncTimeout.cpp
     Playlist.cpp
     PlaylistPlaylistInterface.cpp
+    MetaPlaylistInterface.cpp
     Resolver.cpp
     ExternalResolver.cpp
     Query.cpp

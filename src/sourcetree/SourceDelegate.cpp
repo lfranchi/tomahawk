@@ -21,13 +21,16 @@
 
 #include "SourceDelegate.h"
 
+#include <QApplication>
+#include <QPainter>
+#include <QMouseEvent>
+
 #include "items/SourceTreeItem.h"
 #include "items/SourceItem.h"
 #include "items/PlaylistItems.h"
 #include "items/CategoryItems.h"
 #include "items/TemporaryPageItem.h"
 
-#include "utils/TomahawkUtilsGui.h"
 #include "audio/AudioEngine.h"
 #include "AnimationHelper.h"
 #include "Source.h"
@@ -35,10 +38,8 @@
 #include "ActionCollection.h"
 #include "ViewManager.h"
 #include "ContextMenu.h"
-
-#include <QApplication>
-#include <QPainter>
-#include <QMouseEvent>
+#include "utils/TomahawkUtilsGui.h"
+#include "utils/Logger.h"
 
 
 #define TREEVIEW_INDENT_ADD 12
@@ -59,12 +60,6 @@ SourceDelegate::SourceDelegate( QAbstractItemView* parent )
     m_dropTypeTextMap.insert( 2, tr( "Artist" ) );
     m_dropTypeTextMap.insert( 3, tr( "Local" ) );
     m_dropTypeTextMap.insert( 4, tr( "Top 10" ) );
-
-    m_dropTypeImageMap.insert( 0, QPixmap( RESPATH "images/drop-song.png" ).scaledToWidth( 32, Qt::SmoothTransformation ) );
-    m_dropTypeImageMap.insert( 1, QPixmap( RESPATH "images/drop-album.png" ).scaledToWidth( 32, Qt::SmoothTransformation ) );
-    m_dropTypeImageMap.insert( 2, QPixmap( RESPATH "images/drop-all-songs.png" ).scaledToHeight( 32, Qt::SmoothTransformation ) );
-    m_dropTypeImageMap.insert( 3, QPixmap( RESPATH "images/drop-local-songs.png" ).scaledToWidth( 32, Qt::SmoothTransformation ) );
-    m_dropTypeImageMap.insert( 4, QPixmap( RESPATH "images/drop-top-songs.png" ).scaledToWidth( 32, Qt::SmoothTransformation ) );
 
     m_dropMimeData = new QMimeData();
 }
@@ -197,6 +192,7 @@ SourceDelegate::paintCollection( QPainter* painter, const QStyleOptionViewItem& 
 
     bool isPlaying = !( colItem->source()->currentTrack().isNull() );
     QString desc = colItem->source()->textStatus();
+    QColor descColor = QColor( "#8d8d8d" );
     if ( colItem->source().isNull() )
         desc = tr( "All available tracks" );
 
@@ -255,6 +251,9 @@ SourceDelegate::paintCollection( QPainter* painter, const QStyleOptionViewItem& 
         }
         else
             m_lockRects.remove( index );
+
+        if ( isPlaying )
+            descColor = Qt::black;
     }
 
     if ( m_trackHovered == index )
@@ -267,6 +266,7 @@ SourceDelegate::paintCollection( QPainter* painter, const QStyleOptionViewItem& 
     text = painter->fontMetrics().elidedText( desc, Qt::ElideRight, textRect.width() - 8 );
     QTextOption to( Qt::AlignVCenter );
     to.setWrapMode( QTextOption::NoWrap );
+    painter->setPen( descColor );
     painter->drawText( textRect, text, to );
 
     if ( colItem->source() && colItem->source()->currentTrack() )
@@ -516,7 +516,28 @@ SourceDelegate::paint( QPainter* painter, const QStyleOptionViewItem& option, co
             if ( itemsRect.bottom() - textRect.height() - 2 > itemsRect.top() )
             {
                 imageRect = itemsRect.adjusted( iconSpacing, verticalOffset, -iconSpacing, -textRect.height() - 2 );
-                painter->drawPixmap( imageRect.x(), imageRect.y(), m_dropTypeImageMap.value( i ).copy( 0, 32 - imageRect.height(), 32, imageRect.height() ) );
+
+                QPixmap pixmap;
+                switch ( i )
+                {
+                    case 0:
+                        pixmap = TomahawkUtils::defaultPixmap( TomahawkUtils::DropSong, TomahawkUtils::Original, imageRect.size() );
+                        break;
+                    case 1:
+                        pixmap = TomahawkUtils::defaultPixmap( TomahawkUtils::DropAlbum, TomahawkUtils::Original, imageRect.size() );
+                        break;
+                    case 2:
+                        pixmap = TomahawkUtils::defaultPixmap( TomahawkUtils::DropAllSongs, TomahawkUtils::Original, imageRect.size() );
+                        break;
+                    case 3:
+                        pixmap = TomahawkUtils::defaultPixmap( TomahawkUtils::DropLocalSongs, TomahawkUtils::Original, imageRect.size() );
+                        break;
+                    case 4:
+                        pixmap = TomahawkUtils::defaultPixmap( TomahawkUtils::DropTopSongs, TomahawkUtils::Original, imageRect.size() );
+                        break;
+                }
+
+                painter->drawPixmap( imageRect, pixmap );
             }
 
             count++;
