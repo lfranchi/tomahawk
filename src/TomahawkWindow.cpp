@@ -84,6 +84,10 @@
     #if defined ( WITH_QtSparkle )
         #include <qtsparkle/Updater>
     #endif
+
+    #include <windows.h>
+    #include <shellapi.h>
+
     #ifndef THBN_CLICKED
         #define THBN_CLICKED    0x1800
     #endif
@@ -136,8 +140,7 @@ TomahawkWindow::TomahawkWindow( QWidget* parent )
 
     if ( qApp->arguments().contains( "--debug" ) )
     {
-        connect( ActionCollection::instance()->getAction( "crashNow" ), SIGNAL( triggered() ),
-                 this, SLOT( crashNow() ) );
+        connect( ActionCollection::instance()->getAction( "crashNow" ), SIGNAL( triggered() ), SLOT( crashNow() ) );
     }
 
     // set initial state
@@ -229,7 +232,7 @@ TomahawkWindow::applyPlatformTweaks()
     //       nothing and in QtCurve does evil things), and avoid forwarding it
     //       to QtCurve.
     bool isQtCurve = false;
-    if( QString( qApp->style()->metaObject()->className() ).toLower().contains( "qtcurve" ) )
+    if ( QString( qApp->style()->metaObject()->className() ).toLower().contains( "qtcurve" ) )
         isQtCurve = true;
     qApp->setStyle( new ProxyStyle( isQtCurve ) );
 
@@ -502,7 +505,7 @@ HICON
 TomahawkWindow::thumbIcon(TomahawkUtils::ImageType type)
 {
     static QMap<TomahawkUtils::ImageType,HICON> thumbIcons;
-    if(!thumbIcons.contains( type ) )
+    if (!thumbIcons.contains( type ) )
     {
         QPixmap pix ( TomahawkUtils::defaultPixmap(type , TomahawkUtils::Original, QSize( 20, 20 ) ) );
         thumbIcons[type] = pix.toWinHICON();
@@ -519,20 +522,20 @@ TomahawkWindow::setupSignals()
     connect( AudioEngine::instance(), SIGNAL( error( AudioEngine::AudioErrorCode ) ), SLOT( onAudioEngineError( AudioEngine::AudioErrorCode ) ) );
     connect( AudioEngine::instance(), SIGNAL( loading( const Tomahawk::result_ptr& ) ), SLOT( onPlaybackLoading( const Tomahawk::result_ptr& ) ) );
     connect( AudioEngine::instance(), SIGNAL( started( Tomahawk::result_ptr ) ), SLOT( audioStarted() ) );
-    connect( AudioEngine::instance(), SIGNAL( finished(Tomahawk::result_ptr) ), SLOT( audioFinished() ) );
-    connect( AudioEngine::instance(), SIGNAL( resumed()), SLOT( audioStarted() ) );
+    connect( AudioEngine::instance(), SIGNAL( finished( Tomahawk::result_ptr ) ), SLOT( audioFinished() ) );
+    connect( AudioEngine::instance(), SIGNAL( resumed() ), SLOT( audioStarted() ) );
     connect( AudioEngine::instance(), SIGNAL( paused() ), SLOT( audioPaused() ) );
     connect( AudioEngine::instance(), SIGNAL( stopped() ), SLOT( audioStopped() ) );
 
     // <Menu Items>
     ActionCollection *ac = ActionCollection::instance();
-    //    connect( ui->actionAddPeerManually, SIGNAL( triggered() ), SLOT( addPeerManually() ) );
     connect( ac->getAction( "preferences" ), SIGNAL( triggered() ), SLOT( showSettingsDialog() ) );
     connect( ac->getAction( "diagnostics" ), SIGNAL( triggered() ), SLOT( showDiagnosticsDialog() ) );
     connect( ac->getAction( "legalInfo" ), SIGNAL( triggered() ), SLOT( legalInfo() ) );
+    connect( ac->getAction( "openLogfile" ), SIGNAL( triggered() ), SLOT( openLogfile() ) );
     connect( ac->getAction( "updateCollection" ), SIGNAL( triggered() ), SLOT( updateCollectionManually() ) );
     connect( ac->getAction( "rescanCollection" ), SIGNAL( triggered() ), SLOT( rescanCollectionManually() ) );
-    connect( ac->getAction( "loadXSPF" ), SIGNAL( triggered() ), SLOT( loadSpiff() ));
+    connect( ac->getAction( "loadXSPF" ), SIGNAL( triggered() ), SLOT( loadSpiff() ) );
     connect( ac->getAction( "aboutTomahawk" ), SIGNAL( triggered() ), SLOT( showAboutTomahawk() ) );
     connect( ac->getAction( "quit" ), SIGNAL( triggered() ), qApp, SLOT( quit() ) );
     connect( ac->getAction( "showOfflineSources" ), SIGNAL( triggered() ), SLOT( showOfflineSources() ) );
@@ -562,6 +565,7 @@ TomahawkWindow::setupMenuBar()
     m_compactMainMenu = ActionCollection::instance()->createCompactMenu( this );
 #endif
 }
+
 
 void
 TomahawkWindow::changeEvent( QEvent* e )
@@ -629,7 +633,7 @@ TomahawkWindow::keyPressEvent( QKeyEvent* e )
 
 #if ! defined ( Q_OS_MAC )
 #define KEY_PRESSED Q_FUNC_INFO << "Multimedia Key Pressed:"
-    switch( e->key() )
+    switch ( e->key() )
     {
         case Qt::Key_MediaPlay:
             tLog() << KEY_PRESSED << "Play";
@@ -676,12 +680,12 @@ TomahawkWindow::winEvent( MSG* msg, long* result )
 {
     #define TB_PRESSED Q_FUNC_INFO << "Taskbar Button Pressed:"
 
-    switch( msg->message )
+    switch ( msg->message )
     {
     case WM_COMMAND:
         if ( HIWORD( msg->wParam ) == THBN_CLICKED )
         {
-            switch( TB_STATES(LOWORD( msg->wParam )) )
+            switch ( TB_STATES( LOWORD( msg->wParam ) ) )
             {
             case TP_PREVIOUS:
                 tLog() << TB_PRESSED << "Previous";
@@ -830,6 +834,17 @@ TomahawkWindow::legalInfo()
 
 
 void
+TomahawkWindow::openLogfile()
+{
+#ifdef WIN32
+    ShellExecuteW( 0, 0, (LPCWSTR)Logger::logFile().utf16(), 0, 0, SW_SHOWNORMAL );
+#else
+    QDesktopServices::openUrl( QUrl::fromLocalFile( Logger::logFile() ) );
+#endif
+}
+
+
+void
 TomahawkWindow::updateCollectionManually()
 {
     if ( TomahawkSettings::instance()->hasScannerPaths() )
@@ -846,43 +861,12 @@ TomahawkWindow::rescanCollectionManually()
 
 
 void
-TomahawkWindow::addPeerManually()
-{
-    TomahawkSettings* s = TomahawkSettings::instance();
-    bool ok;
-    QString addr = QInputDialog::getText( this, tr( "Connect To Peer" ),
-                                                tr( "Enter peer address:" ), QLineEdit::Normal,
-                                                s->value( "connip" ).toString(), &ok ); // FIXME
-    if ( !ok )
-        return;
-
-    s->setValue( "connip", addr );
-    QString ports = QInputDialog::getText( this, tr( "Connect To Peer" ),
-                                                 tr( "Enter peer port:" ), QLineEdit::Normal,
-                                                 s->value( "connport", "50210" ).toString(), &ok );
-    if ( !ok )
-        return;
-
-    s->setValue( "connport", ports );
-    int port = ports.toInt();
-    QString key = QInputDialog::getText( this, tr( "Connect To Peer" ),
-                                               tr( "Enter peer key:" ), QLineEdit::Normal,
-                                               "whitelist", &ok );
-    if ( !ok )
-        return;
-
-    qDebug() << "Attempting to connect to" << addr;
-    Servent::instance()->connectToPeer( addr, port, key );
-}
-
-
-void
 TomahawkWindow::showOfflineSources()
 {
-    m_sourcetree->showOfflineSources( ActionCollection::instance()
-                                      ->getAction( "showOfflineSources" )->isChecked() );
-    TomahawkSettings::instance()->setShowOfflineSources( ActionCollection::instance()
-                                                         ->getAction( "showOfflineSources" )->isChecked() );
+    m_sourcetree->showOfflineSources(
+        ActionCollection::instance()->getAction( "showOfflineSources" )->isChecked() );
+    TomahawkSettings::instance()->setShowOfflineSources(
+        ActionCollection::instance()->getAction( "showOfflineSources" )->isChecked() );
 }
 
 
@@ -908,7 +892,7 @@ TomahawkWindow::loadSpiff()
     connect( diag, SIGNAL( finished( int ) ), this, SLOT( loadXspfFinished( int ) ) );
     diag->show();
 #else
-    QWeakPointer< LoadXSPFDialog > safe( diag );
+    QPointer< LoadXSPFDialog > safe( diag );
 
     int ret = diag->exec();
     if ( !safe.isNull() && ret == QDialog::Accepted )
@@ -1310,7 +1294,7 @@ void
 TomahawkWindow::toggleMenuBar() //SLOT
 {
 #ifndef Q_OS_MAC
-    if( menuBar()->isVisible() )
+    if ( menuBar()->isVisible() )
     {
         menuBar()->setVisible( false );
         ActionCollection::instance()->getAction( "toggleMenuBar" )->setText( tr( "Show Menu Bar" ) );

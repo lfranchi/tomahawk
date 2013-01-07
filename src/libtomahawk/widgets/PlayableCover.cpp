@@ -20,6 +20,7 @@
 
 #include "Artist.h"
 #include "Album.h"
+#include "ContextMenu.h"
 #include "ViewManager.h"
 #include "audio/AudioEngine.h"
 #include "widgets/ImageButton.h"
@@ -28,6 +29,7 @@
 
 #include <QPainter>
 
+using namespace Tomahawk;
 
 PlayableCover::PlayableCover( QWidget* parent )
     : QLabel( parent )
@@ -45,6 +47,9 @@ PlayableCover::PlayableCover( QWidget* parent )
     m_button->hide();
 
     connect( m_button, SIGNAL( clicked( bool ) ), SLOT( onClicked() ) );
+
+    m_contextMenu = new ContextMenu( this );
+    m_contextMenu->setSupportedActions( ContextMenu::ActionQueue | ContextMenu::ActionCopyLink | ContextMenu::ActionStopAfter | ContextMenu::ActionLove | ContextMenu::ActionPage );
 }
 
 
@@ -75,7 +80,7 @@ void
 PlayableCover::resizeEvent( QResizeEvent* event )
 {
     QLabel::resizeEvent( event );
-    m_button->move( contentsRect().center() - QPoint( 23, 23 ) );
+    m_button->move( contentsRect().center() - QPoint( 22, 23 ) );
 }
 
 
@@ -130,9 +135,26 @@ PlayableCover::mouseReleaseEvent( QMouseEvent* event )
 
 
 void
+PlayableCover::contextMenuEvent( QContextMenuEvent* event )
+{
+    m_contextMenu->clear();
+
+    if ( m_artist )
+        m_contextMenu->setArtist( m_artist );
+    else if ( m_album )
+        m_contextMenu->setAlbum( m_album );
+    else
+        m_contextMenu->setQuery( m_query );
+    
+    m_contextMenu->exec( event->globalPos() );
+}
+
+
+void
 PlayableCover::setPixmap( const QPixmap& pixmap )
 {
     m_pixmap = TomahawkUtils::createRoundedImage( pixmap, size() );
+    repaint();
 }
 
 
@@ -250,8 +272,8 @@ PlayableCover::paintEvent( QPaintEvent* event )
 
         if ( m_hoveredRect == r )
         {
-            TomahawkUtils::drawQueryBackground( &bufpainter, palette(), r, 1.1 );
-            bufpainter.setPen( Qt::white );
+            TomahawkUtils::drawQueryBackground( &bufpainter, r );
+            bufpainter.setPen( TomahawkUtils::Colors::SELECTION_FOREGROUND );
         }
         
         to.setAlignment( Qt::AlignHCenter | Qt::AlignBottom );
@@ -288,6 +310,7 @@ void
 PlayableCover::setArtist( const Tomahawk::artist_ptr& artist )
 {
     m_artist = artist;
+    repaint();
 }
 
 
@@ -295,6 +318,7 @@ void
 PlayableCover::setAlbum( const Tomahawk::album_ptr& album )
 {
     m_album = album;
+    repaint();
 }
 
 
@@ -302,4 +326,12 @@ void
 PlayableCover::setQuery( const Tomahawk::query_ptr& query )
 {
     m_query = query;
+    repaint();
+}
+
+
+void PlayableCover::setShowText( bool b )
+{
+    m_showText = b;
+    repaint();
 }

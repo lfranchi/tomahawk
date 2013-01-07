@@ -59,12 +59,12 @@ macro(add_tomahawk_plugin)
     # qt stuff
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
     if(PLUGIN_UI)
-        qt4_wrap_ui(PLUGIN_UI_SOURCES ${PLUGIN_UI})
+        qt_wrap_ui(PLUGIN_UI_SOURCES ${PLUGIN_UI})
         list(APPEND PLUGIN_SOURCES ${PLUGIN_UI_SOURCES})
     endif()
 
     if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/resources.qrc")
-        qt4_add_resources(PLUGIN_RC_SOURCES "resources.qrc")
+        qt_add_resources(PLUGIN_RC_SOURCES "resources.qrc")
         list(APPEND PLUGIN_SOURCES ${PLUGIN_RC_SOURCES})
         unset(PLUGIN_RC_SOURCES)
     endif()
@@ -75,6 +75,9 @@ macro(add_tomahawk_plugin)
     else()
         add_library(${target} SHARED ${PLUGIN_SOURCES})
     endif()
+
+    # add qt modules
+    qt5_use_modules(${target} Core Network Widgets Sql Xml DBus)
 
     # definitions - can this be moved into set_target_properties below?
     add_definitions(${QT_DEFINITIONS})

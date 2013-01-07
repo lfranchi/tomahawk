@@ -171,7 +171,6 @@ private:
     bool m_waitingOnNewTrack;
 
     mutable QStringList m_supportedMimeTypes;
-    unsigned int m_volume;
 
     AudioState m_state;
     QQueue< AudioState > m_stateQueue;
