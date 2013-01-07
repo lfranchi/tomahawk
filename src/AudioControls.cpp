@@ -432,7 +432,7 @@ AudioControls::onPlaybackStopped()
 void
 AudioControls::onPlaybackTimer( qint64 msElapsed )
 {
-    tDebug() << Q_FUNC_INFO;
+    //tDebug() << Q_FUNC_INFO;
 
     m_phononTickCheckTimer.stop();
 
@@ -456,7 +456,7 @@ AudioControls::onPlaybackTimer( qint64 msElapsed )
         return;
 
     int currentTime = m_sliderTimeLine.currentTime();
-    tDebug( LOGEXTRA ) << Q_FUNC_INFO << "msElapsed =" << msElapsed << "and timer current time =" << currentTime << "and audio engine state is" << (int)AudioEngine::instance()->state();
+    //tDebug( LOGEXTRA ) << Q_FUNC_INFO << "msElapsed =" << msElapsed << "and timer current time =" << currentTime << "and audio engine state is" << (int)AudioEngine::instance()->state();
 
     // First condition checks for the common case where
     // 1) the track has been started
@@ -474,14 +474,14 @@ AudioControls::onPlaybackTimer( qint64 msElapsed )
     }
     else
     {
-        tDebug() << Q_FUNC_INFO << "Fallthrough";
+        //tDebug() << Q_FUNC_INFO << "Fallthrough";
         // If we're in here we're offset, so we need to do some munging around
         ui->seekSlider->blockSignals( true );
 
         // First handle seeks
         if ( m_seeked )
         {
-            tDebug() << Q_FUNC_INFO << "Seeked";
+            //tDebug() << Q_FUNC_INFO << "Seeked";
             m_sliderTimeLine.setPaused( true );
             m_sliderTimeLine.setCurrentTime( msElapsed );
             m_seeked = false;
@@ -492,7 +492,7 @@ AudioControls::onPlaybackTimer( qint64 msElapsed )
         // However, a Phonon bug means that after a seek we'll actually have AudioEngine's state be Playing, when it ain't, so have to detect that
         else if ( AudioEngine::instance()->state() == AudioEngine::Playing )
         {
-            tDebug() << Q_FUNC_INFO << "AudioEngine playing";
+            //tDebug() << Q_FUNC_INFO << "AudioEngine playing";
             m_sliderTimeLine.setPaused( true );
             m_sliderTimeLine.setCurrentTime( msElapsed );
             if ( msElapsed != m_lastSliderCheck )
@@ -501,7 +501,7 @@ AudioControls::onPlaybackTimer( qint64 msElapsed )
         // Finally, the case where the audioengine isn't playing; if the timeline is still running, pause it and catch up
         else if ( AudioEngine::instance()->state() != AudioEngine::Playing )
         {
-            tDebug() << Q_FUNC_INFO << "AudioEngine not playing";
+            //tDebug() << Q_FUNC_INFO << "AudioEngine not playing";
             if ( msElapsed != currentTime || m_sliderTimeLine.state() == QTimeLine::Running)
             {
                 m_sliderTimeLine.setPaused( true );
