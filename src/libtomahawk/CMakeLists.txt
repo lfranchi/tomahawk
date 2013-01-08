@@ -157,10 +157,9 @@ set( libGuiSources
 
 if(QCA2_FOUND)
     set( libGuiSources ${libGuiSources} utils/GroovesharkParser.cpp )
-    set( libGuiHeaders ${libGuiHeaders} utils/GroovesharkParser.h )
 endif()
 
-if(UNIX AND NOT APPLE)
+if(UNIX AND NOT APPLE AND NOT Qt5Core_DIR)
     if(BUILD_GUI AND X11_FOUND)
         include_directories( ${THIRDPARTY_DIR}/libqnetwm )
         list(APPEND libSources ${libSources} ${THIRDPARTY_DIR}/libqnetwm/libqnetwm/netwm.cpp)
@@ -366,7 +365,6 @@ ENDIF(QCA2_FOUND)
 
 IF(LIBATTICA_FOUND)
     SET( libGuiSources ${libGuiSources} AtticaManager.cpp )
-    SET( libGuiHeaders ${libGuiHeaders} AtticaManager.h )
     INCLUDE_DIRECTORIES( ${LIBATTICA_INCLUDE_DIR} )
     LIST(APPEND LINK_LIBRARIES ${LIBATTICA_LIBRARIES} ${QuaZip_LIBRARIES} )
 ENDIF(LIBATTICA_FOUND)
