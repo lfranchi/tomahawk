@@ -202,6 +202,7 @@ QT_PLUGINS = [
 TOMAHAWK_PLUGINS = [
   'libtomahawk_account_xmpp.so',
   'libtomahawk_account_google.so',
+  'libtomahawk_account_tomahawk.so',
   'libtomahawk_account_twitter.so',
   'libtomahawk_account_zeroconf.so',
   'libtomahawk_infoplugin_adium.so',

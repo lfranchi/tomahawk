@@ -113,7 +113,6 @@ set( libGuiSources
     utils/BinaryExtractWorker.cpp
     utils/SharedTimeLine.cpp
     utils/WebResultHintChecker.cpp
-    utils/WebSocketWrapper.cpp
     utils/NetworkReply.cpp
 
     widgets/AnimatedCounterLabel.cpp
@@ -353,10 +352,10 @@ include_directories(
     ${LIBLASTFM_INCLUDE_DIRS}
     ${CLUCENE_INCLUDE_DIRS}
     ${PHONON_INCLUDES}
-    ${WEBSOCKETPP_INCLUDE_DIR}
-
-    ${LIBPORTFWD_INCLUDE_DIR}
     ${QuaZip_INCLUDE_DIR}
+
+    #Third party libraries included in Tomahawk
+    ${LIBPORTFWD_INCLUDE_DIR}
 )
 
 IF(QCA2_FOUND)
@@ -465,7 +464,6 @@ TARGET_LINK_LIBRARIES( tomahawklib
     ${LINK_LIBRARIES}
     ${Boost_LIBRARIES}
     ${OPENSSL_LIBRARIES}
-    ${WEBSOCKETPP_LIBRARIES}
 )
 
 INSTALL( TARGETS tomahawklib
