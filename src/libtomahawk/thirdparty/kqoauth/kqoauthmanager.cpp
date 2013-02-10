@@ -92,6 +92,7 @@ bool KQOAuthManagerPrivate::setSuccessfulRequestToken(const QMultiMap<QString, Q
     if (hasTemporaryToken) {
         requestToken = QUrl::fromPercentEncoding( QString(request.value("oauth_token")).toLocal8Bit() );
         requestTokenSecret =  QUrl::fromPercentEncoding( QString(request.value("oauth_token_secret")).toLocal8Bit() );
+        results = request;
     }
 
     return hasTemporaryToken;
@@ -107,6 +108,7 @@ bool KQOAuthManagerPrivate::setSuccessfulAuthorized(const QMultiMap<QString, QSt
     if (isAuthorized) {
         requestToken = QUrl::fromPercentEncoding( QString(request.value("oauth_token")).toLocal8Bit() );
         requestTokenSecret =  QUrl::fromPercentEncoding( QString(request.value("oauth_token_secret")).toLocal8Bit() );
+        results = request;
     }
 
     return isAuthorized;
@@ -121,12 +123,12 @@ void KQOAuthManagerPrivate::emitTokens() {
 
     if (currentRequestType == KQOAuthRequest::TemporaryCredentials) {
         // Signal that we are ready to use the protected resources.
-        emit q->temporaryTokenReceived(this->requestToken, this->requestTokenSecret);
+        emit q->temporaryTokenReceived(this->requestToken, this->requestTokenSecret, this->results);
     }
 
     if (currentRequestType == KQOAuthRequest::AccessToken) {
         // Signal that we are ready to use the protected resources.
-        emit q->accessTokenReceived(this->requestToken, this->requestTokenSecret);
+        emit q->accessTokenReceived(this->requestToken, this->requestTokenSecret, this->results);
     }
 
     emit q->receivedToken(this->requestToken, this->requestTokenSecret);

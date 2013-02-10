@@ -59,6 +59,8 @@ public:
     QString consumerKey;
     QString consumerKeySecret;
     QString requestVerifier;
+    QMultiMap<QString, QString> results;
+
 
     QString successHtmlFile;
 

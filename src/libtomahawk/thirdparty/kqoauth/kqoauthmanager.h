@@ -171,7 +171,7 @@ Q_SIGNALS:
 
     // This signal is emited when temporary tokens are returned from the service.
     // Note that this signal is also emited in case temporary tokens are not available.
-    void temporaryTokenReceived(QString oauth_token, QString oauth_token_secret);   // oauth_token, oauth_token_secret
+    void temporaryTokenReceived(QString oauth_token, QString oauth_token_secret, QMultiMap<QString, QString> results);   // oauth_token, oauth_token_secret
 
     // This signal is emited when the user has authenticated the application to
     // communicate with the protected resources. Next we need to exchange the
@@ -181,7 +181,7 @@ Q_SIGNALS:
 
     // This signal is emited when access tokens are received from the service. We are
     // ready to start communicating with the protected resources.
-    void accessTokenReceived(QString oauth_token, QString oauth_token_secret);  // oauth_token, oauth_token_secret
+    void accessTokenReceived(QString oauth_token, QString oauth_token_secret, QMultiMap<QString, QString> results);  // oauth_token, oauth_token_secret
 
     // This signal is emited when the authorized request is done.
     // This ends the kQOAuth interactions.
