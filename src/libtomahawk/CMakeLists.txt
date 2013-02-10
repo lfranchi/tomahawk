@@ -86,7 +86,7 @@ set( libGuiSources
     playlist/dynamic/widgets/CollapsibleControls.cpp
     playlist/dynamic/widgets/DynamicSetupWidget.cpp
 
-    ExternalResolverGui.cpp
+    resolvers/ExternalResolverGui.cpp
     resolvers/ScriptResolver.cpp
     resolvers/QtScriptResolver.cpp
 
@@ -176,14 +176,11 @@ list(APPEND libSources
     ArtistPlaylistInterface.cpp
     Album.cpp
     AlbumPlaylistInterface.cpp
-    Collection.cpp
     CountryUtils.cpp
     FuncTimeout.cpp
     Playlist.cpp
     PlaylistPlaylistInterface.cpp
     MetaPlaylistInterface.cpp
-    Resolver.cpp
-    ExternalResolver.cpp
     Query.cpp
     Result.cpp
     Source.cpp
@@ -211,12 +208,12 @@ list(APPEND libSources
     accounts/dropbox/DropboxAccount.cpp
     accounts/dropbox/DropboxConfig.cpp
 
-    sip/SipPlugin.cpp
-    sip/SipInfo.cpp
-    sip/PeerInfo.cpp
-    sip/SipStatusMessage.cpp
-
     audio/AudioEngine.cpp
+
+    collection/Collection.cpp
+    collection/ArtistsRequest.cpp
+    collection/AlbumsRequest.cpp
+    collection/TracksRequest.cpp
 
     database/Database.cpp
     database/FuzzyIndex.cpp
@@ -308,6 +305,19 @@ list(APPEND libSources
     playlist/dynamic/database/DatabaseGenerator.cpp
     playlist/dynamic/database/DatabaseControl.cpp
     playlist/dynamic/DynamicControl.cpp
+    
+    resolvers/ExternalResolver.cpp
+    resolvers/Resolver.cpp
+    resolvers/ScriptCollection.cpp
+    resolvers/ScriptCommand_AllArtists.cpp
+    resolvers/ScriptCommand_AllAlbums.cpp
+    resolvers/ScriptCommand_AllTracks.cpp
+    resolvers/ScriptCommandQueue.cpp
+
+    sip/SipPlugin.cpp
+    sip/SipInfo.cpp
+    sip/PeerInfo.cpp
+    sip/SipStatusMessage.cpp
 
     utils/TomahawkUtils.cpp
     utils/Logger.cpp

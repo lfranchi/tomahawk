@@ -26,7 +26,7 @@
 #include "AclRegistryImpl.h"
 #include "Album.h"
 #include "Artist.h"
-#include "Collection.h"
+#include "collection/Collection.h"
 #include "infosystem/InfoSystem.h"
 #include "infosystem/InfoSystemCache.h"
 #include "accounts/AccountManager.h"
@@ -739,8 +739,8 @@ TomahawkApp::instanceStarted( KDSingleApplicationGuard::Instance instance )
         return;
     }
 
-    QString arg1 = arguments[ 1 ];
-    if ( loadUrl( arg1 ) )
+    QString lastArg = arguments[ arguments.size() - 1 ];
+    if ( loadUrl( lastArg ) )
     {
         activate();
         return;
