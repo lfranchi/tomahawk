@@ -113,6 +113,7 @@ namespace TomahawkUtils
         DropTopSongs,
         LastfmIcon,
         SpotifyIcon,
+        DropboxIcon,
         SoundcloudIcon,
         AccountNone,
         Starred,

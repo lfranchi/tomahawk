@@ -208,6 +208,9 @@ list(APPEND libSources
     accounts/spotify/SpotifyPlaylistUpdater.cpp
     accounts/spotify/SpotifyInfoPlugin.cpp
 
+    accounts/dropbox/DropboxAccount.cpp
+    accounts/dropbox/DropboxConfig.cpp
+
     sip/SipPlugin.cpp
     sip/SipInfo.cpp
     sip/PeerInfo.cpp
@@ -356,6 +359,7 @@ set( libUI ${libUI}
     accounts/AccountFactoryWrapper.ui
     accounts/spotify/SpotifyAccountConfig.ui
     accounts/lastfm/LastFmConfig.ui
+    accounts/dropbox/DropboxConfig.ui
 )
 
 include_directories(
