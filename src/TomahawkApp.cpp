@@ -653,7 +653,8 @@ TomahawkApp::accountManagerReady()
     m_accountManager.data()->registerAccountFactoryForFilesystem( spotifyFactory );
 
     Tomahawk::Accounts::DropboxAccountFactory* dropboxFactory = new Tomahawk::Accounts::DropboxAccountFactory;
-     m_accountManager.data()->addAccountFactory(dropboxFactory);
+    m_accountManager.data()->addAccountFactory(dropboxFactory);
+    m_accountManager.data()->registerAccountFactoryForFilesystem(dropboxFactory);
 
     Tomahawk::Accounts::AccountManager::instance()->loadFromConfig();
 }

@@ -42,7 +42,7 @@ DropboxConfig::DropboxConfig( DropboxAccount* account )
 
     m_ui->accountNameLabel->setText(m_account->accountName());
 
-    connect( m_ui->associateButton, SIGNAL( clicked( bool ) ), SLOT( testLogin() ) );
+    connect( m_ui->associateButton, SIGNAL( clicked( bool ) ), SLOT( associateClicked() ) );
 
 //    connect( m_ui->importHistory, SIGNAL( clicked( bool ) ), SLOT( loadHistory() ) );
 //    connect( m_ui->syncLovedTracks, SIGNAL( clicked( bool ) ), SLOT( syncLovedTracks() ) );

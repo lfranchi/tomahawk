@@ -49,6 +49,18 @@ DropboxAccountFactory::icon() const
     return TomahawkUtils::defaultPixmap( TomahawkUtils::DropboxIcon );
 }
 
+bool
+DropboxAccountFactory::acceptsPath(const QString &path) const
+{
+    return path.endsWith("dropbox.js");
+}
+
+Account*
+DropboxAccountFactory::createFromPath(const QString &)
+{
+    return new DropboxAccount(generateId(factoryId()));
+}
+
 
 DropboxAccount::DropboxAccount( const QString& accountId )
     : CustomAtticaAccount( accountId )
@@ -185,7 +197,7 @@ DropboxAccount::saveConfig()
 QString
 DropboxAccount::accessToken() const
 {
-    return credentials().value( "password" ).toString();
+    return credentials().value( "accessToken" ).toString();
 }
 
 

@@ -705,7 +705,7 @@ defaultPixmap( ImageType type, ImageMode mode, const QSize& size )
             pixmap = ImageRegistry::instance()->pixmap( RESPATH "images/spotify-sourceicon.svg", size );
             break;
         case DropboxIcon:
-            pixmap = ImageRegistry::instance()->pixmap( RESPATH "images/dropbox-icon.svg", size );
+            pixmap = ImageRegistry::instance()->pixmap( RESPATH "images/dropbox-icon.png", size );
             break;
         case SoundcloudIcon:
             pixmap = ImageRegistry::instance()->pixmap( RESPATH "images/soundcloud.svg", size );

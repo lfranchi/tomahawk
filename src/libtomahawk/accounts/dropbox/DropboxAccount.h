@@ -45,12 +45,14 @@ public:
 
     virtual Account* createAccount(const QString& accountId = QString());
     virtual QString description() const { return tr( "Search and read the music stored on your Dropbox account." ); }
-    virtual QString factoryId() const { return "dropboxmaccount"; }
+    virtual QString factoryId() const { return "dropboxaccount"; }
     virtual QString prettyName() const { return "Dropbox"; }
     virtual AccountTypes types() const { return AccountTypes( ResolverType ); }
     virtual bool allowUserCreation() const { return false; }
     virtual QPixmap icon() const;
     virtual bool isUnique() const { return true; }
+    bool acceptsPath( const QString& ) const;
+    Account* createFromPath(const QString &);
 };
 
 class DLLEXPORT DropboxAccount : public CustomAtticaAccount
