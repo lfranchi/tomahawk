@@ -31,6 +31,7 @@
 #include <QThread>
 #include <QWebPage>
 #include <QWebFrame>
+#include <QSignalMapper>
 
 #ifdef QCA2_FOUND
 #include <QtCrypto>
@@ -162,6 +163,8 @@ public slots:
     virtual void albums( const Tomahawk::collection_ptr& collection, const Tomahawk::artist_ptr& artist );
     virtual void tracks( const Tomahawk::collection_ptr& collection, const Tomahawk::album_ptr& album );
 
+    void executeJavascript(const QString& );
+
 signals:
     void stopped();
 
@@ -175,6 +178,7 @@ private:
     void fillDataInWidgets( const QVariantMap& data );
     void onCapabilitiesChanged( Capabilities capabilities );
     void loadCollections();
+    void connectUISlots( QWidget*, const QVariantList & );
 
     // encapsulate javascript calls
     QVariantMap resolverSettings();
@@ -193,6 +197,7 @@ private:
     QPixmap m_icon;
     unsigned int m_weight, m_timeout;
     Capabilities m_capabilities;
+    QSignalMapper* m_signalMapper;
 
     bool m_ready, m_stopped;
     ExternalResolver::ErrorState m_error;

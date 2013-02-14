@@ -45,6 +45,9 @@
 #include <QNetworkReply>
 #include <QMetaProperty>
 #include <QCryptographicHash>
+#include <QDesktopServices>
+#include <QPainter>
+#include <QSignalMapper>
 
 #include <boost/bind.hpp>
 
@@ -349,6 +352,7 @@ QtScriptResolver::QtScriptResolver( const QString& scriptPath )
     , m_stopped( true )
     , m_error( Tomahawk::ExternalResolver::NoError )
     , m_resolverHelper( new QtScriptResolverHelper( scriptPath, this ) )
+    , m_signalMapper( new QSignalMapper(this) )
 {
     tLog() << Q_FUNC_INFO << "Loading JS resolver:" << scriptPath;
 
@@ -357,6 +361,8 @@ QtScriptResolver::QtScriptResolver( const QString& scriptPath )
 
     // set the icon, if we launch properly we'll get the icon the resolver reports
     m_icon = TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultResolver, TomahawkUtils::Original, QSize( 128, 128 ) );
+
+    connect( m_signalMapper, SIGNAL( mapped ( const QString & ) ), this, SLOT( executeJavascript(const QString &) ) );
 
     if ( !QFile::exists( filePath() ) )
     {
@@ -859,9 +865,11 @@ QtScriptResolver::loadDataFromWidgets()
         QString widgetName = data["widget"].toString();
         QWidget* widget= m_configWidget.data()->findChild<QWidget*>( widgetName );
 
-        QVariant value = widgetData( widget, data["property"].toString() );
-
-        saveData[ data["name"].toString() ] = value;
+        if( data.contains("property") )
+        {
+            QVariant value = widgetData( widget, data["property"].toString() );
+            saveData[ data["name"].toString() ] = value;
+        }
     }
 
     return saveData;
@@ -873,7 +881,9 @@ QtScriptResolver::fillDataInWidgets( const QVariantMap& data )
 {
     foreach(const QVariant& dataWidget, m_dataWidgets)
     {
-        QString widgetName = dataWidget.toMap()["widget"].toString();
+        QVariantMap mapDataWidget = dataWidget.toMap();
+        QString widgetName = mapDataWidget["widget"].toString();
+
         QWidget* widget= m_configWidget.data()->findChild<QWidget*>( widgetName );
         if( !widget )
         {
@@ -881,11 +891,45 @@ QtScriptResolver::fillDataInWidgets( const QVariantMap& data )
             Q_ASSERT(false);
             return;
         }
+        if( mapDataWidget.contains("property") )
+        {
+            QString propertyName = mapDataWidget["property"].toString();
+            QString name = mapDataWidget["name"].toString();
 
-        QString propertyName = dataWidget.toMap()["property"].toString();
-        QString name = dataWidget.toMap()["name"].toString();
+            setWidgetData( data[ name ], widget, propertyName );
+        }
+        if( mapDataWidget.contains("connections") )
+        {
+            connectUISlots( widget, mapDataWidget["connections"].toList() );
+        }
+    }
+}
 
-        setWidgetData( data[ name ], widget, propertyName );
+
+void QtScriptResolver::connectUISlots( QWidget* widget, const QVariantList &connectionsList )
+{
+    foreach( const QVariant& connection, connectionsList )
+    {
+        QVariantMap params = connection.toMap();
+
+        if( params.contains("signal") && params.contains("javascriptCallback") )
+        {
+            int iSignal = widget->metaObject()->indexOfSignal(   params["signal"].toString()
+                                                                                 .toLocal8Bit()
+                                                                                 .data()
+                                                             );
+
+            if( iSignal != -1 ){
+
+                QMetaMethod signal = widget->metaObject()->method( iSignal );
+                QMetaMethod slot = m_signalMapper->metaObject()->method( m_signalMapper
+                                                                         ->metaObject()->
+                                                                         indexOfSlot("map()") );
+
+                connect( widget , signal , m_signalMapper, slot );
+                m_signalMapper->setMapping( widget, params["javascriptCallback"].toString() );
+            }
+        }
     }
 }
 
@@ -943,5 +987,10 @@ QtScriptResolver::resolverCollections()
     // against this ID. doesn't matter what kind of ID string as long as it's unique.
     // Then when there's callbacks from a resolver, it sends source name, collection id
     // + data.
+}
+
+void QtScriptResolver::executeJavascript(const QString &js)
+{
+    m_engine->mainFrame()->evaluateJavaScript( RESOLVER_LEGACY_CODE + js );
 }
 
