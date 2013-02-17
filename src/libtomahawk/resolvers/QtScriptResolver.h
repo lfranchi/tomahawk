@@ -58,6 +58,8 @@ public:
     Q_INVOKABLE QByteArray base64Encode( const QByteArray& input );
     Q_INVOKABLE QByteArray base64Decode( const QByteArray& input );
 
+    Q_INVOKABLE void addLocalJSFile(const QString& jsFilePath);
+
     QSharedPointer<QIODevice> customIODeviceFactory( const Tomahawk::result_ptr& result );
 
 public slots:

@@ -317,6 +317,13 @@ QtScriptResolverHelper::base64Decode( const QByteArray& input )
 }
 
 
+void
+QtScriptResolverHelper::addLocalJSFile( const QString &jsFilePath )
+{
+    m_resolver->m_engine->mainFrame()->evaluateJavaScript( readRaw(jsFilePath) );
+}
+
+
 QSharedPointer< QIODevice >
 QtScriptResolverHelper::customIODeviceFactory( const Tomahawk::result_ptr& result )
 {
@@ -927,6 +934,7 @@ void QtScriptResolver::connectUISlots( QWidget* widget, const QVariantList &conn
                                                                          indexOfSlot("map()") );
 
                 connect( widget , signal , m_signalMapper, slot );
+                //TODO : check if mapping were previously done on widget, if you set the same widget twice the first mapping will be replaced.
                 m_signalMapper->setMapping( widget, params["javascriptCallback"].toString() );
             }
         }
