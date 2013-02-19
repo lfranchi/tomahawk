@@ -31,6 +31,7 @@
 #include <QThread>
 #include <QWebPage>
 #include <QWebFrame>
+#include <QWebView>
 #include <QSignalMapper>
 
 #ifdef QCA2_FOUND
@@ -59,6 +60,8 @@ public:
     Q_INVOKABLE QByteArray base64Decode( const QByteArray& input );
 
     Q_INVOKABLE void addLocalJSFile(const QString& jsFilePath);
+
+    Q_INVOKABLE void requestWebView(const QString& varName, const QString& url);
 
     QSharedPointer<QIODevice> customIODeviceFactory( const Tomahawk::result_ptr& result );
 

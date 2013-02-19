@@ -324,6 +324,19 @@ QtScriptResolverHelper::addLocalJSFile( const QString &jsFilePath )
 }
 
 
+void
+QtScriptResolverHelper::requestWebView(const QString &varName, const QString &url)
+{
+    QWebView *view = new QWebView();
+    view->load(QUrl(url));
+
+    //TODO: move this to JS.
+    view->setWindowModality(Qt::ApplicationModal);
+
+    m_resolver->m_engine->mainFrame()->addToJavaScriptWindowObject(varName, view);
+}
+
+
 QSharedPointer< QIODevice >
 QtScriptResolverHelper::customIODeviceFactory( const Tomahawk::result_ptr& result )
 {
