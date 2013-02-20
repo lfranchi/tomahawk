@@ -249,6 +249,27 @@ Tomahawk.asyncRequest = function(url, callback, extraHeaders)
     xmlHttpRequest.send(null);
 };
 
+Tomahawk.asyncPostRequest = function(url, params, callback, extraHeaders)
+{
+    var xmlHttpRequest = new XMLHttpRequest();
+    xmlHttpRequest.open('POST', url, true);
+    xmlHttpRequest.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+    if (extraHeaders) {
+        for(var headerName in extraHeaders) {
+            xmlHttpRequest.setRequestHeader(headerName, extraHeaders[headerName]);
+        }
+    }
+    xmlHttpRequest.onreadystatechange = function() {
+        if (xmlHttpRequest.readyState == 4 && xmlHttpRequest.status == 200) {
+            callback.call(window, xmlHttpRequest);
+        } else if (xmlHttpRequest.readyState === 4) {
+            Tomahawk.log("Failed to do POST request: to: " + url);
+            Tomahawk.log("Status Code was: " + xmlHttpRequest.status);
+        }
+    }
+    xmlHttpRequest.send(params);
+};
+
 /**
 *
 * Secure Hash Algorithm (SHA256)
