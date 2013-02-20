@@ -263,6 +263,17 @@ TreeModel::addCollection( const collection_ptr& collection )
     setIcon( collection->bigIcon() );
 
     setTitle( collection->prettyName() );
+    setDescription( collection->description() );
+}
+
+
+void
+TreeModel::reloadCollection()
+{
+    if ( m_collection.isNull() )
+        return;
+
+    onCollectionChanged();
 }
 
 

@@ -150,5 +150,6 @@
         <file>data/images/tweet.svg</file>
         <file>data/images/widget-border.png</file>
         <file>data/images/dropbox-icon.png</file>
+        <file>data/images/refresh.svg</file>
     </qresource>
 </RCC>

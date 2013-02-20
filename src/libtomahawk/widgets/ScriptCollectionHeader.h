@@ -1,7 +1,6 @@
 /* === This file is part of Tomahawk Player - <http://tomahawk-player.org> ===
  *
- *   Copyright 2010-2011, Christian Muehlhaeuser <muesli@tomahawk-player.org>
- *   Copyright 2012-2013, Teo Mrnjavac <teo@kde.org>
+ *   Copyright 2013, Teo Mrnjavac <teo@kde.org>
  *
  *   Tomahawk is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,34 +16,26 @@
  *   along with Tomahawk. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FLEXIBLEHEADER_H
-#define FLEXIBLEHEADER_H
+#ifndef SCRIPTCOLLECTIONHEADER_H
+#define SCRIPTCOLLECTIONHEADER_H
 
 #include "widgets/FilterHeader.h"
-#include "Artist.h"
 
-class QPaintEvent;
-class FlexibleView;
-class QRadioButton;
+class QPushButton;
 
-class DLLEXPORT FlexibleHeader : public FilterHeader
+class DLLEXPORT ScriptCollectionHeader : public FilterHeader
 {
     Q_OBJECT
-
 public:
-    FlexibleHeader( FlexibleView* parent );
-    ~FlexibleHeader();
+    explicit ScriptCollectionHeader( QWidget* parent = 0 );
+
+    void setRefreshVisible( bool visible );
+    
+signals:
+    void refreshClicked();
 
 protected:
-    void changeEvent( QEvent* e );
-
-private:
-    FlexibleView* m_parent;
-
-    QRadioButton* m_radioCloud;
-    QRadioButton* m_radioDetailed;
-    QRadioButton* m_radioNormal;
-
+    QPushButton* m_refreshButton;
 };
 
-#endif
+#endif // SCRIPTCOLLECTIONHEADER_H

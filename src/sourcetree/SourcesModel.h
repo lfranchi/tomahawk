@@ -61,7 +61,9 @@ public:
 
         GenericPage = 6,
         TemporaryPage = 7,
-        LovedTracksPage = 10
+        LovedTracksPage = 10,
+
+        ScriptCollection = 11
     };
 
     enum CategoryType {
@@ -135,6 +137,12 @@ private slots:
     void onSourceAdded( const Tomahawk::source_ptr& source );
     void onSourceRemoved( const Tomahawk::source_ptr& source );
 
+    void onScriptCollectionAdded( const Tomahawk::collection_ptr& collection );
+    void onScriptCollectionRemoved( const Tomahawk::collection_ptr& collection );
+
+    Tomahawk::ViewPage* scriptCollectionClicked( const Tomahawk::collection_ptr& collection );
+    Tomahawk::ViewPage* getScriptCollectionPage( const Tomahawk::collection_ptr& collection ) const;
+
     void onWidgetDestroyed( QWidget* w );
 
 private:
@@ -145,9 +153,12 @@ private:
     SourceTreeItem* m_rootItem;
     GroupItem* m_collectionsGroup;
     GroupItem* m_myMusicGroup;
+    GroupItem* m_cloudGroup;
 
     QList< Tomahawk::source_ptr > m_sourcesWithViewPage;
     QHash< Tomahawk::source_ptr, SourceTreeItem* > m_sourcesWithViewPageItems;
+    QHash< Tomahawk::collection_ptr, SourceTreeItem* > m_scriptCollections;
+    QHash< Tomahawk::collection_ptr, Tomahawk::ViewPage* > m_scriptCollectionPages;
 
     QHash< Tomahawk::ViewPage*, SourceTreeItem* > m_sourceTreeLinks;
     Tomahawk::ViewPage* m_viewPageDelayedCacheItem;
