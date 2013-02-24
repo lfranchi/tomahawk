@@ -369,17 +369,17 @@ ansluta och strömma från dig?</translation>
 <context>
     <name>AudioEngine</name>
     <message>
-        <location filename="../src/libtomahawk/audio/AudioEngine.cpp" line="646"/>
+        <location filename="../src/libtomahawk/audio/AudioEngine.cpp" line="648"/>
         <source>Sorry, Tomahawk couldn&apos;t find the track &apos;%1&apos; by %2</source>
         <translation>Tyvärr! Tomahawk kunde inte hitta spåret &apos;%1&apos; av %2</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/audio/AudioEngine.cpp" line="670"/>
+        <location filename="../src/libtomahawk/audio/AudioEngine.cpp" line="672"/>
         <source>Sorry, Tomahawk couldn&apos;t find the artist &apos;%1&apos;</source>
         <translation>Tyvärr! Tomahawk kunde inte hitta artisten &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/audio/AudioEngine.cpp" line="696"/>
+        <location filename="../src/libtomahawk/audio/AudioEngine.cpp" line="698"/>
         <source>Sorry, Tomahawk couldn&apos;t find the album &apos;%1&apos; by %2</source>
         <translation>Tyvärr! Tomahawk kunde inte hitta albumet &apos;%1&apos; av %2 </translation>
     </message>
@@ -650,7 +650,7 @@ ansluta och strömma från dig?</translation>
     <message>
         <location filename="../src/libtomahawk/widgets/FilterHeader.cpp" line="29"/>
         <source>Filter...</source>
-        <translation type="unfinished"/>
+        <translation>Filter...</translation>
     </message>
 </context>
 <context>
@@ -1415,7 +1415,7 @@ ansluta och strömma från dig?</translation>
     <message>
         <location filename="../src/libtomahawk/widgets/ScriptCollectionHeader.cpp" line="49"/>
         <source>Reload Collection</source>
-        <translation type="unfinished"/>
+        <translation>Läs om kollektionen</translation>
     </message>
 </context>
 <context>
@@ -3114,12 +3114,12 @@ Försök att ändra i filtrerna för att få en ny låtlista</translation>
 <context>
     <name>Tomahawk::InfoSystem::FdoNotifyPlugin</name>
     <message>
-        <location filename="../src/infoplugins/linux/fdonotify/FdoNotifyPlugin.cpp" line="156"/>
+        <location filename="../src/infoplugins/linux/fdonotify/FdoNotifyPlugin.cpp" line="155"/>
         <source>Tomahawk is playing &quot;%1&quot; by %2%3.</source>
         <translation>Tomahawk spelar &quot;%1&quot; by %2%3.</translation>
     </message>
     <message>
-        <location filename="../src/infoplugins/linux/fdonotify/FdoNotifyPlugin.cpp" line="159"/>
+        <location filename="../src/infoplugins/linux/fdonotify/FdoNotifyPlugin.cpp" line="158"/>
         <source>on &quot;%1&quot;</source>
         <translation>på &quot;%1&quot;</translation>
     </message>
