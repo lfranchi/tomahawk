@@ -62,6 +62,7 @@ set( libGuiSources
     playlist/GridItemDelegate.cpp
     playlist/GridView.cpp
     playlist/TreeView.cpp
+    playlist/TreeWidget.cpp
     playlist/ViewHeader.cpp
     playlist/LovedTracksModel.cpp
     playlist/RecentlyAddedModel.cpp
@@ -118,6 +119,8 @@ set( libGuiSources
 
     widgets/AnimatedCounterLabel.cpp
     widgets/BasicHeader.cpp
+    widgets/FilterHeader.cpp
+    widgets/ScriptCollectionHeader.cpp
     widgets/Breadcrumb.cpp
     widgets/BreadcrumbButton.cpp
     widgets/CheckDirTree.cpp
@@ -205,9 +208,6 @@ list(APPEND libSources
     accounts/spotify/SpotifyAccountConfig.cpp
     accounts/spotify/SpotifyPlaylistUpdater.cpp
     accounts/spotify/SpotifyInfoPlugin.cpp
-
-    accounts/dropbox/DropboxAccount.cpp
-    accounts/dropbox/DropboxConfig.cpp
 
     audio/AudioEngine.cpp
 
@@ -372,7 +372,6 @@ set( libUI ${libUI}
     accounts/AccountFactoryWrapper.ui
     accounts/spotify/SpotifyAccountConfig.ui
     accounts/lastfm/LastFmConfig.ui
-    accounts/dropbox/DropboxConfig.ui
 )
 
 include_directories(

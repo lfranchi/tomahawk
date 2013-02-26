@@ -32,7 +32,6 @@
 #include "accounts/AccountManager.h"
 #include "accounts/spotify/SpotifyAccount.h"
 #include "accounts/lastfm/LastFmAccount.h"
-#include "accounts/dropbox/DropboxAccount.h"
 #include "database/Database.h"
 #include "database/DatabaseCollection.h"
 #include "database/DatabaseCommand_CollectionStats.h"
@@ -651,9 +650,6 @@ TomahawkApp::accountManagerReady()
     Tomahawk::Accounts::SpotifyAccountFactory* spotifyFactory = new Tomahawk::Accounts::SpotifyAccountFactory;
     m_accountManager.data()->addAccountFactory( spotifyFactory );
     m_accountManager.data()->registerAccountFactoryForFilesystem( spotifyFactory );
-
-    Tomahawk::Accounts::DropboxAccountFactory* dropboxFactory = new Tomahawk::Accounts::DropboxAccountFactory;
-     m_accountManager.data()->addAccountFactory(dropboxFactory);
 
     Tomahawk::Accounts::AccountManager::instance()->loadFromConfig();
 }

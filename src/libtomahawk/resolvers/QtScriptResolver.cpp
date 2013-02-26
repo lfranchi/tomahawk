@@ -41,7 +41,6 @@
 #include "jobview/ErrorStatusMessage.h"
 
 #include "utils/TomahawkUtilsGui.h"
-#include "utils/Logger.h"
 
 #include "config.h"
 
@@ -50,6 +49,9 @@
 #include <QNetworkReply>
 #include <QMetaProperty>
 #include <QCryptographicHash>
+#include <QDesktopServices>
+#include <QPainter>
+#include <QSignalMapper>
 
 #include <boost/bind.hpp>
 
@@ -471,42 +473,26 @@ QtScriptResolverHelper::ReadCloudFile(const QUrl& download_url,
 
   }
 
-/*
-    QVariantMap m;
 
-    m["url"]          = url.arg( fi.canonicalFilePath() );
-    m["mtime"]        = fi.lastModified().toUTC().toTime_t();
-:    m["size"]         = (unsigned int)fi.size();
-:    m["mimetype"]     = mimetype;
-:    m["duration"]     = duration;
-:    m["bitrate"]      = bitrate;
-:    m["artist"]       = artist;
-:    m["album"]        = album;
-:    m["track"]        = track;
-:    m["albumpos"]     = tag->track();
-:    m["year"]         = tag->year();
-:    m["albumartist"]  = tag->albumArtist();
-:    m["composer"]     = tag->composer();
-:    m["discnumber"]   = tag->discNumber();
-    m["hash"]         = ""; // TODO
-
-
-
-    tDebug( LOGINFO ) << "###### Scan mimetype ###### :" << m["mimetype"];
-    tDebug( LOGINFO ) << "###### Scan duration ###### :" << m["duration"];
-    tDebug( LOGINFO ) << "###### Scan bitrate ###### :" << m["bitrate"];
-    tDebug( LOGINFO ) << "###### Scan artist ###### :" << m["artist"];
-    tDebug( LOGINFO ) << "###### Scan album ###### :" << m["album"];
-    tDebug( LOGINFO ) << "###### Scan track ###### :" << m["track"];
-    tDebug( LOGINFO ) << "###### Scan albumpos ###### :" << m["albumpos"];
-    tDebug( LOGINFO ) << "###### Scan year ###### :" << m["year"];
-    tDebug( LOGINFO ) << "###### Scan albumartist ###### :" << m["albumartist"];
-    tDebug( LOGINFO ) << "###### Scan composer ###### :" << m["composer"];
-    tDebug( LOGINFO ) << "###### Scan discnumber ###### :" << m["discnumber"];
-
-    return m;
+void
+QtScriptResolverHelper::addLocalJSFile( const QString &jsFilePath )
+{
+    m_resolver->m_engine->mainFrame()->evaluateJavaScript( readRaw(jsFilePath) );
 }
-*/
+
+
+void
+QtScriptResolverHelper::requestWebView(const QString &varName, const QString &url)
+{
+    QWebView *view = new QWebView();
+    view->load(QUrl(url));
+
+    //TODO: move this to JS.
+    view->setWindowModality(Qt::ApplicationModal);
+
+    m_resolver->m_engine->mainFrame()->addToJavaScriptWindowObject(varName, view);
+}
+
 
 QSharedPointer< QIODevice >
 QtScriptResolverHelper::customIODeviceFactory( const Tomahawk::result_ptr& result )
@@ -543,6 +529,7 @@ QtScriptResolver::QtScriptResolver( const QString& scriptPath )
     , m_stopped( true )
     , m_error( Tomahawk::ExternalResolver::NoError )
     , m_resolverHelper( new QtScriptResolverHelper( scriptPath, this ) )
+    , m_signalMapper( new QSignalMapper(this) )
 {
     tLog() << Q_FUNC_INFO << "Loading JS resolver:" << scriptPath;
 
@@ -551,6 +538,8 @@ QtScriptResolver::QtScriptResolver( const QString& scriptPath )
 
     // set the icon, if we launch properly we'll get the icon the resolver reports
     m_icon = TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultResolver, TomahawkUtils::Original, QSize( 128, 128 ) );
+
+    connect( m_signalMapper, SIGNAL( mapped ( const QString & ) ), this, SLOT( executeJavascript(const QString &) ) );
 
     if ( !QFile::exists( filePath() ) )
     {
@@ -1053,9 +1042,11 @@ QtScriptResolver::loadDataFromWidgets()
         QString widgetName = data["widget"].toString();
         QWidget* widget= m_configWidget.data()->findChild<QWidget*>( widgetName );
 
-        QVariant value = widgetData( widget, data["property"].toString() );
-
-        saveData[ data["name"].toString() ] = value;
+        if( data.contains("property") )
+        {
+            QVariant value = widgetData( widget, data["property"].toString() );
+            saveData[ data["name"].toString() ] = value;
+        }
     }
 
     return saveData;
@@ -1067,7 +1058,9 @@ QtScriptResolver::fillDataInWidgets( const QVariantMap& data )
 {
     foreach(const QVariant& dataWidget, m_dataWidgets)
     {
-        QString widgetName = dataWidget.toMap()["widget"].toString();
+        QVariantMap mapDataWidget = dataWidget.toMap();
+        QString widgetName = mapDataWidget["widget"].toString();
+
         QWidget* widget= m_configWidget.data()->findChild<QWidget*>( widgetName );
         if( !widget )
         {
@@ -1075,11 +1068,46 @@ QtScriptResolver::fillDataInWidgets( const QVariantMap& data )
             Q_ASSERT(false);
             return;
         }
+        if( mapDataWidget.contains("property") )
+        {
+            QString propertyName = mapDataWidget["property"].toString();
+            QString name = mapDataWidget["name"].toString();
 
-        QString propertyName = dataWidget.toMap()["property"].toString();
-        QString name = dataWidget.toMap()["name"].toString();
+            setWidgetData( data[ name ], widget, propertyName );
+        }
+        if( mapDataWidget.contains("connections") )
+        {
+            connectUISlots( widget, mapDataWidget["connections"].toList() );
+        }
+    }
+}
 
-        setWidgetData( data[ name ], widget, propertyName );
+
+void QtScriptResolver::connectUISlots( QWidget* widget, const QVariantList &connectionsList )
+{
+    foreach( const QVariant& connection, connectionsList )
+    {
+        QVariantMap params = connection.toMap();
+
+        if( params.contains("signal") && params.contains("javascriptCallback") )
+        {
+            int iSignal = widget->metaObject()->indexOfSignal(   params["signal"].toString()
+                                                                                 .toLocal8Bit()
+                                                                                 .data()
+                                                             );
+
+            if( iSignal != -1 ){
+
+                QMetaMethod signal = widget->metaObject()->method( iSignal );
+                QMetaMethod slot = m_signalMapper->metaObject()->method( m_signalMapper
+                                                                         ->metaObject()->
+                                                                         indexOfSlot("map()") );
+
+                connect( widget , signal , m_signalMapper, slot );
+                //TODO : check if mapping were previously done on widget, if you set the same widget twice the first mapping will be replaced.
+                m_signalMapper->setMapping( widget, params["javascriptCallback"].toString() );
+            }
+        }
     }
 }
 
@@ -1097,9 +1125,20 @@ QtScriptResolver::loadCollections()
 {
     if ( m_capabilities.testFlag( Browsable ) )
     {
+        QVariantMap collectionInfo = m_engine->mainFrame()->evaluateJavaScript( "resolver.collection();" ).toMap();
+        if ( collectionInfo.isEmpty() ||
+             !collectionInfo.contains( "prettyname" ) ||
+             !collectionInfo.contains( "description" ) )
+            return;
+
+        QString desc = collectionInfo.value( "description" ).toString();
+
         m_collections.clear();
         // at this point we assume that all the tracks browsable through a resolver belong to the local source
-        Tomahawk::collection_ptr collection( new Tomahawk::ScriptCollection( SourceList::instance()->getLocal(), this ) );
+        Tomahawk::ScriptCollection* sc = new Tomahawk::ScriptCollection( SourceList::instance()->getLocal(), this );
+        sc->setDescription( desc );
+        Tomahawk::collection_ptr collection( sc );
+
         m_collections.insert( collection->name(), collection );
         emit collectionAdded( collection );
 
@@ -1137,5 +1176,10 @@ QtScriptResolver::resolverCollections()
     // against this ID. doesn't matter what kind of ID string as long as it's unique.
     // Then when there's callbacks from a resolver, it sends source name, collection id
     // + data.
+}
+
+void QtScriptResolver::executeJavascript(const QString &js)
+{
+    m_engine->mainFrame()->evaluateJavaScript( RESOLVER_LEGACY_CODE + js );
 }
 

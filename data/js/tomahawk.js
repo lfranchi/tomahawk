@@ -151,6 +151,10 @@ var TomahawkResolver = {
         return {
             qid: qid
         };
+    },
+    collection: function()
+    {
+        return {};
     }
 };
 
@@ -247,6 +251,27 @@ Tomahawk.asyncRequest = function(url, callback, extraHeaders)
         }
     }
     xmlHttpRequest.send(null);
+};
+
+Tomahawk.asyncPostRequest = function(url, params, callback, extraHeaders)
+{
+    var xmlHttpRequest = new XMLHttpRequest();
+    xmlHttpRequest.open('POST', url, true);
+    xmlHttpRequest.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+    if (extraHeaders) {
+        for(var headerName in extraHeaders) {
+            xmlHttpRequest.setRequestHeader(headerName, extraHeaders[headerName]);
+        }
+    }
+    xmlHttpRequest.onreadystatechange = function() {
+        if (xmlHttpRequest.readyState == 4 && xmlHttpRequest.status == 200) {
+            callback.call(window, xmlHttpRequest);
+        } else if (xmlHttpRequest.readyState === 4) {
+            Tomahawk.log("Failed to do POST request: to: " + url);
+            Tomahawk.log("Status Code was: " + xmlHttpRequest.status);
+        }
+    }
+    xmlHttpRequest.send(params);
 };
 
 /**
@@ -383,6 +408,29 @@ Tomahawk.sha256=function(s){
 
 };
 
+if (!Function.prototype.bind) {
+  Function.prototype.bind = function (oThis) {
+    if (typeof this !== "function") {
+      // closest thing possible to the ECMAScript 5 internal IsCallable function
+      throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+    }
+ 
+    var aArgs = Array.prototype.slice.call(arguments, 1),
+        fToBind = this,
+        fNOP = function () {},
+        fBound = function () {
+          return fToBind.apply(this instanceof fNOP && oThis
+                                 ? this
+                                 : oThis,
+                               aArgs.concat(Array.prototype.slice.call(arguments)));
+        };
+ 
+    fNOP.prototype = this.prototype;
+    fBound.prototype = new fNOP();
+ 
+    return fBound;
+  };
+}
 
 
 // some aliases

@@ -23,6 +23,8 @@
 #include "infoplugins/InfoPluginDllMacro.h"
 #include "infosystem/InfoSystem.h"
 
+#include <QDBusMessage>
+
 namespace Tomahawk
 {
 
@@ -41,7 +43,9 @@ public:
 
 protected slots:
     virtual void init() {}
-    
+
+    virtual void dbusPlayingReplyReceived( const QDBusMessage &reply );
+
     virtual void getInfo( Tomahawk::InfoSystem::InfoRequestData requestData )
     {
         Q_UNUSED( requestData );
@@ -56,6 +60,8 @@ protected slots:
     }
 
 private:
+    int getNotificationIconHeight();
+
     void notifyUser( const QString &messageText );
 
     void nowPlaying( const QVariant &input );

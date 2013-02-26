@@ -25,12 +25,16 @@
 #include "Query.h"
 #include "utils/TomahawkUtils.h"
 #include "config.h"
+#include "TomahawkVersion.h"
+#include "utils/Logger.h"
 
 #include <QDir>
 #include <QFile>
 #include <QThread>
 #include <QWebPage>
 #include <QWebFrame>
+#include <QWebView>
+#include <QSignalMapper>
 
 #include <taglib/tiostream.h>
 #include <taglib/tfilestream.h>
@@ -60,6 +64,7 @@ public:
     Q_INVOKABLE QByteArray base64Encode( const QByteArray& input );
     Q_INVOKABLE QByteArray base64Decode( const QByteArray& input );
 
+
     // send ID3Tags of the stream as argument of the callback function
     Q_INVOKABLE void
     ReadCloudFile(const QUrl& download_url,
@@ -68,6 +73,11 @@ public:
                                           const QString& mime_type,
                                           const QString& authorisation_header,
                                           const QString &javascriptCallbackFunction);
+
+    Q_INVOKABLE void addLocalJSFile(const QString& jsFilePath);
+
+    Q_INVOKABLE void requestWebView(const QString& varName, const QString& url);
+
 
     QSharedPointer<QIODevice> customIODeviceFactory( const Tomahawk::result_ptr& result );
 
@@ -116,6 +126,19 @@ public:
         settings()->setAttribute( QWebSettings::LocalStorageDatabaseEnabled, true );
         settings()->setAttribute( QWebSettings::LocalContentCanAccessFileUrls, true );
         settings()->setAttribute( QWebSettings::LocalContentCanAccessRemoteUrls, true );
+
+        // Tomahawk is not a user agent
+        m_header = QWebPage::userAgentForUrl( QUrl() ).replace( QString( "%1/%2" )
+                                                                .arg( TOMAHAWK_APPLICATION_NAME )
+                                                                .arg( TOMAHAWK_VERSION )
+                                                                ,"");
+        tLog() << "QtScriptResolver Using header" << m_header;
+    }
+
+    QString userAgentForUrl ( const QUrl & url ) const
+    {
+        Q_UNUSED(url);
+        return m_header;
     }
 
     void setScriptPath( const QString& scriptPath )
@@ -135,6 +158,7 @@ protected:
 private:
     QtScriptResolver* m_parent;
     QString m_scriptPath;
+    QString m_header;
 };
 
 
@@ -175,6 +199,8 @@ public slots:
     virtual void albums( const Tomahawk::collection_ptr& collection, const Tomahawk::artist_ptr& artist );
     virtual void tracks( const Tomahawk::collection_ptr& collection, const Tomahawk::album_ptr& album );
 
+    void executeJavascript(const QString& );
+
 signals:
     void stopped();
 
@@ -188,6 +214,7 @@ private:
     void fillDataInWidgets( const QVariantMap& data );
     void onCapabilitiesChanged( Capabilities capabilities );
     void loadCollections();
+    void connectUISlots( QWidget*, const QVariantList & );
 
     // encapsulate javascript calls
     QVariantMap resolverSettings();
@@ -206,6 +233,7 @@ private:
     QPixmap m_icon;
     unsigned int m_weight, m_timeout;
     Capabilities m_capabilities;
+    QSignalMapper* m_signalMapper;
 
     bool m_ready, m_stopped;
     ExternalResolver::ErrorState m_error;

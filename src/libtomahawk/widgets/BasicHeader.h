@@ -50,8 +50,6 @@ protected:
 
     QBoxLayout* m_mainLayout;
     QBoxLayout* m_verticalLayout;
-
-    static QPixmap* s_tiledHeader;
 };
 
 #endif // BASICHEADER_H

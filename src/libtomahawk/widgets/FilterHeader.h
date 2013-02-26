@@ -1,7 +1,6 @@
 /* === This file is part of Tomahawk Player - <http://tomahawk-player.org> ===
  *
- *   Copyright 2010-2012, Leo Franchi <lfranchi@kde.org>
- *   Copyright 2013, Rémi Benoit <r3m1.benoit@gmail.com>
+ *   Copyright 2013, Teo Mrnjavac <teo@kde.org>
  *
  *   Tomahawk is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,45 +16,40 @@
  *   along with Tomahawk. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DROPBOXCONFIG_H
-#define DROPBOXCONFIG_H
+#ifndef FILTERHEADER_H
+#define FILTERHEADER_H
 
-#include "Query.h"
-#include "accounts/AccountConfigWidget.h"
-#include "database/DatabaseCommand_LoadSocialActions.h"
+#include "widgets/BasicHeader.h"
 
-#include <QWidget>
-#include <QSet>
-#include <QNetworkReply>
+#include "DllMacro.h"
 
-class Ui_DropboxConfig;
+#include <QTimer>
 
-namespace Tomahawk {
+class QSearchField;
 
-namespace Accounts {
-
-class DropboxAccount;
-
-class DropboxConfig : public AccountConfigWidget
+class DLLEXPORT FilterHeader : public BasicHeader
 {
     Q_OBJECT
 public:
-    explicit DropboxConfig( DropboxAccount* account );
+    explicit FilterHeader( QWidget *parent = 0 );
+    virtual ~FilterHeader();
+    
+public slots:
+    void setFilter( const QString& filter );
 
-    QString accountName() const;
-    void setAccountName( const QString& );
+signals:
+    void filterTextChanged( const QString& filter );
 
 private slots:
-    void associateClicked();
+    void onFilterEdited();
+    void applyFilter();
+
+protected:
+    QSearchField* m_filterField;
+
 private:
-
-    DropboxAccount* m_account;
-    Ui_DropboxConfig* m_ui;
-
+    QString m_filter;
+    QTimer m_filterTimer;
 };
 
-}
-
-}
-
-#endif // LASTFMCONFIG_H
+#endif // FILTERHEADER_H

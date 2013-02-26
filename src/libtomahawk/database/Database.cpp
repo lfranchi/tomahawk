@@ -55,9 +55,9 @@ Database::Database( const QString& dbname, QObject* parent )
 
     tDebug() << Q_FUNC_INFO << "Using" << m_maxConcurrentThreads << "database worker threads";
 
+    connect( m_impl, SIGNAL( indexReady() ), SLOT( markAsReady() ) );
     connect( m_impl, SIGNAL( indexReady() ), SIGNAL( indexReady() ) );
     connect( m_impl, SIGNAL( indexReady() ), SIGNAL( ready() ) );
-    connect( m_impl, SIGNAL( indexReady() ), SLOT( setIsReadyTrue() ) );
 
     Q_ASSERT( m_workerRW );
     m_workerRW.data()->start();
@@ -120,6 +120,12 @@ void
 Database::enqueue( const QList< QSharedPointer<DatabaseCommand> >& lc )
 {
     Q_ASSERT( m_ready );
+    if ( !m_ready )
+    {
+        tDebug() << "Can't enqueue DatabaseCommand, Database is not ready yet!";
+        return;
+    }
+
     tDebug( LOGVERBOSE ) << "Enqueueing" << lc.count() << "commands to rw thread";
     if ( m_workerRW && m_workerRW.data()->worker() )
         m_workerRW.data()->worker().data()->enqueue( lc );
@@ -130,6 +136,12 @@ void
 Database::enqueue( const QSharedPointer<DatabaseCommand>& lc )
 {
     Q_ASSERT( m_ready );
+    if ( !m_ready )
+    {
+        tDebug() << "Can't enqueue DatabaseCommand, Database is not ready yet!";
+        return;
+    }
+
     if ( lc->doesMutates() )
     {
         tDebug( LOGVERBOSE ) << "Enqueueing command to rw thread:" << lc->commandname();
@@ -179,4 +191,12 @@ Database::impl()
     }
 
     return m_implHash.value( thread );
+}
+
+
+void
+Database::markAsReady()
+{
+    tLog() << Q_FUNC_INFO << "Database is ready now!";
+    m_ready = true;
 }
