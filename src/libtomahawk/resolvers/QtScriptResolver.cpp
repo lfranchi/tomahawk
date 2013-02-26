@@ -339,16 +339,36 @@ QtScriptResolverHelper::requestWebView(const QString &varName, const QString &ur
 QSharedPointer< QIODevice >
 QtScriptResolverHelper::customIODeviceFactory( const Tomahawk::result_ptr& result )
 {
+    QString urlStr;
+    QVariantMap request;
+    QNetworkRequest req;
     QString getUrl = QString( "Tomahawk.resolver.instance.%1( '%2' );" ).arg( m_urlCallback )
                                                                         .arg( QString( QUrl( result->url() ).toEncoded() ) );
 
-    QString urlStr = m_resolver->m_engine->mainFrame()->evaluateJavaScript( getUrl ).toString();
+    QVariant jsResult = m_resolver->m_engine->mainFrame()->evaluateJavaScript( getUrl ).toString();
+
+    if(jsResult.type() == QVariant::Map)
+    {
+        request = jsResult.toMap();
+
+        urlStr = request["url"].toString();
+
+        QVariantMap headers = request["headers"].toMap();
+        foreach(const QString& headerName, headers.keys())
+        {
+            req.setRawHeader(headerName.toLocal8Bit(), headers[headerName].toString().toLocal8Bit());
+        }
+    }
+    else
+    {
+        urlStr = jsResult.toString();
+    }
 
     if ( urlStr.isEmpty() )
         return QSharedPointer< QIODevice >();
 
     QUrl url = QUrl::fromEncoded( urlStr.toUtf8() );
-    QNetworkRequest req( url );
+    req.setUrl( url );
     tDebug() << "Creating a QNetowrkReply with url:" << req.url().toString();
     QNetworkReply* reply = TomahawkUtils::nam()->get( req );
     return QSharedPointer<QIODevice>( reply, &QObject::deleteLater );
