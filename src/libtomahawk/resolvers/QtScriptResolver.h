@@ -32,6 +32,9 @@
 #include <QWebPage>
 #include <QWebFrame>
 
+#include <taglib/tiostream.h>
+#include <taglib/tfilestream.h>
+
 #ifdef QCA2_FOUND
 #include <QtCrypto>
 #endif
@@ -56,6 +59,15 @@ public:
 
     Q_INVOKABLE QByteArray base64Encode( const QByteArray& input );
     Q_INVOKABLE QByteArray base64Decode( const QByteArray& input );
+
+    // send ID3Tags of the stream as argument of the callback function
+    Q_INVOKABLE void
+    ReadCloudFile(const QUrl& download_url,
+                                          const QString& title,
+                                          int size,
+                                          const QString& mime_type,
+                                          const QString& authorisation_header,
+                                          const QString &javascriptCallbackFunction);
 
     QSharedPointer<QIODevice> customIODeviceFactory( const Tomahawk::result_ptr& result );
 
@@ -85,6 +97,7 @@ private:
 #ifdef QCA2_FOUND
     QCA::Initializer m_qcaInit;
 #endif
+    QNetworkAccessManager* network;
 };
 
 class DLLEXPORT ScriptEngine : public QWebPage

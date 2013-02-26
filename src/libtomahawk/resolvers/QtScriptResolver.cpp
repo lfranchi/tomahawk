@@ -27,6 +27,11 @@
 #include "ScriptCollection.h"
 #include "SourceList.h"
 
+
+
+#include "utils/TomahawkUtils.h"
+#include "TomahawkSettings.h"
+
 #include "accounts/AccountConfigWidget.h"
 
 #include "network/Servent.h"
@@ -48,6 +53,37 @@
 
 #include <boost/bind.hpp>
 
+//--- includes readcloudFile
+//#include "taghandlers/tag.h"
+# include "utils/cloudstream.h"
+
+#include <taglib/aifffile.h>
+#include <taglib/asffile.h>
+#include <taglib/attachedpictureframe.h>
+#include <taglib/commentsframe.h>
+#include <taglib/fileref.h>
+#include <taglib/flacfile.h>
+#include <taglib/id3v2tag.h>
+#include <taglib/mp4file.h>
+#include <taglib/mp4tag.h>
+#include <taglib/mpcfile.h>
+#include <taglib/mpegfile.h>
+#include <taglib/oggfile.h>
+#ifdef TAGLIB_HAS_OPUS
+#include <taglib/opusfile.h>
+#endif
+#include <taglib/oggflacfile.h>
+#include <taglib/speexfile.h>
+#include <taglib/tag.h>
+#include <taglib/textidentificationframe.h>
+#include <taglib/trueaudiofile.h>
+#include <taglib/tstring.h>
+#include <taglib/vorbisfile.h>
+#include <taglib/wavfile.h>
+
+#include <boost/scoped_ptr.hpp>
+//--- end includes readcloudfile
+
 // FIXME: bloody hack, remove this for 0.3
 // this one adds new functionality to old resolvers
 #define RESOLVER_LEGACY_CODE "var resolver = Tomahawk.resolver.instance ? Tomahawk.resolver.instance : TomahawkResolver;"
@@ -60,6 +96,7 @@ QtScriptResolverHelper::QtScriptResolverHelper( const QString& scriptPath, QtScr
 {
     m_scriptPath = scriptPath;
     m_resolver = parent;
+    network = new QNetworkAccessManager(this);
 }
 
 
@@ -313,6 +350,163 @@ QtScriptResolverHelper::base64Decode( const QByteArray& input )
     return QByteArray::fromBase64( input );
 }
 
+
+void
+QtScriptResolverHelper::ReadCloudFile(const QUrl& download_url,
+                                      const QString& title,
+                                      int size,
+                                      const QString& mime_type,
+                                      const QString& authorisation_header,
+                                      const QString& javascriptCallbackFunction) {
+    tDebug( LOGINFO ) << "Loading tags from" << title;
+
+    QVariantMap m;
+
+    m["mimetype"] = mime_type.toUtf8();
+    m["url"] = download_url;
+
+    CloudStream* stream = new CloudStream(
+        download_url, title, size, authorisation_header, network);
+    stream->Precache();
+    boost::scoped_ptr<TagLib::File> tag;
+    if (mime_type == "audio/mpeg" && title.endsWith(".mp3")) {
+      tag.reset(new TagLib::MPEG::File(
+          stream,  // Takes ownership.
+          TagLib::ID3v2::FrameFactory::instance(),
+          TagLib::AudioProperties::Accurate));
+    } else if (mime_type == "audio/mp4" ||
+               (mime_type == "audio/mpeg" && title.endsWith(".m4a"))) {
+      tag.reset(new TagLib::MP4::File(
+          stream,
+          true,
+          TagLib::AudioProperties::Accurate));
+    } else if (mime_type == "application/ogg" ||
+               mime_type == "audio/ogg") {
+      tag.reset(new TagLib::Ogg::Vorbis::File(
+          stream,
+          true,
+          TagLib::AudioProperties::Accurate));
+    }
+  #ifdef TAGLIB_HAS_OPUS
+    else if (mime_type == "application/opus" ||
+               mime_type == "audio/opus") {
+      tag.reset(new TagLib::Ogg::Opus::File(
+          stream,
+          true,
+          TagLib::AudioProperties::Accurate));
+    }
+  #endif
+    else if (mime_type == "application/x-flac" ||
+               mime_type == "audio/flac") {
+      tag.reset(new TagLib::FLAC::File(
+          stream,
+          TagLib::ID3v2::FrameFactory::instance(),
+          true,
+          TagLib::AudioProperties::Accurate));
+    } else if (mime_type == "audio/x-ms-wma") {
+      tag.reset(new TagLib::ASF::File(
+          stream,
+          true,
+          TagLib::AudioProperties::Accurate));
+    } else {
+      tDebug( LOGINFO ) << "Unknown mime type for tagging:" << mime_type;
+      //return m;
+    }
+
+    if (stream->num_requests() > 2) {
+      // Warn if pre-caching failed.
+     tDebug( LOGINFO ) << "Total requests for file:" << title
+                    << stream->num_requests()
+                    << stream->cached_bytes();
+    }
+
+    //construction of the tag's map
+
+
+    if (tag->tag() && !tag->tag()->isEmpty()) {
+      //song->set_title(tag->tag()->title().toCString(true));
+       m["track"] = tag->tag()->title().toCString(true);
+      //song->set_artist(tag->tag()->artist().toCString(true));
+       m["artist"] = tag->tag()->artist().toCString(true);
+      //song->set_album(tag->tag()->album().toCString(true));
+       m["album"] = tag->tag()->album().toCString(true);
+      //song->set_filesize(size);
+       m["size"] = size;
+
+      if (tag->tag()->track() != 0) {
+        //song->set_track(tag->tag()->track());
+          m["albumpos"] = tag->tag()->track();
+      }
+      if (tag->tag()->year() != 0) {
+        //song->set_year(tag->tag()->year());
+          m["year"] = tag->tag()->year();
+      }
+
+      //song->set_type(pb::tagreader::SongMetadata_Type_STREAM);
+
+      if (tag->audioProperties()) {
+        //song->set_length_nanosec(tag->audioProperties()->length() * kNsecPerSec);
+          m["duration"] = tag->audioProperties()->length();
+          m["bitrate"] = tag->audioProperties()->bitrate();
+      }
+/*      if (tag->tag()->albumArtist()) {
+        m["albumartist"]  = tag->tag()->albumArtist();
+      }
+      if (tag->tag()->composer()) {
+        m["composer"]     = tag->tag()->composer();
+      }
+      if (tag->tag()->discNumber() != 0) {
+        m["discnumber"]   = tag->tag()->discNumber();
+      }
+*/
+      //return m;
+    }
+
+    //return m;
+
+    QString getUrl = QString( "Tomahawk.resolver.instance.%1( '%2' );" ).arg( javascriptCallbackFunction )
+                                                                        .arg( m );
+
+    m_resolver->m_engine->mainFrame()->evaluateJavaScript( getUrl );
+
+  }
+
+/*
+    QVariantMap m;
+
+    m["url"]          = url.arg( fi.canonicalFilePath() );
+    m["mtime"]        = fi.lastModified().toUTC().toTime_t();
+:    m["size"]         = (unsigned int)fi.size();
+:    m["mimetype"]     = mimetype;
+:    m["duration"]     = duration;
+:    m["bitrate"]      = bitrate;
+:    m["artist"]       = artist;
+:    m["album"]        = album;
+:    m["track"]        = track;
+:    m["albumpos"]     = tag->track();
+:    m["year"]         = tag->year();
+:    m["albumartist"]  = tag->albumArtist();
+:    m["composer"]     = tag->composer();
+:    m["discnumber"]   = tag->discNumber();
+    m["hash"]         = ""; // TODO
+
+
+
+    tDebug( LOGINFO ) << "###### Scan mimetype ###### :" << m["mimetype"];
+    tDebug( LOGINFO ) << "###### Scan duration ###### :" << m["duration"];
+    tDebug( LOGINFO ) << "###### Scan bitrate ###### :" << m["bitrate"];
+    tDebug( LOGINFO ) << "###### Scan artist ###### :" << m["artist"];
+    tDebug( LOGINFO ) << "###### Scan album ###### :" << m["album"];
+    tDebug( LOGINFO ) << "###### Scan track ###### :" << m["track"];
+    tDebug( LOGINFO ) << "###### Scan albumpos ###### :" << m["albumpos"];
+    tDebug( LOGINFO ) << "###### Scan year ###### :" << m["year"];
+    tDebug( LOGINFO ) << "###### Scan albumartist ###### :" << m["albumartist"];
+    tDebug( LOGINFO ) << "###### Scan composer ###### :" << m["composer"];
+    tDebug( LOGINFO ) << "###### Scan discnumber ###### :" << m["discnumber"];
+
+    return m;
+}
+*/
 
 QSharedPointer< QIODevice >
 QtScriptResolverHelper::customIODeviceFactory( const Tomahawk::result_ptr& result )

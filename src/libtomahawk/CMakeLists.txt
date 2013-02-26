@@ -114,6 +114,7 @@ set( libGuiSources
     utils/SharedTimeLine.cpp
     utils/WebResultHintChecker.cpp
     utils/NetworkReply.cpp
+    utils/cloudstream.cpp
 
     widgets/AnimatedCounterLabel.cpp
     widgets/BasicHeader.cpp
@@ -338,6 +339,8 @@ list(APPEND libSources
     thirdparty/kqoauth/kqoauthrequest_1.cpp
     thirdparty/kqoauth/kqoauthrequest_xauth.cpp
     thirdparty/kqoauth/kqoauthutils.cpp
+
+
 )
 
 IF(LIBLASTFM_FOUND)
