@@ -354,30 +354,47 @@ QtScriptResolverHelper::base64Decode( const QByteArray& input )
 
 
 void
-QtScriptResolverHelper::ReadCloudFile(const QUrl& download_url,
-                                      const QString& title,
-                                      int size,
-                                      const QString& mime_type,
-                                      const QString& authorisation_header,
-                                      const QString& javascriptCallbackFunction) {
-    tDebug( LOGINFO ) << "Loading tags from" << title;
+QtScriptResolverHelper::ReadCloudFile(const QString& fileName, int size, const QString& mime_type, const QVariant& requestJS, const QString& javascriptCallbackFunction) {
 
+    QVariantMap request;
+    QUrl download_url;
+    QVariantMap headers;
     QVariantMap m;
+
+
+
+
+    if(requestJS.type() == QVariant::Map)
+    {
+        request = requestJS.toMap();
+
+        download_url = QUrl(request["url"].toString());
+
+        headers = request["headers"].toMap();
+    }
+    else
+    {
+        download_url = QUrl(jsResult.toString();)
+    }
+
+    tDebug( LOGINFO ) << "ReadCloudFile : Loading tags of " << fileName << " from " << download_url.toString();
+
+
 
     m["mimetype"] = mime_type.toUtf8();
     m["url"] = download_url;
 
     CloudStream* stream = new CloudStream(
-        download_url, title, size, authorisation_header, network);
+        download_url, fileName, size, headers, network);
     stream->Precache();
     boost::scoped_ptr<TagLib::File> tag;
-    if (mime_type == "audio/mpeg" && title.endsWith(".mp3")) {
+    if (mime_type == "audio/mpeg") { // && title.endsWith(".mp3")) {
       tag.reset(new TagLib::MPEG::File(
           stream,  // Takes ownership.
           TagLib::ID3v2::FrameFactory::instance(),
           TagLib::AudioProperties::Accurate));
     } else if (mime_type == "audio/mp4" ||
-               (mime_type == "audio/mpeg" && title.endsWith(".m4a"))) {
+               (mime_type == "audio/mpeg")) { //  && title.endsWith(".m4a"))) {
       tag.reset(new TagLib::MP4::File(
           stream,
           true,
@@ -423,31 +440,21 @@ QtScriptResolverHelper::ReadCloudFile(const QUrl& download_url,
     }
 
     //construction of the tag's map
-
-
     if (tag->tag() && !tag->tag()->isEmpty()) {
-      //song->set_title(tag->tag()->title().toCString(true));
+
        m["track"] = tag->tag()->title().toCString(true);
-      //song->set_artist(tag->tag()->artist().toCString(true));
        m["artist"] = tag->tag()->artist().toCString(true);
-      //song->set_album(tag->tag()->album().toCString(true));
        m["album"] = tag->tag()->album().toCString(true);
-      //song->set_filesize(size);
        m["size"] = size;
 
       if (tag->tag()->track() != 0) {
-        //song->set_track(tag->tag()->track());
           m["albumpos"] = tag->tag()->track();
       }
       if (tag->tag()->year() != 0) {
-        //song->set_year(tag->tag()->year());
           m["year"] = tag->tag()->year();
       }
 
-      //song->set_type(pb::tagreader::SongMetadata_Type_STREAM);
-
       if (tag->audioProperties()) {
-        //song->set_length_nanosec(tag->audioProperties()->length() * kNsecPerSec);
           m["duration"] = tag->audioProperties()->length();
           m["bitrate"] = tag->audioProperties()->bitrate();
       }
@@ -461,15 +468,27 @@ QtScriptResolverHelper::ReadCloudFile(const QUrl& download_url,
         m["discnumber"]   = tag->tag()->discNumber();
       }
 */
-      //return m;
     }
 
-    //return m;
+    QString tabTagsJSON = "{";
+    //we convert the QVariantMap to JSON to give it as an argument of the callback function
+    int nbTags = m.count();
+    int i = 1;
+    foreach(const QString& tag, m.keys()) {
+        tabTagsJSON += "\"" + tag + "\" : \"" + m[tag].toString() + "\"";
+        if(i != nbTags){
+            tabTagsJSON += ", ";
+        }
+        i++;
+    }
+    tabTagsJSON += "}";
 
     QString getUrl = QString( "Tomahawk.resolver.instance.%1( '%2' );" ).arg( javascriptCallbackFunction )
-                                                                        .arg( m );
+                                                                        .arg( tabTagsJSON );
 
     m_resolver->m_engine->mainFrame()->evaluateJavaScript( getUrl );
+}
+
 
   }
 

@@ -36,12 +36,12 @@ namespace {
 
 CloudStream::CloudStream(
     const QUrl& url, const QString& filename, const long length,
-    const QString& auth, QNetworkAccessManager* network)
+    const  QVariantMap& headers, QNetworkAccessManager* network)
     : url_(url),
       filename_(filename),
       encoded_filename_(filename_.toUtf8()),
       length_(length),
-      auth_(auth),
+      headers_(headers),
       cursor_(0),
       network_(network),
       cache_(length),
@@ -112,9 +112,11 @@ TagLib::ByteVector CloudStream::readBlock(ulong length) {
   }
 
   QNetworkRequest request = QNetworkRequest(url_);
-  if (!auth_.isEmpty()) {
-    request.setRawHeader("Authorization", auth_.toUtf8());
+  //setings of specials OAuth (1 or 2) headers
+  foreach(const QString& headerName, headers_.keys()) {
+      request.setRawHeader(headerName.toLocal8Bit(), headers_[headerName].toString().toLocal8Bit());
   }
+
   request.setRawHeader(
       "Range", QString("bytes=%1-%2").arg(start).arg(end).toUtf8());
   request.setAttribute(QNetworkRequest::CacheLoadControlAttribute,
@@ -149,19 +151,19 @@ TagLib::ByteVector CloudStream::readBlock(ulong length) {
 }
 
 void CloudStream::writeBlock(const TagLib::ByteVector&) {
-  tDebug( LOGINFO ) << Q_FUNC_INFO << "not implemented";
+  tDebug( LOGINFO ) << "writeBlock not implemented";
 }
 
 void CloudStream::insert(const TagLib::ByteVector&, ulong, ulong) {
-  tDebug( LOGINFO ) << Q_FUNC_INFO << "not implemented";
+  tDebug( LOGINFO ) << "insert not implemented";
 }
 
 void CloudStream::removeBlock(ulong, ulong) {
-  tDebug( LOGINFO ) << Q_FUNC_INFO << "not implemented";
+  tDebug( LOGINFO ) << "removeBlock not implemented";
 }
 
 bool CloudStream::readOnly() const {
-  tDebug( LOGINFO ) << Q_FUNC_INFO;
+  tDebug( LOGINFO ) << "readOnly not implemented";
   return true;
 }
 
@@ -199,7 +201,7 @@ long CloudStream::length() {
 }
 
 void CloudStream::truncate(long) {
-  tDebug( LOGINFO ) << Q_FUNC_INFO << "not implemented";
+  tDebug( LOGINFO ) << "not implemented";
 }
 
 void CloudStream::SSLErrors(const QList<QSslError>& errors) {

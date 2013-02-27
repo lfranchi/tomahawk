@@ -35,7 +35,7 @@ class CloudStream : public QObject, public TagLib::IOStream {
   CloudStream(const QUrl& url,
                     const QString& filename,
                     const long length,
-                    const QString& auth,
+                    const QVariantMap& headers,
                     QNetworkAccessManager* network);
 
   //Taglib::IOStream;
@@ -76,7 +76,7 @@ class CloudStream : public QObject, public TagLib::IOStream {
   const QString filename_;
   const QByteArray encoded_filename_;
   const ulong length_;
-  const QString auth_;
+  const QVariantMap headers_;
 
   int cursor_;
   QNetworkAccessManager* network_;
