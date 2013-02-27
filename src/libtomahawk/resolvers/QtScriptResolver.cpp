@@ -379,7 +379,7 @@ QtScriptResolverHelper::ReadCloudFile(const QString& fileName, const QString& si
         download_url = QUrl(requestJS.toString());
     }
 
-    tDebug( LOGINFO ) << "ReadCloudFile : Loading tags of " << fileName << " from " << download_url.toString();
+    tDebug( LOGINFO ) << "#### ReadCloudFile : Loading tags of " << fileName << " from " << download_url.toString();
 
 
 
@@ -485,7 +485,7 @@ QtScriptResolverHelper::ReadCloudFile(const QString& fileName, const QString& si
     }
     tabTagsJSON += "}";
 
-    tDebug() << "Sending tags to js : " <<tabTagsJSON;
+    tDebug() << "#### ReadCloudFile : Sending tags to js : " <<tabTagsJSON;
 
     QString getUrl = QString( "Tomahawk.resolver.instance.%1( %2 );" ).arg( javascriptCallbackFunction )
                                                                         .arg( tabTagsJSON );
