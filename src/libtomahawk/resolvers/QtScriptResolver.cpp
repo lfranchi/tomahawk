@@ -354,12 +354,14 @@ QtScriptResolverHelper::base64Decode( const QByteArray& input )
 
 
 void
-QtScriptResolverHelper::ReadCloudFile(const QString& fileName, int size, const QString& mime_type, const QVariant& requestJS, const QString& javascriptCallbackFunction) {
+QtScriptResolverHelper::ReadCloudFile(const QString& fileName, const QString& sizeS, const QString& mime_type, const QVariant& requestJS, const QString& javascriptCallbackFunction)
+{
 
     QVariantMap request;
     QUrl download_url;
     QVariantMap headers;
     QVariantMap m;
+    long size = sizeS.toLong();
 
 
 
@@ -374,7 +376,7 @@ QtScriptResolverHelper::ReadCloudFile(const QString& fileName, int size, const Q
     }
     else
     {
-        download_url = QUrl(jsResult.toString();)
+        download_url = QUrl(requestJS.toString());
     }
 
     tDebug( LOGINFO ) << "ReadCloudFile : Loading tags of " << fileName << " from " << download_url.toString();
@@ -434,7 +436,7 @@ QtScriptResolverHelper::ReadCloudFile(const QString& fileName, int size, const Q
 
     if (stream->num_requests() > 2) {
       // Warn if pre-caching failed.
-     tDebug( LOGINFO ) << "Total requests for file:" << title
+     tDebug( LOGINFO ) << "Total requests for file:" << fileName
                     << stream->num_requests()
                     << stream->cached_bytes();
     }
@@ -445,7 +447,7 @@ QtScriptResolverHelper::ReadCloudFile(const QString& fileName, int size, const Q
        m["track"] = tag->tag()->title().toCString(true);
        m["artist"] = tag->tag()->artist().toCString(true);
        m["album"] = tag->tag()->album().toCString(true);
-       m["size"] = size;
+       m["size"] = QString::number(size);
 
       if (tag->tag()->track() != 0) {
           m["albumpos"] = tag->tag()->track();
@@ -475,7 +477,7 @@ QtScriptResolverHelper::ReadCloudFile(const QString& fileName, int size, const Q
     int nbTags = m.count();
     int i = 1;
     foreach(const QString& tag, m.keys()) {
-        tabTagsJSON += "\"" + tag + "\" : \"" + m[tag].toString() + "\"";
+        tabTagsJSON += "'" + tag + "' : '" + m[tag].toString() + "'";
         if(i != nbTags){
             tabTagsJSON += ", ";
         }
@@ -483,14 +485,13 @@ QtScriptResolverHelper::ReadCloudFile(const QString& fileName, int size, const Q
     }
     tabTagsJSON += "}";
 
-    QString getUrl = QString( "Tomahawk.resolver.instance.%1( '%2' );" ).arg( javascriptCallbackFunction )
+    tDebug() << "Sending tags to js : " <<tabTagsJSON;
+
+    QString getUrl = QString( "Tomahawk.resolver.instance.%1( %2 );" ).arg( javascriptCallbackFunction )
                                                                         .arg( tabTagsJSON );
 
     m_resolver->m_engine->mainFrame()->evaluateJavaScript( getUrl );
 }
-
-
-  }
 
 
 void

@@ -127,6 +127,8 @@ TagLib::ByteVector CloudStream::readBlock(ulong length) {
     request.setRawHeader("Accept-Encoding", "identity");
   }
 
+  //tDebug() << request.rawHeader("Authorization");
+
   QNetworkReply* reply = network_->get(request);
   connect(reply, SIGNAL(sslErrors(QList<QSslError>)), SLOT(SSLErrors(QList<QSslError>)));
   ++num_requests_;
