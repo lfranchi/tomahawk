@@ -233,6 +233,33 @@ Tomahawk.syncRequest = function(url)
 	}
 };
 
+Tomahawk.syncPostRequest = function(url, params, extraHeaders)
+{
+    var xmlHttpRequest = new XMLHttpRequest();
+    xmlHttpRequest.open('POST', url, false);
+    
+    xmlHttpRequest.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+    xmlHttpRequest.setRequestHeader("Content-length", params.length);
+	xmlHttpRequest.setRequestHeader("Connection", "close");
+	
+    if (extraHeaders) {
+        for(var headerName in extraHeaders) {
+            xmlHttpRequest.setRequestHeader(headerName, extraHeaders[headerName]);
+        }
+    }
+    
+    xmlHttpRequest.send(params);
+    
+	if (xmlHttpRequest.readyState == 4 && xmlHttpRequest.status == 200) {
+		return xmlHttpRequest;
+	} else if (xmlHttpRequest.readyState === 4) {
+		Tomahawk.log("Failed to do POST request: to: " + url);
+		Tomahawk.log("Status Code was: " + xmlHttpRequest.status);
+	}
+    
+    
+};
+
 Tomahawk.asyncRequest = function(url, callback, extraHeaders)
 {
     var xmlHttpRequest = new XMLHttpRequest();
@@ -257,7 +284,11 @@ Tomahawk.asyncPostRequest = function(url, params, callback, extraHeaders)
 {
     var xmlHttpRequest = new XMLHttpRequest();
     xmlHttpRequest.open('POST', url, true);
+    
     xmlHttpRequest.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+    xmlHttpRequest.setRequestHeader("Content-length", params.length);
+	xmlHttpRequest.setRequestHeader("Connection", "close");
+	
     if (extraHeaders) {
         for(var headerName in extraHeaders) {
             xmlHttpRequest.setRequestHeader(headerName, extraHeaders[headerName]);
