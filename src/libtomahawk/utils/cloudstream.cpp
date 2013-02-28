@@ -22,6 +22,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QPair>
+#include <QStringList>
 
 #include <taglib/id3v2framefactory.h>
 #include <taglib/mpegfile.h>
@@ -122,28 +123,36 @@ TagLib::ByteVector CloudStream::readBlock(ulong length) {
   QStringList oneAuthList;
   QStringList newAuthorizationHeader;
   foreach(const QString& oneAuth, authorizations){
-      if(auth.contains("oauth_nonce")){
+      if(oneAuth.contains("oauth_nonce")){
           oneAuthList = oneAuth.split("=");
+           tDebug() << "######## CloudStream : oauth_nonce : " << oneAuthList[1];
           QString oauthNonce = oneAuthList[1].replace('"',"");
+
+          tDebug() << "######## CloudStream : oauth_nonce : " << oauthNonce; //ok
+
           int newOautNonce = oauthNonce.toInt(0,16);
+
+          tDebug() << "######## CloudStream : oauth_nonce : " << newOautNonce; // =0 !!!
           newOautNonce++;
+          tDebug() << "######## CloudStream : NEW oauth_nonce : " << newOautNonce;
 
-          oauthNonce = QString::number(newOautNonce,16);
+          oauthNonce = QString::number(newOautNonce,16).toUpper();
 
-          newAuthorizationHeader.append(authList[0]+"=\""+oauthNonce+"\"");
+          newAuthorizationHeader.append(oneAuthList[0]+"=\""+oauthNonce+"\"");
       }
       else {
           newAuthorizationHeader.append(oneAuth);
       }
   }
 
-  headers_["Authorization"] = newAuthorizationHeader.join(", ");
+  QMap<QString,QVariant> newHeaders = headers_;
+  newHeaders.insert("Authorization", QVariant(newAuthorizationHeader.join(", ")));
 
   QNetworkRequest request = QNetworkRequest(url_);
   //setings of specials OAuth (1 or 2) headers
 
-  foreach(const QString& headerName, headers_.keys()) {
-      request.setRawHeader(headerName.toLocal8Bit(), headers_[headerName].toString().toLocal8Bit());
+  foreach(const QString& headerName, newHeaders.keys()) {
+      request.setRawHeader(headerName.toLocal8Bit(), newHeaders[headerName].toString().toLocal8Bit());
 
   }
 
