@@ -67,7 +67,7 @@ public:
 
     // send ID3Tags of the stream as argument of the callback function
     Q_INVOKABLE void
-    ReadCloudFile(const QString& fileName, const QString& sizeS, const QString& mime_type, const QVariant& requestJS, const QString& javascriptCallbackFunction);
+    ReadCloudFile(const QString& fileName, const QString& fileId, const QString& sizeS, const QString& mime_type, const QVariant& requestJS, const QString& javascriptCallbackFunction);
 
     Q_INVOKABLE void addLocalJSFile(const QString& jsFilePath);
 
