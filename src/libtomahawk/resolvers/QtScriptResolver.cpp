@@ -52,6 +52,7 @@
 #include <QDesktopServices>
 #include <QPainter>
 #include <QSignalMapper>
+#include <QWebInspector>
 
 #include <boost/bind.hpp>
 
@@ -511,6 +512,14 @@ QtScriptResolverHelper::requestWebView(const QString &varName, const QString &ur
     view->setWindowModality(Qt::ApplicationModal);
 
     m_resolver->m_engine->mainFrame()->addToJavaScriptWindowObject(varName, view);
+}
+
+void
+QtScriptResolverHelper::showWebInspector()
+{
+    QWebInspector *inspector = new QWebInspector;
+    inspector->setPage(m_resolver->m_engine);
+    inspector->show();
 }
 
 

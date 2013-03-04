@@ -73,6 +73,7 @@ public:
 
     Q_INVOKABLE void requestWebView(const QString& varName, const QString& url);
 
+    Q_INVOKABLE void showWebInspector();
 
     QSharedPointer<QIODevice> customIODeviceFactory( const Tomahawk::result_ptr& result );
 
