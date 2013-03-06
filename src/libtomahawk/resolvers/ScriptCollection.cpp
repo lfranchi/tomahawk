@@ -27,7 +27,6 @@
 #include "resolvers/ScriptCommand_AllAlbums.h"
 #include "resolvers/ScriptCommand_AllTracks.h"
 
-#include <QIcon>
 #include <QPainter>
 
 using namespace Tomahawk;
@@ -37,11 +36,20 @@ ScriptCollection::ScriptCollection( const source_ptr& source,
                                     ExternalResolver* resolver,
                                     QObject* parent )
     : Collection( source, QString( "scriptcollection:" + resolver->name() + ":" + uuid() ), parent )
+    , m_trackCount( -1 ) //null value
 {
     Q_ASSERT( resolver != 0 );
     qDebug() << Q_FUNC_INFO << resolver->name() << name();
 
     m_resolver = resolver;
+
+    m_servicePrettyName = m_resolver->name();
+
+    ExternalResolverGui* gResolver = qobject_cast< ExternalResolverGui* >( m_resolver );
+    if ( gResolver )
+    {
+        m_icon = gResolver->icon();
+    }
 }
 
 
@@ -51,31 +59,41 @@ ScriptCollection::~ScriptCollection()
 }
 
 
+void
+ScriptCollection::setServiceName( const QString& name )
+{
+    m_servicePrettyName = name;
+}
+
+
 QString
 ScriptCollection::prettyName() const
 {
     return tr( "%1 Collection",
-                "Name of a collection based on a resolver, e.g. Subsonic Collection" )
-        .arg( m_resolver->name() );
+               "Name of a collection based on a resolver, e.g. Subsonic Collection" )
+               .arg( m_servicePrettyName );
 }
 
 
 QString
 ScriptCollection::itemName() const
 {
-    return m_resolver->name();
+    return m_servicePrettyName;
+}
+
+
+void
+ScriptCollection::setIcon( const QIcon& icon )
+{
+    m_icon = icon;
+    emit changed();
 }
 
 
 QIcon
 ScriptCollection::icon() const
 {
-    ExternalResolverGui* gResolver = qobject_cast< ExternalResolverGui* >( m_resolver );
-    if ( gResolver )
-    {
-        return gResolver->icon();
-    }
-    return QIcon();
+    return m_icon;
 }
 
 
@@ -154,4 +172,18 @@ ScriptCollection::requestTracks( const Tomahawk::album_ptr& album )
     Tomahawk::TracksRequest* cmd = new ScriptCommand_AllTracks( thisCollection, album );
 
     return cmd;
+}
+
+
+void
+ScriptCollection::setTrackCount( int count )
+{
+    m_trackCount = count;
+}
+
+
+int
+ScriptCollection::trackCount() const
+{
+    return m_trackCount;
 }

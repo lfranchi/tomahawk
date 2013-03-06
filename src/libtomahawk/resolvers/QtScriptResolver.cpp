@@ -44,6 +44,7 @@
 
 #include "config.h"
 
+#include <QImageReader>
 #include <QMessageBox>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -1180,18 +1181,89 @@ QtScriptResolver::loadCollections()
              !collectionInfo.contains( "description" ) )
             return;
 
+        QString prettyname = collectionInfo.value( "prettyname" ).toString();
         QString desc = collectionInfo.value( "description" ).toString();
+
+        foreach ( Tomahawk::collection_ptr collection, m_collections )
+        {
+            emit collectionRemoved( collection );
+        }
 
         m_collections.clear();
         // at this point we assume that all the tracks browsable through a resolver belong to the local source
         Tomahawk::ScriptCollection* sc = new Tomahawk::ScriptCollection( SourceList::instance()->getLocal(), this );
+        sc->setServiceName( prettyname );
         sc->setDescription( desc );
+
+        if ( collectionInfo.contains( "trackcount" ) ) //a resolver might not expose this
+        {
+            bool ok = false;
+            int trackCount = collectionInfo.value( "trackcount" ).toInt( &ok );
+            if ( ok )
+                sc->setTrackCount( trackCount );
+        }
+
+        if ( collectionInfo.contains( "iconfile" ) )
+        {
+            bool ok = false;
+            QString iconPath = QFileInfo( filePath() ).path() + "/"
+                               + collectionInfo.value( "iconfile" ).toString();
+
+            QPixmap iconPixmap;
+            ok = iconPixmap.load( iconPath );
+            if ( ok && !iconPixmap.isNull() )
+                sc->setIcon( QIcon( iconPixmap ) );
+        }
+
         Tomahawk::collection_ptr collection( sc );
 
         m_collections.insert( collection->name(), collection );
         emit collectionAdded( collection );
 
+        if ( collectionInfo.contains( "iconurl" ) )
+        {
+            QString iconUrlString = collectionInfo.value( "iconurl" ).toString();
+            if ( !iconUrlString.isEmpty() )
+            {
+                QUrl iconUrl = QUrl::fromEncoded( iconUrlString.toLatin1() );
+                if ( iconUrl.isValid() )
+                {
+                    QNetworkRequest req( iconUrl );
+                    tDebug() << "Creating a QNetworkReply with url:" << req.url().toString();
+                    QNetworkReply* reply = TomahawkUtils::nam()->get( req );
+                    reply->setProperty( "collectionName", collection->name() );
+
+                    connect( reply, SIGNAL( finished() ),
+                             this, SLOT( onCollectionIconFetched() ) );
+                }
+            }
+        }
+
         //TODO: implement multiple collections from a resolver
+    }
+}
+
+
+void
+QtScriptResolver::onCollectionIconFetched()
+{
+    QNetworkReply* reply = qobject_cast< QNetworkReply* >( sender() );
+    if ( reply != 0 )
+    {
+        Tomahawk::collection_ptr collection;
+        collection = m_collections.value( reply->property( "collectionName" ).toString() );
+        if ( !collection.isNull() )
+        {
+            if ( reply->error() == QNetworkReply::NoError )
+            {
+                QImageReader imageReader( reply );
+                QPixmap collectionIcon = QPixmap::fromImageReader( &imageReader );
+
+                if ( !collectionIcon.isNull() )
+                    qobject_cast< Tomahawk::ScriptCollection* >( collection.data() )->setIcon( collectionIcon );
+            }
+        }
+        reply->deleteLater();
     }
 }
 

@@ -1364,9 +1364,9 @@ Tomahawk създаде доклад относно това и изпращай
 <context>
     <name>QtScriptResolver</name>
     <message>
-        <location filename="../src/libtomahawk/resolvers/QtScriptResolver.cpp" line="523"/>
-        <location filename="../src/libtomahawk/resolvers/QtScriptResolver.cpp" line="558"/>
-        <location filename="../src/libtomahawk/resolvers/QtScriptResolver.cpp" line="594"/>
+        <location filename="../src/libtomahawk/resolvers/QtScriptResolver.cpp" line="524"/>
+        <location filename="../src/libtomahawk/resolvers/QtScriptResolver.cpp" line="559"/>
+        <location filename="../src/libtomahawk/resolvers/QtScriptResolver.cpp" line="595"/>
         <source>Script Resolver Warning: API call %1 returned data sychronously.</source>
         <translation>Предупреждение на скриптът за извличане:  Заявката към %1 върна данни синхронно.</translation>
     </message>
@@ -1422,7 +1422,7 @@ Tomahawk създаде доклад относно това и изпращай
 <context>
     <name>ScriptCollectionHeader</name>
     <message>
-        <location filename="../src/libtomahawk/widgets/ScriptCollectionHeader.cpp" line="49"/>
+        <location filename="../src/libtomahawk/widgets/ScriptCollectionHeader.cpp" line="50"/>
         <source>Reload Collection</source>
         <translation type="unfinished"/>
     </message>
@@ -1430,7 +1430,7 @@ Tomahawk създаде доклад относно това и изпращай
 <context>
     <name>ScriptEngine</name>
     <message>
-        <location filename="../src/libtomahawk/resolvers/QtScriptResolver.cpp" line="340"/>
+        <location filename="../src/libtomahawk/resolvers/QtScriptResolver.cpp" line="341"/>
         <source>Script Resolver Error: %1 %2 %3 %4</source>
         <translation>Грешка на скриптът за извличане на данни: %1 %2 %3 %4</translation>
     </message>
@@ -1741,14 +1741,14 @@ Tomahawk създаде доклад относно това и изпращай
         <translation>Всички налични изпълнения</translation>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceDelegate.cpp" line="363"/>
-        <location filename="../src/sourcetree/SourceDelegate.cpp" line="404"/>
+        <location filename="../src/sourcetree/SourceDelegate.cpp" line="377"/>
+        <location filename="../src/sourcetree/SourceDelegate.cpp" line="418"/>
         <source>Show</source>
         <translation>Покажи</translation>
     </message>
     <message>
-        <location filename="../src/sourcetree/SourceDelegate.cpp" line="365"/>
-        <location filename="../src/sourcetree/SourceDelegate.cpp" line="406"/>
+        <location filename="../src/sourcetree/SourceDelegate.cpp" line="379"/>
+        <location filename="../src/sourcetree/SourceDelegate.cpp" line="420"/>
         <source>Hide</source>
         <translation>Скрий</translation>
     </message>
@@ -3295,7 +3295,7 @@ Try tweaking the filters for a new set of songs to play.</source>
 <context>
     <name>Tomahawk::ScriptCollection</name>
     <message>
-        <location filename="../src/libtomahawk/resolvers/ScriptCollection.cpp" line="57"/>
+        <location filename="../src/libtomahawk/resolvers/ScriptCollection.cpp" line="72"/>
         <source>%1 Collection</source>
         <comment>Name of a collection based on a resolver, e.g. Subsonic Collection</comment>
         <translation type="unfinished"/>
@@ -3320,43 +3320,43 @@ Try tweaking the filters for a new set of songs to play.</source>
 <context>
     <name>Tomahawk::Source</name>
     <message>
-        <location filename="../src/libtomahawk/Source.cpp" line="285"/>
-        <location filename="../src/libtomahawk/Source.cpp" line="336"/>
+        <location filename="../src/libtomahawk/Source.cpp" line="286"/>
+        <location filename="../src/libtomahawk/Source.cpp" line="337"/>
         <source>Scanning (%L1 tracks)</source>
         <translation>Сканиране (%L1 песни)</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/Source.cpp" line="287"/>
+        <location filename="../src/libtomahawk/Source.cpp" line="288"/>
         <source>Scanning</source>
         <translation>Сканирам</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/Source.cpp" line="321"/>
+        <location filename="../src/libtomahawk/Source.cpp" line="322"/>
         <source>Checking</source>
         <translation>Проверявам</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/Source.cpp" line="326"/>
+        <location filename="../src/libtomahawk/Source.cpp" line="327"/>
         <source>Syncing</source>
         <translation>Синхронизиране</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/Source.cpp" line="331"/>
+        <location filename="../src/libtomahawk/Source.cpp" line="332"/>
         <source>Importing</source>
         <translation>Импортиране</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/Source.cpp" line="473"/>
+        <location filename="../src/libtomahawk/Source.cpp" line="483"/>
         <source>Saving (%1%)</source>
         <translation>Запазвам (%1%)</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/Source.cpp" line="554"/>
+        <location filename="../src/libtomahawk/Source.cpp" line="564"/>
         <source>Online</source>
         <translation>На линия</translation>
     </message>
     <message>
-        <location filename="../src/libtomahawk/Source.cpp" line="558"/>
+        <location filename="../src/libtomahawk/Source.cpp" line="568"/>
         <source>Offline</source>
         <translation>Извън линия</translation>
     </message>

@@ -21,7 +21,7 @@
 #include <QSqlQuery>
 
 #include "network/Servent.h"
-#include "Source.h"
+#include "SourceList.h"
 #include "DatabaseImpl.h"
 #include "utils/Logger.h"
 
@@ -33,7 +33,7 @@ DatabaseCommand_LoadAllSources::exec( DatabaseImpl* dbi )
 {
     TomahawkSqlQuery query = dbi->newquery();
 
-    query.exec( QString( "SELECT id, name, friendlyname "
+    query.exec( QString( "SELECT id, name, friendlyname, lastop "
                          "FROM source" ) );
 
     QList<source_ptr> sources;
@@ -41,6 +41,7 @@ DatabaseCommand_LoadAllSources::exec( DatabaseImpl* dbi )
     {
         source_ptr src( new Source( query.value( 0 ).toUInt(), query.value( 1 ).toString() ) );
         src->setDbFriendlyName( query.value( 2 ).toString() );
+        src->setLastCmdGuid( query.value( 3 ).toString() );
         sources << src;
     }
 
