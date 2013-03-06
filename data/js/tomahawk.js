@@ -223,13 +223,23 @@ Tomahawk.valueForSubNode = function(node, tag)
 };
 
 
-Tomahawk.syncRequest = function(url)
+Tomahawk.syncRequest = function(url, extraHeaders)
 {
 	var xmlHttpRequest = new XMLHttpRequest();
 	xmlHttpRequest.open('GET', url, false);
+	
+	if (extraHeaders) {
+        for(var headerName in extraHeaders) {
+            xmlHttpRequest.setRequestHeader(headerName, extraHeaders[headerName]);
+        }
+    }
+	
 	xmlHttpRequest.send(null);
 	if (xmlHttpRequest.status == 200){
 		return xmlHttpRequest.responseText;
+	}else if (xmlHttpRequest.readyState === 4) {
+		Tomahawk.log("Failed to do Get request: to: " + url);
+		Tomahawk.log("Status Code was: " + xmlHttpRequest.status);
 	}
 };
 
