@@ -21,6 +21,8 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QPair>
+#include <QStringList>
 
 #include <taglib/id3v2framefactory.h>
 #include <taglib/mpegfile.h>
@@ -46,6 +48,7 @@ CloudStream::CloudStream(
       network_(network),
       cache_(length),
       num_requests_(0) {
+    tDebug( LOGINFO ) << "#### Cloudstream : CloudStream object created for " << filename_ << " : " << url_.toString();
 }
 
 TagLib::FileName CloudStream::name() const {
@@ -89,17 +92,21 @@ void CloudStream::Precache() {
   // Ideally, we would use bytes=0-655364,-8096 but Google Drive does not seem
   // to support multipart byte ranges yet so we have to make do with two
   // requests.
-
+  tDebug( LOGINFO ) << "#### CloudStream : Precaching from :" << filename_;
   seek(0, TagLib::IOStream::Beginning);
   readBlock(kTaglibPrefixCacheBytes);
   seek(kTaglibSuffixCacheBytes, TagLib::IOStream::End);
   readBlock(kTaglibSuffixCacheBytes);
   clear();
+  tDebug( LOGINFO ) << "#### CloudStream : Precaching end for :" << filename_;
 }
 
 TagLib::ByteVector CloudStream::readBlock(ulong length) {
+
   const uint start = cursor_;
   const uint end = qMin(cursor_ + length - 1, length_ - 1);
+
+  //tDebug( LOGINFO ) << "#### CloudStream : reading block from " << start << " to " << end << " for " << url_.toString();
 
   if (end < start) {
     return TagLib::ByteVector();
@@ -111,10 +118,42 @@ TagLib::ByteVector CloudStream::readBlock(ulong length) {
     return cached;
   }
 
+  QString authorizationHeader  = headers_["Authorization"].toString();
+  QStringList authorizations = authorizationHeader.split(",");
+  QStringList oneAuthList;
+  QStringList newAuthorizationHeader;
+  foreach(const QString& oneAuth, authorizations){
+      if(oneAuth.contains("oauth_nonce")){
+          oneAuthList = oneAuth.split("=");
+           tDebug() << "######## CloudStream : oauth_nonce : " << oneAuthList[1];
+          QString oauthNonce = oneAuthList[1].replace('"',"");
+
+          tDebug() << "######## CloudStream : oauth_nonce : " << oauthNonce; //ok
+
+          int newOautNonce = oauthNonce.toInt(0,16);
+
+          tDebug() << "######## CloudStream : oauth_nonce : " << newOautNonce; // =0 !!!
+          newOautNonce++;
+          tDebug() << "######## CloudStream : NEW oauth_nonce : " << newOautNonce;
+
+          oauthNonce = QString::number(newOautNonce,16).toUpper();
+
+          newAuthorizationHeader.append(oneAuthList[0]+"=\""+oauthNonce+"\"");
+      }
+      else {
+          newAuthorizationHeader.append(oneAuth);
+      }
+  }
+
+  QMap<QString,QVariant> newHeaders = headers_;
+  newHeaders.insert("Authorization", QVariant(newAuthorizationHeader.join(", ")));
+
   QNetworkRequest request = QNetworkRequest(url_);
   //setings of specials OAuth (1 or 2) headers
-  foreach(const QString& headerName, headers_.keys()) {
-      request.setRawHeader(headerName.toLocal8Bit(), headers_[headerName].toString().toLocal8Bit());
+
+  foreach(const QString& headerName, newHeaders.keys()) {
+      request.setRawHeader(headerName.toLocal8Bit(), newHeaders[headerName].toString().toLocal8Bit());
+
   }
 
   request.setRawHeader(
@@ -128,6 +167,10 @@ TagLib::ByteVector CloudStream::readBlock(ulong length) {
   }
 
   //tDebug() << request.rawHeader("Authorization");
+  tDebug() << "######## CloudStream : HTTP request : ";
+  foreach(const QByteArray& header, request.rawHeaderList()){
+      tDebug() << "#### CloudStream : header request : " << header << " = " << request.rawHeader(header);
+  }
 
   QNetworkReply* reply = network_->get(request);
   connect(reply, SIGNAL(sslErrors(QList<QSslError>)), SLOT(SSLErrors(QList<QSslError>)));
@@ -139,8 +182,14 @@ TagLib::ByteVector CloudStream::readBlock(ulong length) {
   reply->deleteLater();
 
   int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+  tDebug() << "######## CloudStream : HTTP reply : ";
+  tDebug( LOGINFO ) << "#### Cloudstream : HttpStatusCode : " << code;
+  foreach (const QNetworkReply::RawHeaderPair& pair, reply->rawHeaderPairs()){
+      tDebug( LOGINFO ) << "#### Cloudstream : header reply " << pair;
+  }
+
   if (code >= 400) {
-    tDebug( LOGINFO ) << "Error retrieving url to tag:" << url_;
+      tDebug( LOGINFO ) << "#### Cloudstream : Error " << code << " retrieving url to tag for " << filename_;
     return TagLib::ByteVector();
   }
 
@@ -208,6 +257,7 @@ void CloudStream::truncate(long) {
 
 void CloudStream::SSLErrors(const QList<QSslError>& errors) {
   foreach (const QSslError& error, errors) {
+    tDebug( LOGINFO ) << "#### Cloudstream : Error for " << filename_ << " : ";
     tDebug( LOGINFO ) << error.error() << error.errorString();
     tDebug( LOGINFO ) << error.certificate();
   }

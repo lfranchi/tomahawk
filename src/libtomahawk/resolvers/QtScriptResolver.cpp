@@ -356,7 +356,7 @@ QtScriptResolverHelper::base64Decode( const QByteArray& input )
 
 
 void
-QtScriptResolverHelper::ReadCloudFile(const QString& fileName, const QString& sizeS, const QString& mime_type, const QVariant& requestJS, const QString& javascriptCallbackFunction)
+QtScriptResolverHelper::ReadCloudFile(const QString& fileName, const QString& fileId, const QString& sizeS, const QString& mime_type, const QVariant& requestJS, const QString& javascriptCallbackFunction)
 {
 
     QVariantMap request;
@@ -381,12 +381,12 @@ QtScriptResolverHelper::ReadCloudFile(const QString& fileName, const QString& si
         download_url = QUrl(requestJS.toString());
     }
 
-    tDebug( LOGINFO ) << "ReadCloudFile : Loading tags of " << fileName << " from " << download_url.toString();
+    tDebug( LOGINFO ) << "#### ReadCloudFile : Loading tags of " << fileName << " from " << download_url.toString() << " which have id " << fileId;
 
 
-
+    m["fileId"] = fileId;
     m["mimetype"] = mime_type.toUtf8();
-    m["url"] = download_url;
+
 
     CloudStream* stream = new CloudStream(
         download_url, fileName, size, headers, network);
@@ -487,7 +487,7 @@ QtScriptResolverHelper::ReadCloudFile(const QString& fileName, const QString& si
     }
     tabTagsJSON += "}";
 
-    tDebug() << "Sending tags to js : " <<tabTagsJSON;
+    tDebug() << "#### ReadCloudFile : Sending tags to js : " <<tabTagsJSON;
 
     QString getUrl = QString( "Tomahawk.resolver.instance.%1( %2 );" ).arg( javascriptCallbackFunction )
                                                                         .arg( tabTagsJSON );
