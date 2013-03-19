@@ -44,7 +44,8 @@ public:
 protected slots:
     virtual void init() {}
 
-    virtual void dbusPlayingReplyReceived( const QDBusMessage &reply );
+    virtual void dbusPlayingReplyReceived( const QDBusMessage& reply );
+    virtual void dbusCapabiltiesReplyReceived( const QDBusMessage& reply );
 
     virtual void getInfo( Tomahawk::InfoSystem::InfoRequestData requestData )
     {
@@ -62,11 +63,13 @@ protected slots:
 private:
     int getNotificationIconHeight();
 
-    void notifyUser( const QString &messageText );
-
-    void nowPlaying( const QVariant &input );
+    void notifyUser( const QString& messageText );
+    void nowPlaying( const QVariant& input );
 
     quint32 m_nowPlayingId;
+
+    // Does the window manger support basic XML-based markup (a small HTML subset), see Desktop Notifications specification
+    bool m_wmSupportsBodyMarkup;
 };
 
 }
