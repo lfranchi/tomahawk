@@ -33,6 +33,11 @@
 #include <QThread>
 #include <QWebPage>
 #include <QWebFrame>
+#include <QWebView>
+#include <QSignalMapper>
+
+#include <taglib/tiostream.h>
+#include <taglib/tfilestream.h>
 
 #ifdef QCA2_FOUND
 #include <QtCrypto>
@@ -58,6 +63,17 @@ public:
 
     Q_INVOKABLE QByteArray base64Encode( const QByteArray& input );
     Q_INVOKABLE QByteArray base64Decode( const QByteArray& input );
+
+
+    // send ID3Tags of the stream as argument of the callback function
+    Q_INVOKABLE void
+    ReadCloudFile(const QString& fileName, const QString& fileId, const QString& sizeS, const QString& mime_type, const QVariant& requestJS, const QString& javascriptCallbackFunction);
+
+    Q_INVOKABLE void addLocalJSFile(const QString& jsFilePath);
+
+    Q_INVOKABLE void requestWebView(const QString& varName, const QString& url);
+
+    Q_INVOKABLE void showWebInspector();
 
     QSharedPointer<QIODevice> customIODeviceFactory( const Tomahawk::result_ptr& result );
 
@@ -87,6 +103,7 @@ private:
 #ifdef QCA2_FOUND
     QCA::Initializer m_qcaInit;
 #endif
+    QNetworkAccessManager* network;
 };
 
 class DLLEXPORT ScriptEngine : public QWebPage
@@ -178,6 +195,8 @@ public slots:
     virtual void albums( const Tomahawk::collection_ptr& collection, const Tomahawk::artist_ptr& artist );
     virtual void tracks( const Tomahawk::collection_ptr& collection, const Tomahawk::album_ptr& album );
 
+    void executeJavascript(const QString& );
+
 signals:
     void stopped();
 
@@ -194,6 +213,7 @@ private:
     void fillDataInWidgets( const QVariantMap& data );
     void onCapabilitiesChanged( Capabilities capabilities );
     void loadCollections();
+    void connectUISlots( QWidget*, const QVariantList & );
 
     // encapsulate javascript calls
     QVariantMap resolverSettings();
@@ -212,6 +232,7 @@ private:
     QPixmap m_icon;
     unsigned int m_weight, m_timeout;
     Capabilities m_capabilities;
+    QSignalMapper* m_signalMapper;
 
     bool m_ready, m_stopped;
     ExternalResolver::ErrorState m_error;

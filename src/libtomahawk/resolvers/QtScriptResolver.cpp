@@ -27,6 +27,11 @@
 #include "ScriptCollection.h"
 #include "SourceList.h"
 
+
+
+#include "utils/TomahawkUtils.h"
+#include "TomahawkSettings.h"
+
 #include "accounts/AccountConfigWidget.h"
 
 #include "network/Servent.h"
@@ -45,8 +50,43 @@
 #include <QNetworkReply>
 #include <QMetaProperty>
 #include <QCryptographicHash>
+#include <QDesktopServices>
+#include <QPainter>
+#include <QSignalMapper>
+#include <QWebInspector>
 
 #include <boost/bind.hpp>
+
+//--- includes readcloudFile
+//#include "taghandlers/tag.h"
+# include "utils/cloudstream.h"
+
+#include <taglib/aifffile.h>
+#include <taglib/asffile.h>
+#include <taglib/attachedpictureframe.h>
+#include <taglib/commentsframe.h>
+#include <taglib/fileref.h>
+#include <taglib/flacfile.h>
+#include <taglib/id3v2tag.h>
+#include <taglib/mp4file.h>
+#include <taglib/mp4tag.h>
+#include <taglib/mpcfile.h>
+#include <taglib/mpegfile.h>
+#include <taglib/oggfile.h>
+#ifdef TAGLIB_HAS_OPUS
+#include <taglib/opusfile.h>
+#endif
+#include <taglib/oggflacfile.h>
+#include <taglib/speexfile.h>
+#include <taglib/tag.h>
+#include <taglib/textidentificationframe.h>
+#include <taglib/trueaudiofile.h>
+#include <taglib/tstring.h>
+#include <taglib/vorbisfile.h>
+#include <taglib/wavfile.h>
+
+#include <boost/scoped_ptr.hpp>
+//--- end includes readcloudfile
 
 // FIXME: bloody hack, remove this for 0.3
 // this one adds new functionality to old resolvers
@@ -60,6 +100,7 @@ QtScriptResolverHelper::QtScriptResolverHelper( const QString& scriptPath, QtScr
 {
     m_scriptPath = scriptPath;
     m_resolver = parent;
+    network = new QNetworkAccessManager(this);
 }
 
 
@@ -314,19 +355,208 @@ QtScriptResolverHelper::base64Decode( const QByteArray& input )
 }
 
 
+void
+QtScriptResolverHelper::ReadCloudFile(const QString& fileName, const QString& fileId, const QString& sizeS, const QString& mime_type, const QVariant& requestJS, const QString& javascriptCallbackFunction)
+{
+
+    QVariantMap request;
+    QUrl download_url;
+    QVariantMap headers;
+    QVariantMap m;
+    long size = sizeS.toLong();
+
+
+
+
+    if(requestJS.type() == QVariant::Map)
+    {
+        request = requestJS.toMap();
+
+        download_url = QUrl(request["url"].toString());
+
+        headers = request["headers"].toMap();
+    }
+    else
+    {
+        download_url = QUrl(requestJS.toString());
+    }
+
+    tDebug( LOGINFO ) << "#### ReadCloudFile : Loading tags of " << fileName << " from " << download_url.toString() << " which have id " << fileId;
+
+
+    m["fileId"] = fileId;
+    m["mimetype"] = mime_type.toUtf8();
+
+
+    CloudStream* stream = new CloudStream(
+        download_url, fileName, size, headers, network);
+    stream->Precache();
+    boost::scoped_ptr<TagLib::File> tag;
+    if (mime_type == "audio/mpeg") { // && title.endsWith(".mp3")) {
+      tag.reset(new TagLib::MPEG::File(
+          stream,  // Takes ownership.
+          TagLib::ID3v2::FrameFactory::instance(),
+          TagLib::AudioProperties::Accurate));
+    } else if (mime_type == "audio/mp4" ||
+               (mime_type == "audio/mpeg")) { //  && title.endsWith(".m4a"))) {
+      tag.reset(new TagLib::MP4::File(
+          stream,
+          true,
+          TagLib::AudioProperties::Accurate));
+    } else if (mime_type == "application/ogg" ||
+               mime_type == "audio/ogg") {
+      tag.reset(new TagLib::Ogg::Vorbis::File(
+          stream,
+          true,
+          TagLib::AudioProperties::Accurate));
+    }
+  #ifdef TAGLIB_HAS_OPUS
+    else if (mime_type == "application/opus" ||
+               mime_type == "audio/opus") {
+      tag.reset(new TagLib::Ogg::Opus::File(
+          stream,
+          true,
+          TagLib::AudioProperties::Accurate));
+    }
+  #endif
+    else if (mime_type == "application/x-flac" ||
+               mime_type == "audio/flac") {
+      tag.reset(new TagLib::FLAC::File(
+          stream,
+          TagLib::ID3v2::FrameFactory::instance(),
+          true,
+          TagLib::AudioProperties::Accurate));
+    } else if (mime_type == "audio/x-ms-wma") {
+      tag.reset(new TagLib::ASF::File(
+          stream,
+          true,
+          TagLib::AudioProperties::Accurate));
+    } else {
+      tDebug( LOGINFO ) << "Unknown mime type for tagging:" << mime_type;
+      //return m;
+    }
+
+    if (stream->num_requests() > 2) {
+      // Warn if pre-caching failed.
+     tDebug( LOGINFO ) << "Total requests for file:" << fileName
+                    << stream->num_requests()
+                    << stream->cached_bytes();
+    }
+
+    //construction of the tag's map
+    if (tag->tag() && !tag->tag()->isEmpty()) {
+
+       m["track"] = tag->tag()->title().toCString(true);
+       m["artist"] = tag->tag()->artist().toCString(true);
+       m["album"] = tag->tag()->album().toCString(true);
+       m["size"] = QString::number(size);
+
+      if (tag->tag()->track() != 0) {
+          m["albumpos"] = tag->tag()->track();
+      }
+      if (tag->tag()->year() != 0) {
+          m["year"] = tag->tag()->year();
+      }
+
+      if (tag->audioProperties()) {
+          m["duration"] = tag->audioProperties()->length();
+          m["bitrate"] = tag->audioProperties()->bitrate();
+      }
+/*      if (tag->tag()->albumArtist()) {
+        m["albumartist"]  = tag->tag()->albumArtist();
+      }
+      if (tag->tag()->composer()) {
+        m["composer"]     = tag->tag()->composer();
+      }
+      if (tag->tag()->discNumber() != 0) {
+        m["discnumber"]   = tag->tag()->discNumber();
+      }
+*/
+    }
+
+    QString tabTagsJSON = "{";
+    //we convert the QVariantMap to JSON to give it as an argument of the callback function
+    int nbTags = m.count();
+    int i = 1;
+    foreach(const QString& tag, m.keys()) {
+        tabTagsJSON += "'" + tag + "' : '" + m[tag].toString() + "'";
+        if(i != nbTags){
+            tabTagsJSON += ", ";
+        }
+        i++;
+    }
+    tabTagsJSON += "}";
+
+    tDebug() << "#### ReadCloudFile : Sending tags to js : " <<tabTagsJSON;
+
+    QString getUrl = QString( "Tomahawk.resolver.instance.%1( %2 );" ).arg( javascriptCallbackFunction )
+                                                                        .arg( tabTagsJSON );
+
+    m_resolver->m_engine->mainFrame()->evaluateJavaScript( getUrl );
+}
+
+
+void
+QtScriptResolverHelper::addLocalJSFile( const QString &jsFilePath )
+{
+    m_resolver->m_engine->mainFrame()->evaluateJavaScript( readRaw(jsFilePath) );
+}
+
+
+void
+QtScriptResolverHelper::requestWebView(const QString &varName, const QString &url)
+{
+    QWebView *view = new QWebView();
+    view->load(QUrl(url));
+
+    //TODO: move this to JS.
+    view->setWindowModality(Qt::ApplicationModal);
+
+    m_resolver->m_engine->mainFrame()->addToJavaScriptWindowObject(varName, view);
+}
+
+void
+QtScriptResolverHelper::showWebInspector()
+{
+    QWebInspector *inspector = new QWebInspector;
+    inspector->setPage(m_resolver->m_engine);
+    inspector->show();
+}
+
+
 QSharedPointer< QIODevice >
 QtScriptResolverHelper::customIODeviceFactory( const Tomahawk::result_ptr& result )
 {
+    QString urlStr;
+    QVariantMap request;
+    QNetworkRequest req;
     QString getUrl = QString( "Tomahawk.resolver.instance.%1( '%2' );" ).arg( m_urlCallback )
                                                                         .arg( QString( QUrl( result->url() ).toEncoded() ) );
 
-    QString urlStr = m_resolver->m_engine->mainFrame()->evaluateJavaScript( getUrl ).toString();
+    QVariant jsResult = m_resolver->m_engine->mainFrame()->evaluateJavaScript( getUrl ).toString();
+
+    if(jsResult.type() == QVariant::Map)
+    {
+        request = jsResult.toMap();
+
+        urlStr = request["url"].toString();
+
+        QVariantMap headers = request["headers"].toMap();
+        foreach(const QString& headerName, headers.keys())
+        {
+            req.setRawHeader(headerName.toLocal8Bit(), headers[headerName].toString().toLocal8Bit());
+        }
+    }
+    else
+    {
+        urlStr = jsResult.toString();
+    }
 
     if ( urlStr.isEmpty() )
         return QSharedPointer< QIODevice >();
 
     QUrl url = QUrl::fromEncoded( urlStr.toUtf8() );
-    QNetworkRequest req( url );
+    req.setUrl( url );
     tDebug() << "Creating a QNetowrkReply with url:" << req.url().toString();
     QNetworkReply* reply = TomahawkUtils::nam()->get( req );
     return QSharedPointer<QIODevice>( reply, &QObject::deleteLater );
@@ -349,6 +579,7 @@ QtScriptResolver::QtScriptResolver( const QString& scriptPath )
     , m_stopped( true )
     , m_error( Tomahawk::ExternalResolver::NoError )
     , m_resolverHelper( new QtScriptResolverHelper( scriptPath, this ) )
+    , m_signalMapper( new QSignalMapper(this) )
 {
     tLog() << Q_FUNC_INFO << "Loading JS resolver:" << scriptPath;
 
@@ -357,6 +588,8 @@ QtScriptResolver::QtScriptResolver( const QString& scriptPath )
 
     // set the icon, if we launch properly we'll get the icon the resolver reports
     m_icon = TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultResolver, TomahawkUtils::Original, QSize( 128, 128 ) );
+
+    connect( m_signalMapper, SIGNAL( mapped ( const QString & ) ), this, SLOT( executeJavascript(const QString &) ) );
 
     if ( !QFile::exists( filePath() ) )
     {
@@ -859,9 +1092,11 @@ QtScriptResolver::loadDataFromWidgets()
         QString widgetName = data["widget"].toString();
         QWidget* widget= m_configWidget.data()->findChild<QWidget*>( widgetName );
 
-        QVariant value = widgetData( widget, data["property"].toString() );
-
-        saveData[ data["name"].toString() ] = value;
+        if( data.contains("property") )
+        {
+            QVariant value = widgetData( widget, data["property"].toString() );
+            saveData[ data["name"].toString() ] = value;
+        }
     }
 
     return saveData;
@@ -873,7 +1108,9 @@ QtScriptResolver::fillDataInWidgets( const QVariantMap& data )
 {
     foreach(const QVariant& dataWidget, m_dataWidgets)
     {
-        QString widgetName = dataWidget.toMap()["widget"].toString();
+        QVariantMap mapDataWidget = dataWidget.toMap();
+        QString widgetName = mapDataWidget["widget"].toString();
+
         QWidget* widget= m_configWidget.data()->findChild<QWidget*>( widgetName );
         if( !widget )
         {
@@ -881,11 +1118,46 @@ QtScriptResolver::fillDataInWidgets( const QVariantMap& data )
             Q_ASSERT(false);
             return;
         }
+        if( mapDataWidget.contains("property") )
+        {
+            QString propertyName = mapDataWidget["property"].toString();
+            QString name = mapDataWidget["name"].toString();
 
-        QString propertyName = dataWidget.toMap()["property"].toString();
-        QString name = dataWidget.toMap()["name"].toString();
+            setWidgetData( data[ name ], widget, propertyName );
+        }
+        if( mapDataWidget.contains("connections") )
+        {
+            connectUISlots( widget, mapDataWidget["connections"].toList() );
+        }
+    }
+}
 
-        setWidgetData( data[ name ], widget, propertyName );
+
+void QtScriptResolver::connectUISlots( QWidget* widget, const QVariantList &connectionsList )
+{
+    foreach( const QVariant& connection, connectionsList )
+    {
+        QVariantMap params = connection.toMap();
+
+        if( params.contains("signal") && params.contains("javascriptCallback") )
+        {
+            int iSignal = widget->metaObject()->indexOfSignal(   params["signal"].toString()
+                                                                                 .toLocal8Bit()
+                                                                                 .data()
+                                                             );
+
+            if( iSignal != -1 ){
+
+                QMetaMethod signal = widget->metaObject()->method( iSignal );
+                QMetaMethod slot = m_signalMapper->metaObject()->method( m_signalMapper
+                                                                         ->metaObject()->
+                                                                         indexOfSlot("map()") );
+
+                connect( widget , signal , m_signalMapper, slot );
+                //TODO : check if mapping were previously done on widget, if you set the same widget twice the first mapping will be replaced.
+                m_signalMapper->setMapping( widget, params["javascriptCallback"].toString() );
+            }
+        }
     }
 }
 
@@ -1025,5 +1297,10 @@ QtScriptResolver::resolverCollections()
     // against this ID. doesn't matter what kind of ID string as long as it's unique.
     // Then when there's callbacks from a resolver, it sends source name, collection id
     // + data.
+}
+
+void QtScriptResolver::executeJavascript(const QString &js)
+{
+    m_engine->mainFrame()->evaluateJavaScript( RESOLVER_LEGACY_CODE + js );
 }
 

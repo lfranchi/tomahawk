@@ -115,6 +115,7 @@ set( libGuiSources
     utils/SharedTimeLine.cpp
     utils/WebResultHintChecker.cpp
     utils/NetworkReply.cpp
+    utils/cloudstream.cpp
 
     widgets/AnimatedCounterLabel.cpp
     widgets/BasicHeader.cpp
@@ -330,6 +331,16 @@ list(APPEND libSources
     thirdparty/kdsingleapplicationguard/kdsharedmemorylocker.cpp
     thirdparty/kdsingleapplicationguard/kdtoolsglobal.cpp
     thirdparty/kdsingleapplicationguard/kdlockedsharedmemorypointer.cpp
+
+    thirdparty/kqoauth/kqoauth2request.cpp
+    thirdparty/kqoauth/kqoauthauthreplyserver.cpp
+    thirdparty/kqoauth/kqoauthmanager.cpp
+    thirdparty/kqoauth/kqoauthrequest.cpp
+    thirdparty/kqoauth/kqoauthrequest_1.cpp
+    thirdparty/kqoauth/kqoauthrequest_xauth.cpp
+    thirdparty/kqoauth/kqoauthutils.cpp
+
+
 )
 
 IF(LIBLASTFM_FOUND)
